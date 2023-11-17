@@ -12,6 +12,7 @@ import {
   sendAdminToken,
 } from "../utils/jwt";
 import { IAdmin } from "../models/admin.model";
+import { getAdminById, getAllDentistByAdminService, getAllEmployeeService, getAllUsersService } from "../services/admin.service";
 
 //login dentist
 interface ILoginRequest {
@@ -66,6 +67,51 @@ async (req: any, res: Response, next: NextFunction) => {
     return next(new ErrorHandler(error.message, 400));
     }
 }
+);
+
+//get admin info
+export const getAdminInfo = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const adminId = req.admin?.MaQTV;
+      getAdminById(adminId, res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// get all users 
+export const getAllUsers = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// get all dentists
+export const getAllDentistsByAdmin = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllDentistByAdminService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// get all employees
+export const GetAllEmployee = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllEmployeeService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
 );
 
 export const logoutAdmin = CatchAsyncError(

@@ -4,15 +4,19 @@ import {
   activateUser,
   loginUser,
   logoutUser,
-  getAllUsers,
   getUserInfo,
   updateUserInfo,
   createAppointment,
-  getMedicalRecordByUser
+  getMedicalRecordByUser,
+  getAllDentistsByUser,
+  getAllDentistsScheduleByUser,
+  sendResetPasswordEmail,
+  ResetPasswordByUser
 } from "../controllers/user.controller";
 
 import { isAuthenticatedUserLogin } from "../middleware/auth";
 import { updateUserAccessToken } from "../middleware/updatetoken";
+
 
 
 const userRouter = express.Router();
@@ -25,8 +29,6 @@ userRouter.post("/user/login", loginUser);
 
 userRouter.get("/user/logout", isAuthenticatedUserLogin, logoutUser);
 
-userRouter.get("/get-users", isAuthenticatedUserLogin, getAllUsers);
-
 userRouter.get("/user/me", isAuthenticatedUserLogin, getUserInfo);
 
 userRouter.put("/user/update-user-info",isAuthenticatedUserLogin, updateUserInfo);
@@ -37,5 +39,12 @@ userRouter.post("/user/create-appointment",isAuthenticatedUserLogin,createAppoin
 
 userRouter.get("/user/get-medical-record", isAuthenticatedUserLogin, getMedicalRecordByUser);
 
+userRouter.get("/user/get-all-dentists", isAuthenticatedUserLogin, getAllDentistsByUser);
+
+userRouter.get("/user/get-all-dentists-schedules", isAuthenticatedUserLogin, getAllDentistsScheduleByUser);
+
+userRouter.post("/user/sendEmail-reset-password", isAuthenticatedUserLogin, sendResetPasswordEmail);
+
+userRouter.put("/user/reset-password", isAuthenticatedUserLogin, ResetPasswordByUser);
 
 export default userRouter;

@@ -12,14 +12,13 @@ import {
   refreshTokenOptions,
   sendUserToken,
 } from "../utils/jwt";
-import { getAllUsersService, getUserById } from "../services/user.service";
+import { getAllDentistByUserService, getAllDentistsScheduleByUserService, getUserById } from "../services/user.service";
 import ejs from "ejs";
 import path from "path";
-import sendMail from "../utils/sendEmail";
+import sendEmail from "../utils/sendEmail";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IAppointment } from "../models/appointment.model";
 import { IMedicalRecord } from "../models/medicalrecord.model";
-
 
 
 
@@ -94,7 +93,7 @@ export const registrationUser = CatchAsyncError(
               //   phoneNumber: user.SoDT,
               //   data,
               // });
-              await sendMail({
+              await sendEmail({
                 email: user.Email,
                 subject: "Activate your account",
                 template: "activation-mail.ejs",
@@ -229,6 +228,9 @@ export const activateUser = CatchAsyncError(
             GRANT EXECUTE ON UpdateUserInfo TO ${MaKH}
             GRANT EXECUTE ON InsertAppointment TO ${MaKH}
             GRANT EXECUTE ON GetMedicalRecordByID TO ${MaKH}
+            GRANT EXECUTE ON GetAllDentistInfoByUser TO ${MaKH}
+            GRANT EXECUTE ON GetAllLICHNHASI TO ${MaKH}
+            GRANT EXECUTE ON UpdatePasswordByUser TO ${MaKH}
             `, (err) => {
               if (err) {
                 return next(new ErrorHandler(err.message, 400));
@@ -335,16 +337,7 @@ export const logoutUser = CatchAsyncError(
   }
 );
 
-// get all users -- only for admin
-export const getAllUsers = CatchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      getAllUsersService(req, res, next);
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
-);
+
 
 //get user info
 export const getUserInfo = CatchAsyncError(
@@ -419,6 +412,7 @@ export const updateUserInfo = CatchAsyncError(
                 MatKhau: columns[6].value.trim(),
                 Email: columns[7].value.trim(),
               };
+              //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
               redis.set(MaKH, JSON.stringify(user));
             });
 
@@ -575,3 +569,204 @@ export const getMedicalRecordByUser = CatchAsyncError(
     }
   }
 );
+
+//Get all dentist
+export const getAllDentistsByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      getAllDentistByUserService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//Get All Dentist Schedule
+export const getAllDentistsScheduleByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      getAllDentistsScheduleByUserService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//create reset password token
+interface IResetpasswordToken {
+  token: string;
+  resetPasswordCode: string;
+}
+
+export const createResetpasswordToken = (userOldAndNewPassword: any): IResetpasswordToken => {
+  const resetPasswordCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+  const token = jwt.sign(
+    {
+      userOldAndNewPassword,
+      resetPasswordCode,
+    },
+    process.env.ACTIVATION_SECRET as Secret,
+    {
+      expiresIn: "10m",
+    }
+  );
+  return { token, resetPasswordCode };
+};
+
+// update user password
+interface IUpdatePassword {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export const sendResetPasswordEmail = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+      const HoTen = req.user?.HoTen;
+      const email = req.user?.Email;
+      const userOldAndNewPassword: IUpdatePassword = {
+        oldPassword,
+        newPassword
+      };
+      const resetPasswordToken = createResetpasswordToken(userOldAndNewPassword);
+
+      const resetPasswordCode = resetPasswordToken.resetPasswordCode;
+
+      const data = { user: { name: HoTen }, resetPasswordCode };
+
+      const html = await ejs.renderFile(
+        path.join(__dirname, "../mails/resetpassword-mail.ejs"),
+        data
+      );
+
+      try {
+        await sendEmail({
+          email: email,
+          subject: "Reset your password account",
+          template: "resetpassword-mail.ejs",
+          data,
+        });
+
+        res.status(201).json({
+          success: true,
+          resetPasswordCode,
+          resetpasswordToken: resetPasswordToken.token,
+        });
+      } catch (error: any) {
+        console.error(`Failed to send SMS in registrationUser function: ${error.message}`);
+        return next(new ErrorHandler(error.message, 400));
+      }
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//reset password after verification email successfully
+interface IResetPassowrdRequest {
+  resetpassword_token: string;
+  resetpassword_code: string;
+}
+
+export const ResetPasswordByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const MaKH = req.user?.MaKH;
+      const MatKhau = req.user?.MatKhau;
+      const SoDT = req.user?.SoDT;
+      const { resetpassword_token, resetpassword_code } =
+        req.body as IResetPassowrdRequest;
+      const updatePassword: { userOldAndNewPassword: IUpdatePassword; resetPasswordCode: string } = jwt.verify(
+        resetpassword_token,
+        process.env.ACTIVATION_SECRET as string
+      ) as { userOldAndNewPassword: IUpdatePassword; resetPasswordCode: string };
+
+      if (updatePassword.resetPasswordCode !== resetpassword_code) {
+        return next(new ErrorHandler("Invalid activation code", 400));
+      }
+      const { oldPassword,newPassword } = updatePassword.userOldAndNewPassword;
+      const connection: Connection = ConnectToDataBaseDefault();
+
+      connection.on('connect', async (err: Error | null) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        } 
+
+        const request = new SQLRequest('UpdatePasswordByUser', (err) => {
+          if (err) {
+            return res.status(400).json({
+              success: false,
+              message: err.message,
+            });
+
+          }
+
+          request.on('requestCompleted', function () {
+            const sql = `
+            SELECT * FROM KHACHHANG WHERE MaKH = @MaKH
+            ALTER LOGIN ${MaKH} WITH PASSWORD = '${newPassword}';
+            `;
+
+            const GetInfoAfterUpdateRequest = new SQLRequest(sql, (err, rowCount) => {
+              if (err) {
+                return next(new ErrorHandler(err.message, 400));
+              }
+
+              if (rowCount === 0) {
+                return next(new ErrorHandler("Mã số khách hàng ko hợp lệ", 400));
+              }
+            });
+
+            GetInfoAfterUpdateRequest.addParameter('MaKH', TYPES.VarChar, MaKH);
+      
+            
+
+
+            GetInfoAfterUpdateRequest.on('row', function (columns) {
+              const user: IUser = {
+                MaKH: columns[0].value.trim(),
+                SoDT: columns[1].value.trim(),
+                HoTen: columns[2].value.trim(),
+                Phai: columns[3].value.trim(),
+                NgaySinh: new Date(columns[4].value),
+                DiaChi: columns[5].value.trim(),
+                MatKhau: columns[6].value.trim(),
+                Email: columns[7].value.trim(),
+              };
+              //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
+              redis.set(MaKH, JSON.stringify(user));
+            });
+
+            connection.execSql(GetInfoAfterUpdateRequest);
+          });
+
+          return res.status(201).json({
+            success: true,
+            message: 'Mật khẩu người dùng đã được cập nhật thành công',
+          });
+
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+        request.addParameter('SoDT', TYPES.Char, SoDT);
+        request.addParameter('newPassword', TYPES.Char, newPassword);
+
+
+        connection.callProcedure(request);
+         
+      });
+
+     
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+
+
