@@ -6,7 +6,8 @@ use PHONGKHAMNHASI
 
 go
 
-create table LOAIDICHVU (
+create table LOAIDICHVU
+(
   MaDV char(10),
   TenDV nvarchar(40),
   MoTa nvarchar(100),
@@ -16,7 +17,8 @@ create table LOAIDICHVU (
 
 go
 
-create table CHITIETDV (
+create table CHITIETDV
+(
   MaDV char(10),
   MaKH char(20),
   STT int,
@@ -27,7 +29,8 @@ create table CHITIETDV (
 
 go
 
-create table NHASI (
+create table NHASI
+(
   MaNS char(20),
   TenDangNhap char(50),
   HoTen nvarchar(50),
@@ -39,7 +42,8 @@ create table NHASI (
 
 go
 
-create table KHACHHANG (
+create table KHACHHANG
+(
   MaKH char(20),
   SoDT char(15),
   HoTen nvarchar(50),
@@ -55,7 +59,8 @@ create table KHACHHANG (
 
 go
 
-create table LICHHEN (
+create table LICHHEN
+(
   MaSoHen char(20),
   NgayGioKham datetime,
   LyDoKham nvarchar(100),
@@ -65,7 +70,8 @@ create table LICHHEN (
   constraint PK_MaSoHen primary key(MaSoHen)
 )
 
-create table LOAITHUOC(
+create table LOAITHUOC
+(
   MaThuoc char(30),
   TenThuoc nvarchar(100),
   DonViTinh nvarchar(100),
@@ -76,7 +82,8 @@ create table LOAITHUOC(
   constraint PK_MaThuoc primary key(MaThuoc)
 )
 
-create table HOSOBENH(
+create table HOSOBENH
+(
   MaKH char(20),
   SoDT char(15),
   STT int,
@@ -87,7 +94,8 @@ create table HOSOBENH(
   constraint PK_SoDT_STT primary key(MaKH,SoDT,STT)
 )
 
-create table LICHNHASI(
+create table LICHNHASI
+(
   MaNS char(20),
   STT int,
   GioBatDau datetime,
@@ -96,7 +104,8 @@ create table LICHNHASI(
   constraint PK_MaNS_STT primary key(MaNS,STT)
 )
 
-create table NHANVIEN(
+create table NHANVIEN
+(
   MaNV char(20),
   HoTen nvarchar(100),
   Phai CHAR(1) CHECK(Phai IN ('M', 'F')),
@@ -105,7 +114,8 @@ create table NHANVIEN(
   constraint PK_NHANVIEN primary key(MaNV)
 )
 
-create table QUANTRIVIEN(
+create table QUANTRIVIEN
+(
   MaQTV char(20),
   HoTen nvarchar(100),
   Phai CHAR(1) CHECK(Phai IN ('M', 'F')),
@@ -114,8 +124,9 @@ create table QUANTRIVIEN(
   constraint PK_MaQTV primary key(MaQTV)
 )
 
- 
-create table CHITIETTHUOC(
+
+create table CHITIETTHUOC
+(
   MaThuoc char(30),
   MaKH char(20),
   SoDT char(15),
@@ -125,7 +136,8 @@ create table CHITIETTHUOC(
   constraint PK_MaThuoc_STT_SoDT primary key(MaThuoc,MaKH,SoDT,STT)
 )
 
-create table HOADON(
+create table HOADON
+(
   MaHoaDon char(20),
   MaKH char(20),
   SoDT char(15),
@@ -199,35 +211,44 @@ BEGIN
   SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
   -- Begin a transaction
   BEGIN TRANSACTION
-    -- Get the values of MaKH and SoDT from the inserted table
-    SELECT @MaKH = MaKH, @SoDT = SoDT FROM inserted
-    -- Check if the customer ID is unique
-    IF EXISTS (SELECT * FROM KHACHHANG WITH (XLOCK,ROWLOCK) WHERE MaKH = @MaKH)
+  -- Get the values of MaKH and SoDT from the inserted table
+  SELECT @MaKH = MaKH, @SoDT = SoDT
+  FROM inserted
+  -- Check if the customer ID is unique
+  IF EXISTS (SELECT *
+  FROM KHACHHANG WITH (XLOCK,ROWLOCK)
+  WHERE MaKH = @MaKH)
     BEGIN
-      -- Rollback the transaction and raise an error
-      ROLLBACK TRANSACTION
-      RAISERROR ('Mã khách hàng đã tồn tại.', 16, 1)
-      RETURN
-    END
-    -- Check if the phone number is unique
-    IF EXISTS (SELECT * FROM KHACHHANG WITH (XLOCK,ROWLOCK) WHERE SoDT = @SoDT)
+    -- Rollback the transaction and raise an error
+    ROLLBACK TRANSACTION
+    RAISERROR ('Mã khách hàng đã tồn tại.', 16, 1)
+    RETURN
+  END
+  -- Check if the phone number is unique
+  IF EXISTS (SELECT *
+  FROM KHACHHANG WITH (XLOCK,ROWLOCK)
+  WHERE SoDT = @SoDT)
     BEGIN
-      -- Rollback the transaction and raise an error
-      ROLLBACK TRANSACTION
-      RAISERROR ('Số điện thoại đã tồn tại.', 16, 1)
-      RETURN
-    END
-    -- Check if there are no NULL values
-    IF EXISTS (SELECT * FROM inserted WHERE HoTen IS NULL OR NgaySinh IS NULL OR DiaChi IS NULL OR SoDT IS NULL OR MatKhau IS NULL OR Email IS NULL)
+    -- Rollback the transaction and raise an error
+    ROLLBACK TRANSACTION
+    RAISERROR ('Số điện thoại đã tồn tại.', 16, 1)
+    RETURN
+  END
+  -- Check if there are no NULL values
+  IF EXISTS (SELECT *
+  FROM inserted
+  WHERE HoTen IS NULL OR NgaySinh IS NULL OR DiaChi IS NULL OR SoDT IS NULL OR MatKhau IS NULL OR Email IS NULL)
     BEGIN
-      -- Rollback the transaction and raise an error
-      ROLLBACK TRANSACTION
-      RAISERROR ('Không được để trống các giá trị.', 16, 1)
-      RETURN
-    END
-    -- Insert the data from the inserted table into KHACHHANG table
-    INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email)
-    SELECT MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email FROM inserted
+    -- Rollback the transaction and raise an error
+    ROLLBACK TRANSACTION
+    RAISERROR ('Không được để trống các giá trị.', 16, 1)
+    RETURN
+  END
+  -- Insert the data from the inserted table into KHACHHANG table
+  INSERT INTO KHACHHANG
+    (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email)
+  SELECT MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email
+  FROM inserted
   -- Commit the transaction
   COMMIT TRANSACTION
 END
@@ -239,50 +260,51 @@ ON NHASI
 INSTEAD OF INSERT
 AS
 BEGIN
-    -- Bắt đầu giao tác
-    BEGIN TRANSACTION;
-    -- Đặt mức cô lập SERIALIZABLE
-    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  -- Bắt đầu giao tác
+  BEGIN TRANSACTION;
+  -- Đặt mức cô lập SERIALIZABLE
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-	-- Kiểm tra xem MaNS đã tồn tại trong NHASI chưa
-	IF EXISTS (
+  -- Kiểm tra xem MaNS đã tồn tại trong NHASI chưa
+  IF EXISTS (
         SELECT 1
-        FROM NHASI N WITH (XLOCK,ROWLOCK)
-        JOIN INSERTED I ON N.MaNS = I.MaNS
+  FROM NHASI N WITH (XLOCK,ROWLOCK)
+    JOIN INSERTED I ON N.MaNS = I.MaNS
     )
     BEGIN
-        RAISERROR ('Mã nha sĩ đã tồn tại.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
-	
-    -- Kiểm tra xem tên đăng nhập có trùng lặp không
-    IF EXISTS (
+    RAISERROR ('Mã nha sĩ đã tồn tại.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
+
+  -- Kiểm tra xem tên đăng nhập có trùng lặp không
+  IF EXISTS (
         SELECT 1
-        FROM NHASI N WITH (XLOCK,ROWLOCK)
-        JOIN INSERTED I ON N.TenDangNhap = I.TenDangNhap
+  FROM NHASI N WITH (XLOCK,ROWLOCK)
+    JOIN INSERTED I ON N.TenDangNhap = I.TenDangNhap
     )
     BEGIN
-        RAISERROR ('Tên đăng nhập đã tồn tại.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Tên đăng nhập đã tồn tại.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Chèn dữ liệu từ bảng INSERTED vào bảng NHASI nếu họ tên không NULL
-    INSERT INTO NHASI (MaNS, TenDangNhap, HoTen, Phai, GioiThieu, MatKhau)
-    SELECT 
-        I.MaNS, 
-        I.TenDangNhap, 
-        I.HoTen, 
-        I.Phai, 
-        I.GioiThieu, 
-        I.MatKhau
-    FROM INSERTED I 
-    WHERE 
+  -- Chèn dữ liệu từ bảng INSERTED vào bảng NHASI nếu họ tên không NULL
+  INSERT INTO NHASI
+    (MaNS, TenDangNhap, HoTen, Phai, GioiThieu, MatKhau)
+  SELECT
+    I.MaNS,
+    I.TenDangNhap,
+    I.HoTen,
+    I.Phai,
+    I.GioiThieu,
+    I.MatKhau
+  FROM INSERTED I
+  WHERE 
         I.HoTen IS NOT NULL;
 
-    -- Kết thúc giao tác
-    COMMIT TRANSACTION;
+  -- Kết thúc giao tác
+  COMMIT TRANSACTION;
 END;
 
 
@@ -294,43 +316,44 @@ ON LOAITHUOC
 INSTEAD OF INSERT
 AS
 BEGIN
-    -- Bắt đầu giao tác
-    BEGIN TRANSACTION;
-    -- Đặt mức cô lập SERIALIZABLE
-    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  -- Bắt đầu giao tác
+  BEGIN TRANSACTION;
+  -- Đặt mức cô lập SERIALIZABLE
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-    -- Kiểm tra xem MaThuoc đã tồn tại trong LOAITHUOC chưa
-    IF EXISTS (
+  -- Kiểm tra xem MaThuoc đã tồn tại trong LOAITHUOC chưa
+  IF EXISTS (
         SELECT 1
-        FROM LOAITHUOC T WITH (XLOCK,ROWLOCK)
-        JOIN INSERTED I ON T.MaThuoc = I.MaThuoc
+  FROM LOAITHUOC T WITH (XLOCK,ROWLOCK)
+    JOIN INSERTED I ON T.MaThuoc = I.MaThuoc
     )
     BEGIN
-        RAISERROR ('Mã thuốc đã tồn tại.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã thuốc đã tồn tại.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    DECLARE @Now date;
-    SET @Now = GETDATE();
+  DECLARE @Now date;
+  SET @Now = GETDATE();
 
-    -- Chèn dữ liệu từ bảng INSERTED vào bảng LOAITHUOC nếu MaThuoc không tồn tại trong LOAITHUOC, SoLuong lớn hơn hoặc bằng 0 và NgayHetHan sau ngày hiện tại
-    INSERT INTO LOAITHUOC (MaThuoc, TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc)
-    SELECT 
-        I.MaThuoc, 
-        I.TenThuoc, 
-        I.DonViTinh, 
-        I.ChiDinh, 
-        I.SoLuong, 
-        I.NgayHetHan, 
-        I.GiaThuoc
-    FROM INSERTED I 
-    WHERE 
-        I.SoLuong >= 0 
-        AND I.NgayHetHan > @Now;
+  -- Chèn dữ liệu từ bảng INSERTED vào bảng LOAITHUOC nếu MaThuoc không tồn tại trong LOAITHUOC, SoLuong lớn hơn hoặc bằng 0 và NgayHetHan sau ngày hiện tại
+  INSERT INTO LOAITHUOC
+    (MaThuoc, TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc)
+  SELECT
+    I.MaThuoc,
+    I.TenThuoc,
+    I.DonViTinh,
+    I.ChiDinh,
+    I.SoLuong,
+    I.NgayHetHan,
+    I.GiaThuoc
+  FROM INSERTED I
+  WHERE 
+        I.SoLuong >= 0
+    AND I.NgayHetHan > @Now;
 
-    -- Kết thúc giao tác
-    COMMIT TRANSACTION;
+  -- Kết thúc giao tác
+  COMMIT TRANSACTION;
 END;
 
 
@@ -340,76 +363,77 @@ ON LICHHEN
 INSTEAD OF INSERT
 AS
 BEGIN
-    -- Bắt đầu giao tác thứ nhất
-    BEGIN TRANSACTION;
-    -- Đặt mức cô lập SERIALIZABLE
-    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  -- Bắt đầu giao tác thứ nhất
+  BEGIN TRANSACTION;
+  -- Đặt mức cô lập SERIALIZABLE
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-    DECLARE @Now datetime;
-    SET @Now = GETDATE();
+  DECLARE @Now datetime;
+  SET @Now = GETDATE();
 
-    -- Kiểm tra xem MaSoHen đã tồn tại trong LICHHEN chưa
-    IF EXISTS (
+  -- Kiểm tra xem MaSoHen đã tồn tại trong LICHHEN chưa
+  IF EXISTS (
         SELECT 1
-        FROM LICHHEN L WITH (XLOCK, ROWLOCK)
-        JOIN INSERTED I ON L.MaSoHen = I.MaSoHen
+  FROM LICHHEN L WITH (XLOCK, ROWLOCK)
+    JOIN INSERTED I ON L.MaSoHen = I.MaSoHen
     )
     BEGIN
-        RAISERROR ('Mã số hẹn đã tồn tại trong lịch hẹn.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã số hẹn đã tồn tại trong lịch hẹn.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Kiểm tra xem MaKH đã tồn tại trong KHACHHANG chưa
-    IF NOT EXISTS (
+  -- Kiểm tra xem MaKH đã tồn tại trong KHACHHANG chưa
+  IF NOT EXISTS (
         SELECT 1
-        FROM KHACHHANG K WITH (XLOCK, ROWLOCK)
-        JOIN INSERTED I ON K.MaKH = I.MaKH
+  FROM KHACHHANG K WITH (XLOCK, ROWLOCK)
+    JOIN INSERTED I ON K.MaKH = I.MaKH
     )
     BEGIN
-        RAISERROR ('Mã khách hàng không tồn tại trong KHACHHANG.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã khách hàng không tồn tại trong KHACHHANG.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Chèn dữ liệu từ bảng INSERTED vào bảng LICHHEN nếu MaKH tồn tại trong KHACHHANG và NgayGioKham sau thời điểm hiện tại
-    INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
-    SELECT 
-        I.MaSoHen,
-        I.NgayGioKham,
-        I.LyDoKham,
-        I.MaNS,
-        I.MaKH,
-        I.SoDT
-    FROM INSERTED I WITH (XLOCK, ROWLOCK)
-    WHERE EXISTS (
-        SELECT 1 
-        FROM KHACHHANG K WITH (XLOCK, ROWLOCK)
-        WHERE K.MaKH = I.MaKH AND K.SoDT = I.SoDT
+  -- Chèn dữ liệu từ bảng INSERTED vào bảng LICHHEN nếu MaKH tồn tại trong KHACHHANG và NgayGioKham sau thời điểm hiện tại
+  INSERT INTO LICHHEN
+    (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
+  SELECT
+    I.MaSoHen,
+    I.NgayGioKham,
+    I.LyDoKham,
+    I.MaNS,
+    I.MaKH,
+    I.SoDT
+  FROM INSERTED I WITH (XLOCK, ROWLOCK)
+  WHERE EXISTS (
+        SELECT 1
+    FROM KHACHHANG K WITH (XLOCK, ROWLOCK)
+    WHERE K.MaKH = I.MaKH AND K.SoDT = I.SoDT
     ) AND I.NgayGioKham > @Now;
 
-    -- Kết thúc giao tác thứ nhất
-    COMMIT TRANSACTION;
+  -- Kết thúc giao tác thứ nhất
+  COMMIT TRANSACTION;
 
-    -- Bắt đầu giao tác thứ hai
-    BEGIN TRANSACTION;
-    -- Đặt mức cô lập SERIALIZABLE
-    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  -- Bắt đầu giao tác thứ hai
+  BEGIN TRANSACTION;
+  -- Đặt mức cô lập SERIALIZABLE
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-    -- Kiểm tra xem MaNS đã tồn tại trong NHASI chưa
-    IF NOT EXISTS (
+  -- Kiểm tra xem MaNS đã tồn tại trong NHASI chưa
+  IF NOT EXISTS (
         SELECT 1
-        FROM NHASI N WITH (XLOCK, ROWLOCK)
-        JOIN INSERTED I ON N.MaNS = I.MaNS
+  FROM NHASI N WITH (XLOCK, ROWLOCK)
+    JOIN INSERTED I ON N.MaNS = I.MaNS
     )
     BEGIN
-        RAISERROR ('Mã nha sĩ không tồn tại trong NHASI.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã nha sĩ không tồn tại trong NHASI.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Kết thúc giao tác thứ hai
-    COMMIT TRANSACTION;
+  -- Kết thúc giao tác thứ hai
+  COMMIT TRANSACTION;
 END;
 
 
@@ -420,61 +444,62 @@ ON HOSOBENH
 INSTEAD OF INSERT
 AS
 BEGIN
-    -- Bắt đầu giao tác
-    BEGIN TRANSACTION;
-    -- Đặt mức cô lập SERIALIZABLE
-    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  -- Bắt đầu giao tác
+  BEGIN TRANSACTION;
+  -- Đặt mức cô lập SERIALIZABLE
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-	DECLARE @Now datetime;
-	SET @Now = GETDATE();
+  DECLARE @Now datetime;
+  SET @Now = GETDATE();
 
-    -- Kiểm tra xem MaNS đã tồn tại trong NHASI chưa
-    IF NOT EXISTS (
+  -- Kiểm tra xem MaNS đã tồn tại trong NHASI chưa
+  IF NOT EXISTS (
         SELECT 1
-        FROM NHASI N WITH (XLOCK,ROWLOCK)
-        JOIN INSERTED I ON N.MaNS = I.MaNS
+  FROM NHASI N WITH (XLOCK,ROWLOCK)
+    JOIN INSERTED I ON N.MaNS = I.MaNS
     )
     BEGIN
-        RAISERROR ('Mã nha sĩ không tồn tại trong NHASI.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã nha sĩ không tồn tại trong NHASI.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Kiểm tra xem MaKH và SoDT đã tồn tại trong KHACHHANG chưa
-    IF NOT EXISTS (
+  -- Kiểm tra xem MaKH và SoDT đã tồn tại trong KHACHHANG chưa
+  IF NOT EXISTS (
         SELECT 1
-        FROM KHACHHANG K WITH (XLOCK,ROWLOCK)
-        JOIN INSERTED I ON K.MaKH = I.MaKH AND K.SoDT = I.SoDT
+  FROM KHACHHANG K WITH (XLOCK,ROWLOCK)
+    JOIN INSERTED I ON K.MaKH = I.MaKH AND K.SoDT = I.SoDT
     )
     BEGIN
-        RAISERROR ('Mã KH và Số ĐT không tồn tại trong KHACHHANG.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã KH và Số ĐT không tồn tại trong KHACHHANG.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Chèn dữ liệu từ bảng INSERTED vào bảng HOSOBENH nếu MaNS tồn tại trong NHASI và NgayKham sau hoặc bằng NgayDK
-    INSERT INTO HOSOBENH (MaKH, SoDT, STT, NgayKham, DanDo, MaNS, TinhTrangXuatHoaDon)
-    SELECT 
-        I.MaKH,
-        I.SoDT,
-        I.STT,
-        I.NgayKham,
-        I.DanDo,
-        I.MaNS,
-        I.TinhTrangXuatHoaDon
-    FROM INSERTED I WITH (XLOCK,ROWLOCK)
-    WHERE EXISTS (
-        SELECT 1 
-        FROM NHASI N 
-        WHERE N.MaNS = I.MaNS
+  -- Chèn dữ liệu từ bảng INSERTED vào bảng HOSOBENH nếu MaNS tồn tại trong NHASI và NgayKham sau hoặc bằng NgayDK
+  INSERT INTO HOSOBENH
+    (MaKH, SoDT, STT, NgayKham, DanDo, MaNS, TinhTrangXuatHoaDon)
+  SELECT
+    I.MaKH,
+    I.SoDT,
+    I.STT,
+    I.NgayKham,
+    I.DanDo,
+    I.MaNS,
+    I.TinhTrangXuatHoaDon
+  FROM INSERTED I WITH (XLOCK,ROWLOCK)
+  WHERE EXISTS (
+        SELECT 1
+    FROM NHASI N
+    WHERE N.MaNS = I.MaNS
     ) AND EXISTS (
-        SELECT 1 
-        FROM KHACHHANG K 
-        WHERE K.MaKH = I.MaKH AND K.SoDT = I.SoDT
+        SELECT 1
+    FROM KHACHHANG K
+    WHERE K.MaKH = I.MaKH AND K.SoDT = I.SoDT
     ) AND I.NgayKham >= @Now;
 
-     -- Kết thúc giao dịch
-     COMMIT TRANSACTION;
+  -- Kết thúc giao dịch
+  COMMIT TRANSACTION;
 END;
 
 
@@ -491,32 +516,40 @@ BEGIN
   SET TRANSACTION ISOLATION LEVEL SERIALIZABLE
   -- Begin a transaction
   BEGIN TRANSACTION
-    -- Check if the trigger is fired by an INSERT or UPDATE statement
-    IF EXISTS (SELECT * FROM inserted)
+  -- Check if the trigger is fired by an INSERT or UPDATE statement
+  IF EXISTS (SELECT *
+  FROM inserted)
     BEGIN
-      -- Get the value of MaDV from the inserted table
-      SELECT @MaDV_Inserted = MaDV FROM inserted
-      -- Check if there is a corresponding service in LOAIDICHVU table
-      IF NOT EXISTS (SELECT * FROM LOAIDICHVU WITH (XLOCK,ROWLOCK) WHERE MaDV = @MaDV_Inserted)
+    -- Get the value of MaDV from the inserted table
+    SELECT @MaDV_Inserted = MaDV
+    FROM inserted
+    -- Check if there is a corresponding service in LOAIDICHVU table
+    IF NOT EXISTS (SELECT *
+    FROM LOAIDICHVU WITH (XLOCK,ROWLOCK)
+    WHERE MaDV = @MaDV_Inserted)
       BEGIN
-        -- Rollback the transaction and raise an error
-        ROLLBACK TRANSACTION
-        RAISERROR ('Không có dịch vụ tương ứng trong LOAIDICHVU', 16, 1)
-        RETURN
-      END
+      -- Rollback the transaction and raise an error
+      ROLLBACK TRANSACTION
+      RAISERROR ('Không có dịch vụ tương ứng trong LOAIDICHVU', 16, 1)
+      RETURN
     END
-    -- Check if the trigger is fired by a DELETE or UPDATE statement
-    IF EXISTS (SELECT * FROM deleted)
+  END
+  -- Check if the trigger is fired by a DELETE or UPDATE statement
+  IF EXISTS (SELECT *
+  FROM deleted)
     BEGIN
-      -- Get the value of MaDV from the deleted table
-      SELECT @MaDV_Deleted = MaDV FROM deleted
-      -- Check if there is any other service in CHITIETDV that references the same service in LOAIDICHVU
-      IF NOT EXISTS (SELECT * FROM CHITIETDV WITH (XLOCK,ROWLOCK) WHERE MaDV = @MaDV_Deleted)
+    -- Get the value of MaDV from the deleted table
+    SELECT @MaDV_Deleted = MaDV
+    FROM deleted
+    -- Check if there is any other service in CHITIETDV that references the same service in LOAIDICHVU
+    IF NOT EXISTS (SELECT *
+    FROM CHITIETDV WITH (XLOCK,ROWLOCK)
+    WHERE MaDV = @MaDV_Deleted)
       BEGIN
-        -- Delete the corresponding service in LOAIDICHVU
-        DELETE FROM LOAIDICHVU WHERE MaDV = @MaDV_Deleted
-      END
+      -- Delete the corresponding service in LOAIDICHVU
+      DELETE FROM LOAIDICHVU WHERE MaDV = @MaDV_Deleted
     END
+  END
   -- Commit the transaction
   COMMIT TRANSACTION
 END
@@ -527,36 +560,37 @@ ON LOAIDICHVU
 INSTEAD OF INSERT
 AS
 BEGIN
-    -- Bắt đầu giao tác
-    BEGIN TRANSACTION;
-    -- Đặt mức cô lập SERIALIZABLE
-    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+  -- Bắt đầu giao tác
+  BEGIN TRANSACTION;
+  -- Đặt mức cô lập SERIALIZABLE
+  SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-    -- Kiểm tra xem MaDV có trùng lặp không
-    IF EXISTS (
+  -- Kiểm tra xem MaDV có trùng lặp không
+  IF EXISTS (
         SELECT 1
-        FROM LOAIDICHVU L WITH (XLOCK,ROWLOCK)
-        JOIN INSERTED I ON L.MaDV = I.MaDV
+  FROM LOAIDICHVU L WITH (XLOCK,ROWLOCK)
+    JOIN INSERTED I ON L.MaDV = I.MaDV
     )
     BEGIN
-        RAISERROR ('Mã dịch vụ đã tồn tại.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END;
+    RAISERROR ('Mã dịch vụ đã tồn tại.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+  END;
 
-    -- Chèn dữ liệu từ bảng INSERTED vào bảng LOAIDICHVU nếu TenDV không NULL
-    INSERT INTO LOAIDICHVU (MaDV, TenDV, MoTa, DongGia)
-    SELECT 
-        I.MaDV, 
-        I.TenDV, 
-        I.MoTa, 
-        I.DongGia
-    FROM INSERTED I
-    WHERE 
+  -- Chèn dữ liệu từ bảng INSERTED vào bảng LOAIDICHVU nếu TenDV không NULL
+  INSERT INTO LOAIDICHVU
+    (MaDV, TenDV, MoTa, DongGia)
+  SELECT
+    I.MaDV,
+    I.TenDV,
+    I.MoTa,
+    I.DongGia
+  FROM INSERTED I
+  WHERE 
         I.TenDV IS NOT NULL;
 
-    -- Kết thúc giao tác
-    COMMIT TRANSACTION;
+  -- Kết thúc giao tác
+  COMMIT TRANSACTION;
 END;
 
 --Trigger cho nhân viên
@@ -566,7 +600,8 @@ INSTEAD OF INSERT
 AS
 BEGIN
   DECLARE @MaNV char(20), @TenDangNhap char(50);
-  SELECT @MaNV = MaNV, @TenDangNhap = TenDangNhap FROM inserted;
+  SELECT @MaNV = MaNV, @TenDangNhap = TenDangNhap
+  FROM inserted;
 
   -- Start transaction
   BEGIN TRANSACTION;
@@ -575,7 +610,9 @@ BEGIN
   SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
   -- Check for duplicate MaNV
-  IF EXISTS (SELECT 1 FROM NHANVIEN WITH (XLOCK, ROWLOCK) WHERE MaNV = @MaNV)
+  IF EXISTS (SELECT 1
+  FROM NHANVIEN WITH (XLOCK, ROWLOCK)
+  WHERE MaNV = @MaNV)
   BEGIN
     ROLLBACK TRANSACTION;
     RAISERROR ('Mã NV đã tồn tại', 16, 1);
@@ -583,7 +620,9 @@ BEGIN
   END;
 
   -- Check for duplicate TenDangNhap
-  IF EXISTS (SELECT 1 FROM NHANVIEN WITH (XLOCK, ROWLOCK) WHERE TenDangNhap = @TenDangNhap)
+  IF EXISTS (SELECT 1
+  FROM NHANVIEN WITH (XLOCK, ROWLOCK)
+  WHERE TenDangNhap = @TenDangNhap)
   BEGIN
     ROLLBACK TRANSACTION;
     RAISERROR ('Tên đăng nhập đã tồn tại', 16, 1);
@@ -591,7 +630,9 @@ BEGIN
   END;
 
   -- If no duplicates, insert the row
-  INSERT INTO NHANVIEN SELECT * FROM inserted;
+  INSERT INTO NHANVIEN
+  SELECT *
+  FROM inserted;
 
   -- Commit transaction
   COMMIT TRANSACTION;
@@ -604,7 +645,8 @@ INSTEAD OF INSERT
 AS
 BEGIN
   DECLARE @MaQTV char(20), @TenDangNhap char(50);
-  SELECT @MaQTV = MaQTV, @TenDangNhap = TenDangNhap FROM inserted;
+  SELECT @MaQTV = MaQTV, @TenDangNhap = TenDangNhap
+  FROM inserted;
 
   -- Start transaction
   BEGIN TRANSACTION;
@@ -613,7 +655,9 @@ BEGIN
   SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
   -- Check for duplicate MaQTV
-  IF EXISTS (SELECT 1 FROM QUANTRIVIEN WITH (XLOCK, ROWLOCK) WHERE MaQTV = @MaQTV)
+  IF EXISTS (SELECT 1
+  FROM QUANTRIVIEN WITH (XLOCK, ROWLOCK)
+  WHERE MaQTV = @MaQTV)
   BEGIN
     ROLLBACK TRANSACTION;
     RAISERROR ('Mã QTV đã tồn tại', 16, 1);
@@ -621,7 +665,9 @@ BEGIN
   END;
 
   -- Check for duplicate TenDangNhap
-  IF EXISTS (SELECT 1 FROM QUANTRIVIEN WITH (XLOCK, ROWLOCK) WHERE TenDangNhap = @TenDangNhap)
+  IF EXISTS (SELECT 1
+  FROM QUANTRIVIEN WITH (XLOCK, ROWLOCK)
+  WHERE TenDangNhap = @TenDangNhap)
   BEGIN
     ROLLBACK TRANSACTION;
     RAISERROR ('Tên đăng nhập đã tồn tại', 16, 1);
@@ -629,7 +675,9 @@ BEGIN
   END;
 
   -- If no duplicates, insert the row
-  INSERT INTO QUANTRIVIEN SELECT * FROM inserted;
+  INSERT INTO QUANTRIVIEN
+  SELECT *
+  FROM inserted;
 
   -- Commit transaction
   COMMIT TRANSACTION;
@@ -642,7 +690,8 @@ INSTEAD OF INSERT
 AS
 BEGIN
   DECLARE @MaHoaDon char(20);
-  SELECT @MaHoaDon = MaHoaDon FROM inserted;
+  SELECT @MaHoaDon = MaHoaDon
+  FROM inserted;
 
   -- Start transaction
   BEGIN TRANSACTION;
@@ -651,7 +700,9 @@ BEGIN
   SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
   -- Check for duplicate MaHoaDon
-  IF EXISTS (SELECT 1 FROM HOADON WITH (XLOCK, ROWLOCK) WHERE MaHoaDon = @MaHoaDon)
+  IF EXISTS (SELECT 1
+  FROM HOADON WITH (XLOCK, ROWLOCK)
+  WHERE MaHoaDon = @MaHoaDon)
   BEGIN
     ROLLBACK TRANSACTION;
     RAISERROR ('Mã hóa đơn đã tồn tại', 16, 1);
@@ -659,7 +710,9 @@ BEGIN
   END;
 
   -- If no duplicates, insert the row
-  INSERT INTO HOADON SELECT * FROM inserted;
+  INSERT INTO HOADON
+  SELECT *
+  FROM inserted;
 
   -- Commit transaction
   COMMIT TRANSACTION;
@@ -677,25 +730,25 @@ END;
 --STORE PROCEDURE
 --Đăng ký tài khoản
 CREATE PROCEDURE DangKyTaiKhoan
-    @MaKH char(20),
-    @SoDT char(15),
-    @HoTen nvarchar(50),
-    @Phai CHAR(1),
-    @NgaySinh datetime,
-    @DiaChi nvarchar(100),
-    @MatKhau char(50),
-    @Email varchar(50)
+  @MaKH char(20),
+  @SoDT char(15),
+  @HoTen nvarchar(50),
+  @Phai CHAR(1),
+  @NgaySinh datetime,
+  @DiaChi nvarchar(100),
+  @MatKhau char(50),
+  @Email varchar(50)
 AS
 BEGIN
-    -- Khởi tạo biến retry
-    DECLARE @retry INT;
-    SET @retry = 5;
+  -- Khởi tạo biến retry
+  DECLARE @retry INT;
+  SET @retry = 5;
 
-    WHILE @retry > 0
+  WHILE @retry > 0
     BEGIN
-        SET @retry = @retry - 1;
+    SET @retry = @retry - 1;
 
-        BEGIN TRY
+    BEGIN TRY
             -- Khởi tạo giao tác
             BEGIN TRANSACTION;
 
@@ -703,16 +756,20 @@ BEGIN
             SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
             -- Kiểm tra xem số điện thoại đã tồn tại chưa
-            IF EXISTS (SELECT 1 FROM KHACHHANG WITH (UPDLOCK, HOLDLOCK) WHERE SoDT = @SoDT)
+            IF EXISTS (SELECT 1
+    FROM KHACHHANG WITH (UPDLOCK, HOLDLOCK)
+    WHERE SoDT = @SoDT)
             BEGIN
-                RAISERROR ('Số điện thoại đã tồn tại.', 16, 1);
-                ROLLBACK TRANSACTION;
-                RETURN;
-            END
+      RAISERROR ('Số điện thoại đã tồn tại.', 16, 1);
+      ROLLBACK TRANSACTION;
+      RETURN;
+    END
 
             -- Thêm người dùng mới vào cơ sở dữ liệu
-            INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau,Email)
-            VALUES (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau,@Email);
+            INSERT INTO KHACHHANG
+      (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau,Email)
+    VALUES
+      (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau, @Email);
 
             -- Nếu không có lỗi, commit giao tác
             COMMIT TRANSACTION;
@@ -727,15 +784,15 @@ BEGIN
             -- Nếu lỗi là do deadlock, thử lại giao tác
             IF ERROR_NUMBER() = 1205 AND @retry > 0
             BEGIN
-				WAITFOR DELAY '00:00:05';
-                CONTINUE;
-            END
+      WAITFOR DELAY '00:00:05';
+      CONTINUE;
+    END
             ELSE
             BEGIN
                 THROW;
             END
-        END CATCH
-    END
+    END CATCH
+  END
 END;
 
 
@@ -743,33 +800,36 @@ END;
 CREATE PROCEDURE GetAllUsers
 AS
 BEGIN
-    DECLARE @retry INT;
-    SET @retry = 5;
+  DECLARE @retry INT;
+  SET @retry = 5;
 
-    WHILE @retry > 0
+  WHILE @retry > 0
     BEGIN
-        SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-        BEGIN TRANSACTION;
-        BEGIN TRY
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
             DECLARE @users TABLE (
-                MaKH NVARCHAR(50),
-                SoDT NVARCHAR(50),
-                HoTen NVARCHAR(50),
-                Phai NVARCHAR(50),
-                NgaySinh DATETIME,
-                DiaChi NVARCHAR(50),
-                MatKhau NVARCHAR(50),
-                Email NVARCHAR(50)
+      MaKH NVARCHAR(50),
+      SoDT NVARCHAR(50),
+      HoTen NVARCHAR(50),
+      Phai NVARCHAR(50),
+      NgaySinh DATETIME,
+      DiaChi NVARCHAR(50),
+      MatKhau NVARCHAR(50),
+      Email NVARCHAR(50)
             );
 
             INSERT INTO @users
-            SELECT * FROM KHACHHANG WITH (TABLOCKX) ORDER BY MaKH;
+    SELECT *
+    FROM KHACHHANG WITH (TABLOCKX)
+    ORDER BY MaKH;
 
 			WAITFOR DELAY '00:00:01';
 
             COMMIT TRANSACTION; 
 
-            SELECT * FROM @users;
+            SELECT *
+    FROM @users;
 
             SET @retry = 0;
         END TRY
@@ -777,22 +837,22 @@ BEGIN
             SET @retry = @retry - 1;
             ROLLBACK TRANSACTION;
         END CATCH
-    END
+  END
 END;
 
 
 --cập nhật thông tin người khám
 CREATE PROCEDURE UpdateUserInfo
-    @MaKH char(20),
-    @HoTen nvarchar(50),
-    @Phai char(1),
-    @NgaySinh datetime,
-    @DiaChi nvarchar(100)
+  @MaKH char(20),
+  @HoTen nvarchar(50),
+  @Phai char(1),
+  @NgaySinh datetime,
+  @DiaChi nvarchar(100)
 AS
 BEGIN
-    -- Khởi tạo giao tác
-    BEGIN TRANSACTION;
-    BEGIN TRY
+  -- Khởi tạo giao tác
+  BEGIN TRANSACTION;
+  BEGIN TRY
         -- Đặt mức cô lập
         SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
         
@@ -813,9 +873,9 @@ BEGIN
         -- Nếu có deadlock, thử lại giao tác
         IF ERROR_NUMBER() = 1205
         BEGIN
-            WAITFOR DELAY '00:00:05';
-            EXEC UpdateUserInfo @MaKH, @HoTen, @Phai, @NgaySinh, @DiaChi;
-        END
+    WAITFOR DELAY '00:00:05';
+    EXEC UpdateUserInfo @MaKH, @HoTen, @Phai, @NgaySinh, @DiaChi;
+  END
     END CATCH
 END;
 
@@ -832,7 +892,7 @@ CREATE LOGIN AW_UserThuong
 GO
 
 USE PHONGKHAMNHASI
-GO 
+GO
 CREATE USER AW_UserThuong
 	for login AW_UserThuong
 GO
@@ -853,10 +913,10 @@ CREATE LOGIN NS01
 GO
 
 USE PHONGKHAMNHASI
-GO 
+GO
 CREATE USER NS01
 	for login NS01
-GO 
+GO
 
 -- Phân quyền cho nha sĩ thêm hồ sơ bệnh nhân
 GRANT SELECT,INSERT,DELETE,UPDATE ON HOSOBENH TO NS01
@@ -885,7 +945,7 @@ DEFAULT_DATABASE = PHONGKHAMNHASI
 GO
 
 USE PHONGKHAMNHASI
-GO 
+GO
 CREATE USER KH02
 for login KH02
 GO
@@ -894,7 +954,7 @@ USE PHONGKHAMNHASI
 GO
 GRANT SELECT, UPDATE 
 ON KHACHHANG TO KH02
-            
+
 USE PHONGKHAMNHASI
 GO
 GRANT SELECT,UPDATE
@@ -917,17 +977,224 @@ GRANT EXECUTE ON UpdateUserInfo TO KH02
 
 
 
- 
 
+--Procedure khách hàng đăng kí thông tin
+CREATE PROCEDURE DangKiThongTin
+  @MaKH char(20),
+  @SoDT char(15),
+  @HoTen nvarchar(50),
+  @Phai CHAR(1),
+  @NgaySinh datetime,
+  @DiaChi nvarchar(100),
+  @MatKhau char(50),
+  @Email varchar(50)
+AS
+BEGIN
+  DECLARE @retry INT;
+  SET @retry = 5;
 
+  WHILE @retry > 0
+    BEGIN
+    SET @retry = @retry - 1;
 
+    BEGIN TRY
+            BEGIN TRANSACTION;
 
+            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
+            -- Kiểm tra xem số điện thoại đã tồn tại chưa
+            IF EXISTS (SELECT 1
+    FROM KHACHHANG WITH (UPDLOCK, HOLDLOCK)
+    WHERE SoDT = @SoDT)
+            BEGIN
+      RAISERROR ('Số điện thoại đã tồn tại.', 16, 1);
+      ROLLBACK TRANSACTION;
+      RETURN;
+    END
 
+            -- Thêm người dùng mới vào cơ sở dữ liệu
+            INSERT INTO KHACHHANG
+      (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau,Email)
+    VALUES
+      (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau, @Email);
 
+            COMMIT TRANSACTION;
 
+            SET @retry = 0;
+        END TRY
+        BEGIN CATCH
+            ROLLBACK TRANSACTION;
 
+            IF ERROR_NUMBER() = 1205 AND @retry > 0
+            BEGIN
+      WAITFOR DELAY '00:00:05';
+      CONTINUE;
+    END
+            ELSE
+            BEGIN
+                THROW;
+            END
+    END CATCH
+  END
+END;
 
+--Procedure khách hàng đăng kí lịch hẹn
+CREATE PROCEDURE DangKiLichHen
+  @NgayGioKham datetime,
+  @LyDoKham nvarchar(100),
+  @MaNS char(20),
+  @MaKH char(20),
+  @SoDT char(15)
+AS
+BEGIN
+  DECLARE @retry INT;
+  SET @retry = 5;
 
+  WHILE @retry > 0
+  BEGIN
+    SET @retry = @retry - 1;
 
+    BEGIN TRY
+      BEGIN TRANSACTION;
+
+      SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+      -- Tạo mã số hẹn
+      DECLARE @MaSoHen char(20);
+      SET @MaSoHen = NEWID();
+
+      INSERT INTO LICHHEN
+      (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
+    VALUES
+      (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT);
+
+      COMMIT TRANSACTION;
+
+      SET @retry = 0;
+    END TRY
+    BEGIN CATCH
+      ROLLBACK TRANSACTION;
+
+      IF ERROR_NUMBER() = 1205 AND @retry > 0
+      BEGIN
+      WAITFOR DELAY '00:00:05';
+      CONTINUE;
+    END
+      ELSE
+      BEGIN
+        THROW;
+      END
+    END CATCH
+  END
+END;
+
+--Procedure khách hàng hủy lịch hẹn (được phép hủy trước 2h so với thời gian hẹn)
+CREATE PROCEDURE HuyLichHen
+  @MaSoHen char(20)
+AS
+BEGIN
+  DECLARE @retry INT;
+  SET @retry = 5;
+
+  WHILE @retry > 0
+  BEGIN
+    SET @retry = @retry - 1;
+
+    BEGIN TRY
+      BEGIN TRANSACTION;
+
+      SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+      IF NOT EXISTS (SELECT 1
+    FROM LICHHEN WITH (UPDLOCK, HOLDLOCK)
+    WHERE MaSoHen = @MaSoHen)
+      BEGIN
+      RAISERROR ('Mã số hẹn không tồn tại.', 16, 1);
+      ROLLBACK TRANSACTION;
+      RETURN;
+    END
+
+      -- Kiểm tra xem mã số hẹn có thể hủy không
+      IF NOT EXISTS (SELECT 1
+    FROM LICHHEN WITH (UPDLOCK, HOLDLOCK)
+    WHERE MaSoHen = @MaSoHen AND NgayGioKham > DATEADD(HOUR, 2, GETDATE()))
+      BEGIN
+      RAISERROR ('Không thể hủy lịch hẹn.', 16, 1);
+      ROLLBACK TRANSACTION;
+      RETURN;
+    END
+
+      DELETE FROM LICHHEN WHERE MaSoHen = @MaSoHen;
+
+      COMMIT TRANSACTION;
+
+      SET @retry = 0;
+    END TRY
+    BEGIN CATCH
+      ROLLBACK TRANSACTION;
+
+      IF ERROR_NUMBER() = 1205 AND @retry > 0
+      BEGIN
+      WAITFOR DELAY '00:00:05';
+      CONTINUE;
+    END
+      ELSE
+      BEGIN
+        THROW;
+      END
+    END CATCH
+  END
+END;
+
+--Procedure khách hàng/ nha sĩ xem hồ sơ bệnh án
+CREATE PROCEDURE XemHoSoBenh
+  @MaKH char(20),
+  @SoDT char(15)
+AS
+BEGIN
+  DECLARE @retry INT;
+  SET @retry = 5;
+
+  WHILE @retry > 0
+  BEGIN
+    SET @retry = @retry - 1;
+
+    BEGIN TRY
+      BEGIN TRANSACTION;
+
+      SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+      IF NOT EXISTS (SELECT 1
+    FROM KHACHHANG WITH (UPDLOCK, HOLDLOCK)
+    WHERE MaKH = @MaKH AND SoDT = @SoDT)
+      BEGIN
+      RAISERROR ('Mã khách hàng không tồn tại.', 16, 1);
+      ROLLBACK TRANSACTION;
+      RETURN;
+    END
+
+      -- Lấy thông tin hồ sơ bệnh án
+      SELECT *
+    FROM HOSOBENH
+    WHERE MaKH = @MaKH AND SoDT = @SoDT;
+
+      COMMIT TRANSACTION;
+
+      SET @retry = 0;
+    END TRY
+    BEGIN CATCH
+      ROLLBACK TRANSACTION;
+
+      IF ERROR_NUMBER() = 1205 AND @retry > 0
+      BEGIN
+      WAITFOR DELAY '00:00:05';
+      CONTINUE;
+    END
+      ELSE
+      BEGIN
+        THROW;
+      END
+    END CATCH
+  END
+END;
 
