@@ -1344,3 +1344,62 @@ BEGIN
     END CATCH
   END
 END;
+
+--QTV sửa thông tin nhân viên
+CREATE PROCEDURE SuaThongTinNhanVien
+  @MaNV char(20),
+  @HoTen nvarchar(50),
+  @Phai char(1),
+  @TenDangNhap char(50),
+  @MatKhau char(50)
+AS
+BEGIN
+  DECLARE @retry INT;
+  SET @retry = 5;
+
+  WHILE @retry > 0
+  BEGIN
+    SET @retry = @retry - 1;
+
+    BEGIN TRY
+      BEGIN TRANSACTION;
+
+      SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+      -- Kiểm tra xem mã nhân viên có tồn tại không
+      IF NOT EXISTS (SELECT 1
+    FROM NHANVIEN WITH (UPDLOCK, HOLDLOCK)
+    WHERE MaNV = @MaNV)
+      BEGIN
+      RAISERROR ('Mã nhân viên không tồn tại.', 16, 1);
+      ROLLBACK TRANSACTION;
+      RETURN;
+    END
+
+      -- Cập nhật thông tin nhân viên
+      UPDATE NHANVIEN
+    SET HoTen = ISNULL(@HoTen, HoTen),
+        Phai = ISNULL(@Phai, Phai),
+        TenDangNhap = ISNULL(@TenDangNhap, TenDangNhap),
+        MatKhau = ISNULL(@MatKhau, MatKhau)
+    WHERE MaNV = @MaNV;
+
+      COMMIT TRANSACTION;
+
+      SET @retry = 0;
+    END TRY
+    BEGIN CATCH
+      ROLLBACK TRANSACTION;
+
+      IF ERROR_NUMBER() = 1205 AND @retry > 0
+      BEGIN
+      WAITFOR DELAY '00:00:05';
+      CONTINUE;
+    END
+      ELSE
+      BEGIN
+        THROW;
+      END
+    END CATCH
+  END
+END;
