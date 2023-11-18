@@ -15,6 +15,8 @@ create table LOAIDICHVU
   constraint PK_MaDV primary key(MaDV)
 )
 
+
+
 go
 
 create table CHITIETDV
@@ -90,6 +92,8 @@ create table HOSOBENH
   NgayKham datetime,
   DanDo nvarchar(300),
   MaNS char(20),
+  MaDV char(10),
+  MaThuoc char(30),
   TinhTrangXuatHoaDon CHAR(10) CHECK (TinhTrangXuatHoaDon IN ('DaXuat', 'ChuaXuat')),
   constraint PK_SoDT_STT primary key(MaKH,SoDT,STT)
 )
@@ -150,9 +154,7 @@ create table HOADON
   constraint PK_MaKH_STT_SoDT primary key(MaHoaDon,MaKH,STT,SoDT)
 )
 
-UPDATE KHACHHANG
-SET HoTen = N'Lý Công Hoàng Anh'
-WHERE MaKH = 'KH02' AND SoDT = '0344805188';
+
 
 ALTER TABLE HOADON
 ADD CONSTRAINT FK_HOADON_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
@@ -181,6 +183,13 @@ ADD CONSTRAINT FK_HOSOBENH_KHACHHANG foreign key(MaKH,SoDT) references KHACHHANG
 ALTER TABLE HOSOBENH
 ADD CONSTRAINT FK_HOSOBENH_NHASI foreign key(MaNS) references NHASI(MaNS)
 
+ALTER TABLE HOSOBENH
+ADD CONSTRAINT FK_HOSOBENH_LOAITHUOC foreign key(MaThuoc) references LOAITHUOC(MaThuoc)
+
+ALTER TABLE HOSOBENH
+ADD CONSTRAINT FK_HOSOBENH_LOAIDICHVU foreign key(MaDV) references LOAIDICHVU(MaDV)
+
+
 
 ALTER TABLE LICHHEN
 ADD CONSTRAINT FK_LICHHEN_LOAIDICHVU foreign key(MaNS) references NHASI(MaNS)
@@ -196,6 +205,30 @@ ALTER TABLE CHITIETDV
 ADD CONSTRAINT FK_CHITIETDV_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
 
 go
+
+
+insert into LOAIDICHVU
+values
+  ('DV01', N'Tẩy trắng răng', N'Sử dụng công nghệ laser để làm trắng răng', 2000000),
+  ('DV02', N'Niềng răng', N'Sử dụng mắc cài hoặc dây chun để chỉnh hình răng', 10000000),
+  ('DV03', N'Nhổ răng', N'Rút răng bị sâu hoặc gây đau', 500000),
+  ('DV04', N'Trồng răng', N'Cấy ghép răng giả vào xương hàm', 15000000),
+  ('DV05', N'Làm đều răng', N'Sử dụng composite để tạo hình răng đều đẹp', 3000000);
+
+
+insert into LOAITHUOC
+values
+  ('T01', N'Paracetamol', N'Viên', N'Hạ sốt, giảm đau', 100, '2023-12-31', 5000),
+  ('T02', N'Ibuprofen', N'Viên', N'Giảm đau, chống viêm', 50, '2024-01-31', 10000),
+  ('T03', N'Chlorhexidine', N'Nước súc miệng', N'Sát khuẩn, ngừa viêm nha chu', 20, '2024-02-28', 30000),
+  ('T04', N'Lidocaine', N'Thuốc tiêm', N'Gây tê, làm dịu cơn đau', 10, '2024-03-31', 50000),
+  ('T05', N'Fluoride', N'Kem đánh răng', N'Bảo vệ men răng, ngừa sâu răng', 30, '2024-04-30', 20000);
+
+
+insert into HOSOBENH
+values
+  ('KH01', '+12672133096', 1, '2023-11-14 10:00:00', N'Răng sâu, đau nhức', 'NS01', 'DV03', 'T01', 'ChuaXuat'),
+  ('KH02', '0344805188', 2, '2023-11-14 10:30:00', N'Răng ố vàng, muốn tẩy trắng', 'NS02', 'DV01', NULL, 'ChuaXuat');
 
 --/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -478,7 +511,7 @@ BEGIN
 
   -- Chèn dữ liệu từ bảng INSERTED vào bảng HOSOBENH nếu MaNS tồn tại trong NHASI và NgayKham sau hoặc bằng NgayDK
   INSERT INTO HOSOBENH
-    (MaKH, SoDT, STT, NgayKham, DanDo, MaNS, TinhTrangXuatHoaDon)
+    (MaKH, SoDT, STT, NgayKham, DanDo, MaNS, MaDV,MaThuoc,TinhTrangXuatHoaDon)
   SELECT
     I.MaKH,
     I.SoDT,
@@ -486,6 +519,8 @@ BEGIN
     I.NgayKham,
     I.DanDo,
     I.MaNS,
+    I.MaDV,
+    I.MaThuoc,
     I.TinhTrangXuatHoaDon
   FROM INSERTED I WITH (XLOCK,ROWLOCK)
   WHERE EXISTS (
@@ -719,7 +754,8 @@ BEGIN
 END;
 
 
-
+SELECT MaSoHen
+FROM LICHHEN
 
 
 
@@ -879,6 +915,115 @@ BEGIN
     END CATCH
 END;
 
+--Thêm lịch hẹn của người dùng
+CREATE PROCEDURE InsertAppointment
+  @MaSoHen varchar(20),
+  @NgayGioKham datetime,
+  @LyDoKham nvarchar(100),
+  @MaNS varchar(20),
+  @MaKH varchar(20),
+  @SoDT varchar(15)
+AS
+BEGIN
+  -- Khai báo biến
+  DECLARE @retry INT;
+  SET @retry = 5;
+
+  -- Bắt đầu vòng lặp
+  WHILE @retry > 0
+    BEGIN
+    BEGIN TRY
+            -- Bắt đầu giao tác
+            BEGIN TRANSACTION;
+
+            -- Chờ 5 giây trước khi thực hiện giao tác để giảm thiểu thời gian giữ khóa
+            WAITFOR DELAY '00:00:05';
+
+            -- Thực hiện truy vấn INSERT với mức cô lập SERIALIZABLE để tránh dirty read, lost update, phantom read và unrepeatable read
+            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+            INSERT INTO LICHHEN
+      (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
+    VALUES
+      (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT);
+
+            -- Kết thúc giao tác
+            COMMIT TRANSACTION;
+
+            -- Đặt lại số lần thử lại
+            SET @retry = 0;
+        END TRY
+        BEGIN CATCH
+            -- Nếu có lỗi, hủy giao tác
+            ROLLBACK TRANSACTION;
+
+            -- Giảm số lần thử lại
+            SET @retry = @retry - 1;
+
+            -- Nếu hết số lần thử lại, đưa ra lỗi
+            IF @retry = 0
+                THROW;
+        END CATCH
+  END
+END;
+
+CREATE PROCEDURE GetMedicalRecordByID
+  @MaKH CHAR(20),
+  @retry INT = 5
+AS
+BEGIN
+  -- Khai báo biến
+  DECLARE @retry_count INT = 0;
+  DECLARE @wait_time INT = 500;
+  -- thời gian chờ (ms)
+
+  -- Sử dụng vòng lặp while để thử lại nếu xảy ra deadlock
+  WHILE @retry_count < @retry
+    BEGIN
+    BEGIN TRY
+            -- Bắt đầu giao dịch
+            BEGIN TRANSACTION;
+
+            -- Đặt mức cô lập giao dịch
+            SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+            -- Lấy thông tin từ bảng HOSOBENH
+            SELECT *
+    FROM HOSOBENH WITH (ROWLOCK, HOLDLOCK)
+    WHERE MaKH = @MaKH;
+
+            -- Kết thúc giao dịch
+            COMMIT TRANSACTION;
+
+            -- Thoát khỏi vòng lặp
+            BREAK;
+        END TRY
+        BEGIN CATCH
+            -- Kiểm tra xem lỗi có phải là deadlock hay không
+            IF ERROR_NUMBER() = 1205 AND @retry_count < @retry
+            BEGIN
+      -- Tăng biến đếm thử lại
+      SET @retry_count = @retry_count + 1;
+
+      -- Chờ một khoảng thời gian trước khi thử lại
+      WAITFOR DELAY @wait_time;
+
+      -- Tiếp tục vòng lặp
+      CONTINUE;
+    END
+            ELSE
+            BEGIN
+      -- Nếu không phải deadlock hoặc đã vượt quá số lần thử lại, rollback giao dịch
+      ROLLBACK TRANSACTION;
+
+      -- Đưa ra thông báo lỗi
+      THROW;
+    END
+        END CATCH
+  END
+END
+
+
 
 
 
@@ -957,7 +1102,7 @@ ON KHACHHANG TO KH02
 
 USE PHONGKHAMNHASI
 GO
-GRANT SELECT,UPDATE
+GRANT SELECT,UPDATE, INSERT
 ON LICHHEN TO KH02
 GO
 
@@ -974,6 +1119,8 @@ ON NHASI TO KH02
 GO
 
 GRANT EXECUTE ON UpdateUserInfo TO KH02
+GRANT EXECUTE ON InsertAppointment TO KH02
+GRANT EXECUTE ON GetMedicalRecordByID TO KH02
 
 
 
@@ -1197,4 +1344,3 @@ BEGIN
     END CATCH
   END
 END;
-
