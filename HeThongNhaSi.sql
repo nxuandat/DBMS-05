@@ -758,13 +758,231 @@ SELECT MaSoHen
 FROM LICHHEN
 
 
+USE PHONGKHAMNHASI
+GO
+CREATE USER AW_UserThuong
+	for login AW_UserThuong
+GO
+
+USE PHONGKHAMNHASI
+GO
+GRANT SELECT, INSERT, DELETE, UPDATE 
+ON BANGGIDO TO AW_UserThuong
+
+
+--Phân quyền nha sĩ(chưa xong)
+USE MASTER;
+GO
+CREATE LOGIN NS01
+	WITH PASSWORD = '123456',
+	CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF,
+	DEFAULT_DATABASE = PHONGKHAMNHASI
+GO
+
+USE PHONGKHAMNHASI
+GO
+CREATE USER NS01
+	for login NS01
+GO
+
+-- Phân quyền cho nha sĩ thêm hồ sơ bệnh nhân
+GRANT SELECT,INSERT,DELETE,UPDATE ON HOSOBENH TO NS01
+
+-- Phân quyền cho nha sĩ ghi nhận thông tin khám bệnh
+GRANT INSERT ON ThongTinKhamBenh TO NhaSi
+
+-- Phân quyền cho nha sĩ xem lịch hẹn của mình
+GRANT SELECT ON LichHen TO NhaSi
+
+
+-- Phân quyền cho nha sĩ thêm lịch hẹn của mình
+GRANT INSERT ON LichHen TO NhaSi
+
+-- Phân quyền cho nha sĩ cập nhật lịch cá nhân của mình
+GRANT SELECT,INSERT,DELETE,UPDATE ON LichNHASI TO NS01
+
+
+--Phân quyền người dùng
+USE MASTER;
+GO
+CREATE LOGIN KH02
+WITH PASSWORD = 'password113',
+CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF,
+DEFAULT_DATABASE = PHONGKHAMNHASI
+GO
+
+USE PHONGKHAMNHASI
+GO
+CREATE USER KH02
+for login KH02
+GO
+
+USE PHONGKHAMNHASI
+GO
+GRANT SELECT, UPDATE 
+ON KHACHHANG TO KH02
+
+USE PHONGKHAMNHASI
+GO
+GRANT SELECT,UPDATE, INSERT
+ON LICHHEN TO KH02
+GO
+
+USE PHONGKHAMNHASI
+GO
+GRANT SELECT
+ON HOSOBENH TO KH02
+GO
+
+USE PHONGKHAMNHASI
+GO
+GRANT SELECT
+ON NHASI TO KH02
+GO
+
+GRANT EXECUTE ON UpdateUserInfo TO KH02
+GRANT EXECUTE ON InsertAppointment TO KH02
+GRANT EXECUTE ON GetMedicalRecordByID TO KH02
+
+
+-------------------------------------------------------
+--------------------STORE PROCEDURE--------------------
+-------------------------------------------------------
+
+--1.  Procedure đăng nhập cho nha sĩ
+CREATE PROCEDURE DangNhap_NhaSi
+  @TenDangNhap char(50),
+  @MatKhau char(50),
+  @KetQua int OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'DangNhap_NhaSi'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Kiểm tra tên đăng nhập và mật khẩu có hợp lệ không
+    IF EXISTS (SELECT * FROM NHASI WHERE TenDangNhap = @TenDangNhap AND MatKhau = @MatKhau)
+    BEGIN
+      -- Nếu hợp lệ, trả về kết quả là 1
+      SET @KetQua = 1
+      -- Kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không hợp lệ, trả về kết quả là 0
+      SET @KetQua = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+-- Procedure đăng nhập cho quản trị viên
+CREATE PROCEDURE DangNhap_QuanTriVien
+  @TenDangNhap char(50),
+  @MatKhau char(50),
+  @KetQua int OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'DangNhap_QuanTriVien'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Kiểm tra tên đăng nhập và mật khẩu có hợp lệ không
+    IF EXISTS (SELECT * FROM QUANTRIVIEN WHERE TenDangNhap = @TenDangNhap AND MatKhau = @MatKhau)
+    BEGIN
+      -- Nếu hợp lệ, trả về kết quả là 1
+      SET @KetQua = 1
+      -- Kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không hợp lệ, trả về kết quả là 0
+      SET @KetQua = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+
+--2.  Procedure xem thông tin cá nhân cho nhân viên
+CREATE PROCEDURE XemThongTin_NhanVien
+  @MaNV char(20),
+  @HoTen nvarchar(100) OUTPUT,
+  @Phai char(1) OUTPUT,
+  @TenDangNhap char(50) OUTPUT,
+  @MatKhau char(50) OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'XemThongTin_NhanVien'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Lấy thông tin nhân viên theo mã nhân viên
+    SELECT @HoTen = HoTen, @Phai = Phai, @TenDangNhap = TenDangNhap, @MatKhau = MatKhau
+    FROM NHANVIEN
+    WHERE MaNV = @MaNV
+
+    -- Kiểm tra xem có lấy được thông tin không
+    IF @@ROWCOUNT = 1
+    BEGIN
+      -- Nếu có, kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không, hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
 
 
 
+-- Procedure xem thông tin cá nhân cho quản trị viên
+CREATE PROCEDURE XemThongTin_QuanTriVien
+  @MaQTV char(20),
+  @HoTen nvarchar(100) OUTPUT,
+  @Phai char(1) OUTPUT,
+  @TenDangNhap char(50) OUTPUT,
+  @MatKhau char(50) OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'XemThongTin_QuanTriVien'
 
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Lấy thông tin quản trị viên theo mã quản trị viên
+    SELECT @HoTen = HoTen, @Phai = Phai, @TenDangNhap = TenDangNhap, @MatKhau = MatKhau
+    FROM QUANTRIVIEN
+    WHERE MaQTV = @MaQTV
 
---STORE PROCEDURE
---Đăng ký tài khoản
+    -- Kiểm tra xem có lấy được thông tin không
+    IF @@ROWCOUNT = 1
+    BEGIN
+      -- Nếu có, kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không, hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+--3. Đăng ký tài khoản
 CREATE PROCEDURE DangKyTaiKhoan
   @MaKH char(20),
   @SoDT char(15),
@@ -1036,156 +1254,8 @@ CREATE LOGIN AW_UserThuong
 	DEFAULT_DATABASE = PHONGKHAMNHASI
 GO
 
-USE PHONGKHAMNHASI
-GO
-CREATE USER AW_UserThuong
-	for login AW_UserThuong
-GO
 
-USE PHONGKHAMNHASI
-GO
-GRANT SELECT, INSERT, DELETE, UPDATE 
-ON BANGGIDO TO AW_UserThuong
-
-
---Phân quyền nha sĩ(chưa xong)
-USE MASTER;
-GO
-CREATE LOGIN NS01
-	WITH PASSWORD = '123456',
-	CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF,
-	DEFAULT_DATABASE = PHONGKHAMNHASI
-GO
-
-USE PHONGKHAMNHASI
-GO
-CREATE USER NS01
-	for login NS01
-GO
-
--- Phân quyền cho nha sĩ thêm hồ sơ bệnh nhân
-GRANT SELECT,INSERT,DELETE,UPDATE ON HOSOBENH TO NS01
-
--- Phân quyền cho nha sĩ ghi nhận thông tin khám bệnh
-GRANT INSERT ON ThongTinKhamBenh TO NhaSi
-
--- Phân quyền cho nha sĩ xem lịch hẹn của mình
-GRANT SELECT ON LichHen TO NhaSi
-
-
--- Phân quyền cho nha sĩ thêm lịch hẹn của mình
-GRANT INSERT ON LichHen TO NhaSi
-
--- Phân quyền cho nha sĩ cập nhật lịch cá nhân của mình
-GRANT SELECT,INSERT,DELETE,UPDATE ON LichNHASI TO NS01
-
-
---Phân quyền người dùng
-USE MASTER;
-GO
-CREATE LOGIN KH02
-WITH PASSWORD = 'password113',
-CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF,
-DEFAULT_DATABASE = PHONGKHAMNHASI
-GO
-
-USE PHONGKHAMNHASI
-GO
-CREATE USER KH02
-for login KH02
-GO
-
-USE PHONGKHAMNHASI
-GO
-GRANT SELECT, UPDATE 
-ON KHACHHANG TO KH02
-
-USE PHONGKHAMNHASI
-GO
-GRANT SELECT,UPDATE, INSERT
-ON LICHHEN TO KH02
-GO
-
-USE PHONGKHAMNHASI
-GO
-GRANT SELECT
-ON HOSOBENH TO KH02
-GO
-
-USE PHONGKHAMNHASI
-GO
-GRANT SELECT
-ON NHASI TO KH02
-GO
-
-GRANT EXECUTE ON UpdateUserInfo TO KH02
-GRANT EXECUTE ON InsertAppointment TO KH02
-GRANT EXECUTE ON GetMedicalRecordByID TO KH02
-
-
-
-
---Procedure khách hàng đăng kí thông tin
-CREATE PROCEDURE DangKiThongTin
-  @MaKH char(20),
-  @SoDT char(15),
-  @HoTen nvarchar(50),
-  @Phai CHAR(1),
-  @NgaySinh datetime,
-  @DiaChi nvarchar(100),
-  @MatKhau char(50),
-  @Email varchar(50)
-AS
-BEGIN
-  DECLARE @retry INT;
-  SET @retry = 5;
-
-  WHILE @retry > 0
-    BEGIN
-    SET @retry = @retry - 1;
-
-    BEGIN TRY
-            BEGIN TRANSACTION;
-
-            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-
-            -- Kiểm tra xem số điện thoại đã tồn tại chưa
-            IF EXISTS (SELECT 1
-    FROM KHACHHANG WITH (UPDLOCK, HOLDLOCK)
-    WHERE SoDT = @SoDT)
-            BEGIN
-      RAISERROR ('Số điện thoại đã tồn tại.', 16, 1);
-      ROLLBACK TRANSACTION;
-      RETURN;
-    END
-
-            -- Thêm người dùng mới vào cơ sở dữ liệu
-            INSERT INTO KHACHHANG
-      (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau,Email)
-    VALUES
-      (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau, @Email);
-
-            COMMIT TRANSACTION;
-
-            SET @retry = 0;
-        END TRY
-        BEGIN CATCH
-            ROLLBACK TRANSACTION;
-
-            IF ERROR_NUMBER() = 1205 AND @retry > 0
-            BEGIN
-      WAITFOR DELAY '00:00:05';
-      CONTINUE;
-    END
-            ELSE
-            BEGIN
-                THROW;
-            END
-    END CATCH
-  END
-END;
-
---Procedure khách hàng đăng kí lịch hẹn
+--4. Procedure khách hàng đăng kí lịch hẹn
 CREATE PROCEDURE DangKiLichHen
   @NgayGioKham datetime,
   @LyDoKham nvarchar(100),
@@ -1235,7 +1305,7 @@ BEGIN
   END
 END;
 
---Procedure khách hàng hủy lịch hẹn (được phép hủy trước 2h so với thời gian hẹn)
+--4. Procedure khách hàng hủy lịch hẹn (được phép hủy trước 2h so với thời gian hẹn)
 CREATE PROCEDURE HuyLichHen
   @MaSoHen char(20)
 AS
@@ -1293,7 +1363,7 @@ BEGIN
   END
 END;
 
---Procedure khách hàng/ nha sĩ xem hồ sơ bệnh án
+--5. Procedure khách hàng/ nha sĩ xem hồ sơ bệnh án
 CREATE PROCEDURE XemHoSoBenh
   @MaKH char(20),
   @SoDT char(15)
@@ -1345,7 +1415,609 @@ BEGIN
   END
 END;
 
---QTV sửa thông tin nhân viên
+--6	NS	Quan ly ho so benh nhan: them, xoa ho so benh
+--them ho so benh
+CREATE PROCEDURE ThemHoSoBenh
+    @MaKH CHAR(20),
+    @SoDT CHAR(15),
+    @STT INT,
+    @NgayKham DATETIME,
+    @DanDo NVARCHAR(300),
+    @MaNS CHAR(20),
+    @MaDV CHAR(10),
+    @MaThuoc CHAR(30),
+    @TinhTrangXuatHoaDon CHAR(10)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION WITH ISOLATION LEVEL READ COMMITTED; -- Set the isolation level
+
+        -- Check if the record already exists
+        IF NOT EXISTS (SELECT 1 FROM HOSOBENH WHERE MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT)
+        BEGIN
+        -- Insert the new record
+        INSERT INTO HOSOBENH (MaKH, SoDT, STT, NgayKham, DanDo, MaNS, MaDV, MaThuoc, TinhTrangXuatHoaDon)
+        VALUES (@MaKH, @SoDT, @STT, @NgayKham, @DanDo, @MaNS, @MaDV, @MaThuoc, @TinhTrangXuatHoaDon);
+
+        -- Commit the transaction if all steps succeed
+        COMMIT;
+        PRINT 'Transaction committed successfully.';
+        END
+        ELSE
+        BEGIN
+        -- Rollback the transaction if the record already exists
+        ROLLBACK;
+        PRINT 'Transaction rolled back. Record already exists.';
+        END
+    END TRY
+    BEGIN CATCH
+        -- Rollback the transaction in case of any error
+        ROLLBACK;
+        PRINT 'Transaction rolled back due to an error.';
+        THROW;
+    END CATCH
+END;
+
+--xoa ho so benh
+CREATE PROCEDURE XoaHoSoBenh
+    @MaKH CHAR(20),
+    @SoDT CHAR(15),
+    @STT INT
+AS
+BEGIN
+    -- Set NOCOUNT to ON to suppress "xx rows affected" messages
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Start a new transaction with READ COMMITTED isolation level
+        BEGIN TRANSACTION WITH ISOLATION LEVEL READ COMMITTED;
+
+        -- Check if the record exists
+        IF EXISTS (SELECT 1 FROM HOSOBENH WHERE MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT)
+        BEGIN
+        -- Delete the record from the HOSOBENH table
+        DELETE FROM HOSOBENH WHERE MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT;
+
+        -- Commit the transaction if the deletion is successful
+        COMMIT;
+        PRINT 'Transaction committed successfully. Record deleted.';
+        END
+        ELSE
+        BEGIN
+        -- Rollback the transaction if the record does not exist
+        ROLLBACK;
+        PRINT 'Transaction rolled back. Record does not exist.';
+        END
+    END TRY
+    BEGIN CATCH
+        -- Rollback the transaction in case of any error
+        ROLLBACK;
+        PRINT 'Transaction rolled back due to an error.';
+        THROW;
+    END CATCH
+END;
+
+--7	NS	Quản lý cuộc hẹn	Xem lịch hẹn của mình, thêm lịch cá nhân (lịch bận)
+--xem lich nha si
+CREATE PROCEDURE XemLichNhaSi
+    @MaNS char(20)
+AS
+BEGIN
+    BEGIN TRY
+        BEGIN TRANSACTION; -- Start the transaction
+
+        -- Your SELECT statement to retrieve data from LICHNHASI table
+        SELECT MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen
+        FROM LICHNHASI;
+        WHERE MaNS = @MaNS;
+
+        COMMIT; -- Commit the transaction if successful
+    END TRY
+    BEGIN CATCH
+        ROLLBACK; -- Rollback the transaction if there is an error
+
+        -- Print a custom error message
+        PRINT 'Cannot view the schedule. An error occurred: ' + ERROR_MESSAGE();
+
+    END CATCH
+END;
+
+--them lich nha si
+CREATE PROCEDURE ThemLichHenNhaSi
+    @MaNS char(20),
+    @GioBatDau datetime,
+    @GioKetThuc datetime,
+    @TinhTrangCuocHen char(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Set the isolation level
+        SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+        
+        BEGIN TRANSACTION;
+
+        -- Insert the new schedule
+        INSERT INTO LICHNHASI (MaNS, GioBatDau, GioKetThuc, TinhTrangCuocHen)
+        VALUES (@MaNS, @GioBatDau, @GioKetThuc, @TinhTrangCuocHen);
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot insert the schedule. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--xoa lich nha si
+CREATE PROCEDURE XoaLichHenNhaSi
+    @MaNS char(20),
+    @STT int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Delete the schedule
+        DELETE FROM LICHNHASI
+        WHERE MaNS = @MaNS AND STT = @STT;
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot delete the schedule. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--8	NS	Quản lý lịch sử khám	Xem, sửa lịch sử khám của bệnh nhân (hồ sơ bệnh)
+CREATE PROCEDURE ViewHoSoBenh
+  @MaKH CHAR(20)
+AS
+BEGIN
+  -- Set NOCOUNT to ON to suppress "xx rows affected" messages
+  SET NOCOUNT ON;
+
+  BEGIN TRY
+    -- Start a new transaction with READ COMMITTED isolation level
+    BEGIN TRANSACTION WITH ISOLATION LEVEL READ COMMITTED;
+
+    -- Select all Ho So Benh records for the specified MaKH
+    SELECT MaKH, SoDT, STT, NgayKham, DanDo, MaNS, MaDV, MaThuoc, TinhTrangXuatHoaDon
+    FROM HOSOBENH
+    WHERE MaKH = @MaKH;
+
+    -- Commit the transaction if the SELECT statement succeeds
+    COMMIT;
+    PRINT 'Transaction committed successfully.';
+  END TRY
+  BEGIN CATCH
+    -- Rollback the transaction in case of any error
+    ROLLBACK;
+    PRINT 'Transaction rolled back due to an error.';
+    THROW;
+  END CATCH
+END;
+
+--CapNhatHoSoBenh
+CREATE PROCEDURE CapNhatHoSoBenh
+    @MaKH CHAR(20),
+    @SoDT CHAR(15),
+    @STT INT,
+    @NgayKham DATETIME,
+    @DanDo NVARCHAR(300),
+    @MaNS CHAR(20),
+    @MaDV CHAR(10),
+    @MaThuoc CHAR(30),
+    @TinhTrangXuatHoaDon CHAR(10)
+AS
+BEGIN
+    -- Set NOCOUNT to ON to suppress "xx rows affected" messages
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Start a new transaction with READ COMMITTED isolation level
+        BEGIN TRANSACTION WITH ISOLATION LEVEL READ COMMITTED;
+
+        -- Check if the record exists
+        IF EXISTS (SELECT 1 FROM HOSOBENH WHERE MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT)
+        BEGIN
+        -- Update the record in the HOSOBENH table
+        UPDATE HOSOBENH
+        SET
+            NgayKham = @NgayKham,
+            DanDo = @DanDo,
+            MaNS = @MaNS,
+            MaDV = @MaDV,
+            MaThuoc = @MaThuoc,
+            TinhTrangXuatHoaDon = @TinhTrangXuatHoaDon
+        WHERE MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT;
+
+        -- Commit the transaction if the update is successful
+        COMMIT;
+        PRINT 'Transaction committed successfully. Record updated.';
+        END
+        ELSE
+        BEGIN
+        -- Rollback the transaction if the record does not exist
+        ROLLBACK;
+        PRINT 'Transaction rolled back. Record does not exist.';
+        END
+    END TRY
+    BEGIN CATCH
+        -- Rollback the transaction in case of any error
+        ROLLBACK;
+        PRINT 'Transaction rolled back due to an error.';
+        THROW;
+    END CATCH
+END;
+
+-- 9. Stored procedure thêm lịch cuộc hẹn
+CREATE PROCEDURE ThemLichHen
+  @MaSoHen char(20),
+  @NgayGioKham datetime,
+  @LyDoKham nvarchar(100),
+  @MaNS char(20),
+  @MaKH char(20),
+  @SoDT char(15)
+AS
+BEGIN
+  -- Sử dụng mức cô lập READ UNCOMMITTED
+  SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+  BEGIN TRANSACTION
+    -- Kiểm tra xem lịch hẹn đã tồn tại hay chưa
+    IF NOT EXISTS (SELECT * FROM LICHHEN WHERE MaSoHen = @MaSoHen)
+    BEGIN
+      -- Kiểm tra xem khách hàng đã có tài khoản hay chưa
+      IF EXISTS (SELECT * FROM KHACHHANG WHERE MaKH = @MaKH AND SoDT = @SoDT)
+      BEGIN
+        -- Thêm lịch hẹn mới vào bảng LICHHEN
+        INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
+        VALUES (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT)
+        -- Cập nhật thông tin đăng nhập cho khách hàng
+        UPDATE KHACHHANG SET MatKhau = '123456', Email = @MaKH + '@gmail.com' WHERE MaKH = @MaKH AND SoDT = @SoDT
+      END
+      ELSE
+      BEGIN
+        -- Nếu khách hàng chưa có tài khoản, báo lỗi
+        RAISERROR ('Khách hàng chưa có tài khoản', 16, 1)
+      END
+    END
+    ELSE
+    BEGIN
+      -- Nếu lịch hẹn đã tồn tại, báo lỗi
+      RAISERROR ('Lịch hẹn đã tồn tại', 16, 1)
+    END
+  COMMIT TRANSACTION
+END
+
+--9. Xem những lịch hẹn tiếp theo
+CREATE PROCEDURE ViewUpcomingAppointments
+    @NgayHienTai DATETIME
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+    BEGIN TRANSACTION;
+
+    -- Lấy tất cả lịch hẹn sắp tới của khách hàng
+    SELECT * FROM LICHHEN
+    WHERE NgayGioKham > @NgayHienTai
+
+    COMMIT TRANSACTION;
+END;
+
+--9. Xóa lịch hẹn
+CREATE PROCEDURE CancelAppointment
+    @MaSoHen VARCHAR(20)
+AS
+BEGIN
+    SET XACT_ABORT ON;
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+
+    -- Kiểm tra xem lịch hẹn có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM LICHHEN WHERE MaSoHen = @MaSoHen)
+    BEGIN
+        RAISERROR('Lịch hẹn không tồn tại.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    -- Hủy lịch hẹn
+    DELETE FROM LICHHEN WHERE MaSoHen = @MaSoHen;
+
+    COMMIT TRANSACTION;
+END;
+
+--10. cập nhật hóa đơn
+CREATE PROCEDURE UpdateBill
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    DECLARE @quantity INT;
+    SET @quantity = (SELECT Quantity FROM LOAITHUOC WHERE MaThuoc = T01);
+    WAITFOR DELAY '00:00:05';
+    UPDATE HOADON SET Total = @quantity * 1000 WHERE MaHoaDon = 1;
+    COMMIT TRANSACTION;
+END;
+
+-- 11. Procedure xem danh sách người dùng
+CREATE PROCEDURE XemDanhSachNguoiDung
+  @LoaiNguoiDung char(10),
+  @DanhSach table OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'XemDanhSachNguoiDung'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Kiểm tra loại người dùng là khách hàng hay nhân viên
+    IF @LoaiNguoiDung = 'KhachHang'
+    BEGIN
+      -- Nếu là khách hàng, lấy danh sách khách hàng từ bảng KHACHHANG
+      SELECT * INTO @DanhSach
+      FROM KHACHHANG
+      -- Kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE IF @LoaiNguoiDung = 'NhanVien'
+    BEGIN
+      -- Nếu là nhân viên, lấy danh sách nhân viên từ bảng NHANVIEN
+      SELECT * INTO @DanhSach
+      FROM NHANVIEN
+      -- Kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không phải hai loại trên, trả về danh sách rỗng
+      SELECT * INTO @DanhSach
+      FROM KHACHHANG
+      WHERE 1 = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+-- Procedure sửa thông tin người dùng
+CREATE PROCEDURE SuaThongTinNguoiDung
+  @LoaiNguoiDung char(10),
+  @Ma char(20),
+  @SoDT char(15),
+  @HoTen nvarchar(50),
+  @Phai char(1),
+  @NgaySinh datetime,
+  @DiaChi nvarchar(100),
+  @MatKhau char(50),
+  @Email varchar(40),
+  @TenDangNhap char(50),
+  @KetQua int OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'SuaThongTinNguoiDung'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Kiểm tra loại người dùng là khách hàng hay nhân viên
+    IF @LoaiNguoiDung = 'KhachHang'
+    BEGIN
+      -- Nếu là khách hàng, cập nhật thông tin khách hàng theo mã khách hàng và số điện thoại
+      UPDATE KHACHHANG
+      SET HoTen = @HoTen, Phai = @Phai, NgaySinh = @NgaySinh, DiaChi = @DiaChi, MatKhau = @MatKhau, Email = @Email
+      WHERE MaKH = @Ma AND SoDT = @SoDT
+
+      -- Kiểm tra xem có cập nhật được thông tin không
+      IF @@ROWCOUNT = 1
+      BEGIN
+        -- Nếu có, trả về kết quả là 1
+        SET @KetQua = 1
+        -- Kết thúc transaction
+        COMMIT TRANSACTION @TranName
+      END
+      ELSE
+      BEGIN
+        -- Nếu không, trả về kết quả là 0
+        SET @KetQua = 0
+        -- Hủy transaction
+        ROLLBACK TRANSACTION @TranName
+      END
+    END
+    ELSE IF @LoaiNguoiDung = 'NhanVien'
+    BEGIN
+      -- Nếu là nhân viên, cập nhật thông tin nhân viên theo mã nhân viên
+      UPDATE NHANVIEN
+      SET HoTen = @HoTen, Phai = @Phai, TenDangNhap = @TenDangNhap, MatKhau = @MatKhau
+      WHERE MaNV = @Ma
+
+      -- Kiểm tra xem có cập nhật được thông tin không
+      IF @@ROWCOUNT = 1
+      BEGIN
+        -- Nếu có, trả về kết quả là 1
+        SET @KetQua = 1
+        -- Kết thúc transaction
+        COMMIT TRANSACTION @TranName
+      END
+      ELSE
+      BEGIN
+        -- Nếu không, trả về kết quả là 0
+        SET @KetQua = 0
+        -- Hủy transaction
+        ROLLBACK TRANSACTION @TranName
+      END
+    END
+    ELSE
+    BEGIN
+      -- Nếu không phải hai loại trên, trả về kết quả là 0
+      SET @KetQua = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+-- Procedure xóa thông tin người dùng
+CREATE PROCEDURE XoaThongTinNguoiDung
+  @LoaiNguoiDung char(10),
+  @Ma char(20),
+  @SoDT char(15),
+  @KetQua int OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'XoaThongTinNguoiDung'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Kiểm tra loại người dùng là khách hàng hay nhân viên
+    IF @LoaiNguoiDung = 'KhachHang'
+    BEGIN
+      -- Nếu là khách hàng, xóa thông tin khách hàng theo mã khách hàng và số điện thoại
+      DELETE FROM KHACHHANG
+      WHERE MaKH = @Ma AND SoDT = @SoDT
+
+      -- Kiểm tra xem có xóa được thông tin không
+      IF @@ROWCOUNT = 1
+      BEGIN
+        -- Nếu có, trả về kết quả là 1
+        SET @KetQua = 1
+        -- Kết thúc transaction
+        COMMIT TRANSACTION @TranName
+      END
+      ELSE
+      BEGIN
+        -- Nếu không, trả về kết quả là 0
+        SET @KetQua = 0
+        -- Hủy transaction
+        ROLLBACK TRANSACTION @TranName
+      END
+    END
+    ELSE IF @LoaiNguoiDung = 'NhanVien'
+    BEGIN
+      -- Nếu là nhân viên, xóa thông tin nhân viên theo mã nhân viên
+      DELETE FROM NHANVIEN
+      WHERE MaNV = @Ma
+
+      -- Kiểm tra xem có xóa được thông tin không
+      IF @@ROWCOUNT = 1
+      BEGIN
+        -- Nếu có, trả về kết quả là 1
+        SET @KetQua = 1
+        -- Kết thúc transaction
+        COMMIT TRANSACTION @TranName
+      END
+      ELSE
+      BEGIN
+        -- Nếu không, trả về kết quả là 0
+        SET @KetQua = 0
+        -- Hủy transaction
+        ROLLBACK TRANSACTION @TranName
+      END
+    END
+    ELSE
+    BEGIN
+      -- Nếu không phải hai loại trên, trả về kết quả là 0
+      SET @KetQua = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+-- Procedure thêm nhân sự
+CREATE PROCEDURE ThemNhanVien
+  @MaNV char(20),
+  @HoTen nvarchar(100),
+  @Phai char(1),
+  @TenDangNhap char(50),
+  @MatKhau char(50),
+  @KetQua int OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'ThemNhanSu'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Thêm thông tin nhân sự vào bảng NHANVIEN
+    INSERT INTO NHANVIEN (MaNV, HoTen, Phai, TenDangNhap, MatKhau)
+    VALUES (@MaNV, @HoTen, @Phai, @TenDangNhap, @MatKhau)
+
+    -- Kiểm tra xem có thêm được thông tin không
+    IF @@ROWCOUNT = 1
+    BEGIN
+      -- Nếu có, trả về kết quả là 1
+      SET @KetQua = 1
+      -- Kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không, trả về kết quả là 0
+      SET @KetQua = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+
+-- 11. Procedure cập nhật thông tin cá nhân cho quản trị viên
+CREATE PROCEDURE CapNhatThongTin_QuanTriVien
+  @MaQTV char(20),
+  @HoTen nvarchar(100),
+  @Phai char(1),
+  @TenDangNhap char(50),
+  @MatKhau char(50),
+  @KetQua int OUTPUT
+AS
+BEGIN
+  -- Khởi tạo biến transaction
+  DECLARE @TranName varchar(20)
+  SELECT @TranName = 'CapNhatThongTin_QuanTriVien'
+
+  -- Bắt đầu transaction
+  BEGIN TRANSACTION @TranName
+    -- Cập nhật thông tin quản trị viên theo mã quản trị viên
+    UPDATE QUANTRIVIEN
+    SET HoTen = @HoTen, Phai = @Phai, TenDangNhap = @TenDangNhap, MatKhau = @MatKhau
+    WHERE MaQTV = @MaQTV
+
+    -- Kiểm tra xem có cập nhật được thông tin không
+    IF @@ROWCOUNT = 1
+    BEGIN
+      -- Nếu có, trả về kết quả là 1
+      SET @KetQua = 1
+      -- Kết thúc transaction
+      COMMIT TRANSACTION @TranName
+    END
+    ELSE
+    BEGIN
+      -- Nếu không, trả về kết quả là 0
+      SET @KetQua = 0
+      -- Hủy transaction
+      ROLLBACK TRANSACTION @TranName
+    END
+END
+GO
+
+--11. QTV sửa thông tin nhân viên
 CREATE PROCEDURE SuaThongTinNhanVien
   @MaNV char(20),
   @HoTen nvarchar(50),
@@ -1403,3 +2075,360 @@ BEGIN
     END CATCH
   END
 END;
+
+--11. Xem các loại dịch vụ
+CREATE PROCEDURE XemDichVu
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM LOAIDICHVU;
+END;
+
+--Xem 1 loại dịch vụ
+CREATE PROCEDURE XemChiTietDichVu
+    @MaDV char(10)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Truy vấn thông tin của dịch vụ bằng MaDV
+        SELECT * FROM LOAIDICHVU WHERE MaDV = @MaDV;
+
+        -- Nếu không có lỗi, commit transaction
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Nếu có lỗi, rollback transaction
+        ROLLBACK TRANSACTION;
+        PRINT 'Đã xảy ra lỗi khi truy vấn thông tin dịch vụ.';
+    END CATCH
+END;
+
+--11. Thêm loại dịch vụ
+CREATE PROCEDURE ThemDichVu
+    @MaDV char(10),
+    @TenDV nvarchar(40),
+    @MoTa nvarchar(100),
+    @DongGia bigint
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO LOAIDICHVU (MaDV, TenDV, MoTa, DongGia)
+        VALUES (@MaDV, @TenDV, @MoTa, @DongGia);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        RAISERROR ('Lỗi khi thêm dịch vụ mới.', 16, 1);
+    END CATCH
+END;
+
+--Xóa loại dịch vụ
+CREATE PROCEDURE XoaDichVu
+    @MaDV char(10)
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DELETE FROM LOAIDICHVU WHERE MaDV = @MaDV;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        RAISERROR ('Lỗi khi xóa dịch vụ.', 16, 1);
+    END CATCH
+END;
+
+--11. Sửa loại dịch vụ
+CREATE PROCEDURE SuaDichVu
+    @MaDV char(10),
+    @TenDV nvarchar(40),
+    @MoTa nvarchar(100),
+    @DongGia bigint
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE LOAIDICHVU
+        SET TenDV = @TenDV, MoTa = @MoTa, DongGia = @DongGia
+        WHERE MaDV = @MaDV;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        RAISERROR ('Lỗi khi cập nhật dịch vụ.', 16, 1);
+    END CATCH
+END;
+
+-- 13	QT	Quản lý thuốc	Thêm, sửa, xóa, xem, xem thuốc hết hạn, xóa thuốc hết hạn
+
+--Them thuoc
+CREATE PROCEDURE ThemThuoc
+    @MaThuoc char(30),
+    @TenThuoc nvarchar(100),
+    @DonViTinh nvarchar(100),
+    @ChiDinh nvarchar(200),
+    @SoLuong int,
+    @NgayHetHan date,
+    @GiaThuoc bigint
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Insert the new record
+        INSERT INTO LOAITHUOC (MaThuoc, TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc)
+        VALUES (@MaThuoc, @TenThuoc, @DonViTinh, @ChiDinh, @SoLuong, @NgayHetHan, @GiaThuoc);
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot insert the record. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--Xoa thuoc
+CREATE PROCEDURE XoaThuoc
+    @MaThuoc char(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Delete the record
+        DELETE FROM LOAITHUOC
+        WHERE MaThuoc = @MaThuoc;
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot delete the record. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--sua thuoc
+CREATE PROCEDURE SuaThongTinThuoc
+    @MaThuoc char(30),
+    @TenThuoc nvarchar(100),
+    @DonViTinh nvarchar(100),
+    @ChiDinh nvarchar(200),
+    @SoLuong int,
+    @NgayHetHan date,
+    @GiaThuoc bigint
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Update the record
+        UPDATE LOAITHUOC
+        SET TenThuoc = @TenThuoc,
+            DonViTinh = @DonViTinh,
+            ChiDinh = @ChiDinh,
+            SoLuong = @SoLuong,
+            NgayHetHan = @NgayHetHan,
+            GiaThuoc = @GiaThuoc
+        WHERE MaThuoc = @MaThuoc;
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot update the record. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--xem thuoc
+CREATE PROCEDURE XemThuoc
+    @MaThuoc char(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- View the medicine information
+        SELECT MaThuoc, TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc
+        FROM LOAITHUOC
+        WHERE MaThuoc = @MaThuoc;
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot view the medicine information. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--xem thuoc het han
+CREATE PROCEDURE XemThuocHetHan
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- View the expired medicines
+        SELECT MaThuoc, TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc
+        FROM LOAITHUOC
+        WHERE NgayHetHan < GETDATE(); -- Select medicines whose expiration date is before the current date
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot view expired medicines. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--xoa thuoc het han
+CREATE PROCEDURE XoaThuocHetHan
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Delete expired medicines
+        DELETE FROM LOAITHUOC
+        WHERE NgayHetHan < GETDATE(); -- Delete medicines whose expiration date is before the current date
+
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
+        -- Print the error message
+        PRINT 'Cannot delete expired medicines. An error occurred: ' + ERROR_MESSAGE();
+    END CATCH;
+END;
+
+--Xem báo cáo doanh thu
+USE PHONGKHAMNHASI;
+GO
+
+CREATE PROCEDURE XemBaoCaoDoanhThu
+    @NgayBatDau DATETIME,
+    @NgayKetThuc DATETIME
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+        
+        -- Tính toán doanh thu từ dịch vụ
+        DECLARE @DoanhThuDichVu BIGINT;
+        SELECT @DoanhThuDichVu = SUM(LDV.DongGia * CTDV.SoLuong)
+        FROM LOAIDICHVU LDV
+        JOIN CHITIETDV CTDV ON LDV.MaDV = CTDV.MaDV
+        WHERE EXISTS (
+            SELECT 1
+            FROM HOADON HD
+            WHERE HD.MaDV = CTDV.MaDV
+              AND HD.NgayXuat BETWEEN @NgayBatDau AND @NgayKetThuc
+        );
+
+        -- Tính toán doanh thu từ thuốc
+        DECLARE @DoanhThuThuoc BIGINT;
+        SELECT @DoanhThuThuoc = SUM(LT.GiaThuoc * CTT.SoLuong)
+        FROM LOAITHUOC LT
+        JOIN CHITIETTHUOC CTT ON LT.MaThuoc = CTT.MaThuoc
+        WHERE EXISTS (
+            SELECT 1
+            FROM HOADON HD
+            WHERE HD.MaThuoc = CTT.MaThuoc
+              AND HD.NgayXuat BETWEEN @NgayBatDau AND @NgayKetThuc
+        );
+
+        -- Tổng hợp doanh thu
+        DECLARE @TongDoanhThu BIGINT;
+        SET @TongDoanhThu = ISNULL(@DoanhThuDichVu, 0) + ISNULL(@DoanhThuThuoc, 0);
+
+        -- Trả về kết quả
+        SELECT 
+            @TongDoanhThu AS 'TongDoanhThu',
+            @DoanhThuDichVu AS 'DoanhThuDichVu',
+            @DoanhThuThuoc AS 'DoanhThuThuoc';
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Nếu có lỗi, rollback giao tác
+        ROLLBACK TRANSACTION;
+        -- Ném lỗi ra ngoài
+        THROW;
+    END CATCH
+END;
+GO
+
+--Xem top nha sĩ dựa và số lượng bệnh án và doanh thu của họ
+CREATE PROCEDURE XemTopNhaSi
+    @NgayBatDau DATETIME,
+    @NgayKetThuc DATETIME
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+        
+        -- Truy vấn để lấy thông tin top nha sĩ
+        SELECT 
+            N.MaNS,
+            N.HoTen,
+            COUNT(DISTINCT H.MaKH) AS 'SoLuongBenhAn',
+            SUM(CASE 
+                WHEN HD.MaDV IS NOT NULL THEN LDV.DongGia 
+                ELSE 0 
+            END) AS 'DoanhThuDichVu'
+        FROM NHASI N
+        LEFT JOIN HOSOBENH H ON N.MaNS = H.MaNS
+        LEFT JOIN HOADON HD ON H.MaKH = HD.MaKH AND H.SoDT = HD.SoDT AND H.STT = HD.STT
+        LEFT JOIN LOAIDICHVU LDV ON HD.MaDV = LDV.MaDV
+        WHERE H.NgayKham BETWEEN @NgayBatDau AND @NgayKetThuc
+        GROUP BY N.MaNS, N.HoTen
+        ORDER BY COUNT(DISTINCT H.MaKH) DESC, SUM(CASE 
+                WHEN HD.MaDV IS NOT NULL THEN LDV.DongGia 
+                ELSE 0 
+            END) DESC;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
