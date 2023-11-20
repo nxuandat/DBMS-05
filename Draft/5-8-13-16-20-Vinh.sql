@@ -151,45 +151,40 @@ END;
 GO
 
 --16
-CREATE PROCEDURE UpdateCustomerAddress
-    @MaKH CHAR(20), -- Customer ID
-    @NewAddress NVARCHAR(100) -- New address to be updated
+CREATE PROCEDURE UpdateMedicalRecord
+    @MaKH CHAR(20), -- The ID of the patient (MaKH)
+    @DanDo NVARCHAR(300) -- The new diagnosis information (DanDo)
 AS
 BEGIN
-    SET NOCOUNT ON;
-    -- Set the transaction isolation level to serializable to avoid phantom reads
+    -- Attempt to start the transaction with SERIALIZABLE isolation level
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-    
+    BEGIN TRANSACTION;
+
     BEGIN TRY
-        -- Start the transaction
-        BEGIN TRANSACTION;
-        
-        -- Check if the new address already exists for another customer
-        IF EXISTS (SELECT 1 FROM KHACHHANG WHERE DiaChi = @NewAddress AND MaKH <> @MaKH)
-        BEGIN
-            -- If it does, throw an error and do not proceed with the update
-            RAISERROR('The address is already used by another customer.', 16, 1);
-        END
-        ELSE
-        BEGIN
-            -- If the address is not used, proceed to update the customer's address
-            UPDATE KHACHHANG
-            SET DiaChi = @NewAddress
-            WHERE MaKH = @MaKH;
-        END
-        
-        -- Commit the transaction
+        -- Read the current medical record for the patient
+        SELECT * FROM HOSOBENH
+        WHERE MaKH = @MaKH;
+
+        -- Update the medical record with the new diagnosis
+        UPDATE HOSOBENH
+        SET DanDo = @DanDo
+        WHERE MaKH = @MaKH;
+
+        -- Simulate some processing time
+        WAITFOR DELAY '00:00:05';
+
+        -- Commit the transaction if all operations succeed
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
-        -- If an error occurs, roll back the transaction
+        -- Rollback the transaction if any errors occurred
         ROLLBACK TRANSACTION;
-        -- Re-throw the caught error
-        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
-        RAISERROR(@ErrorMessage, 16, 1);
-    END CATCH;
+        -- Re-throw the error to the caller
+        THROW;
+    END CATCH
 END;
 GO
+
 
 
 --20
