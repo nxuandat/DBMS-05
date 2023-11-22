@@ -1,7 +1,8 @@
 import React from "react";
 // import backgroundImage from "./images/loginBackground.png";
 import "./LogIn.css";
-import pictureLogin from "./images/Picture2.svg";
+import pictureLogin from "../images/Picture2.svg";
+import { TextField } from "@mui/material";
 
 export default function LogIn() {
   return (
@@ -20,27 +21,21 @@ export default function LogIn() {
           <h1>ĐĂNG KÝ</h1>
           <form>
             {/* Name input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='text'
-                id='form1Example13'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example13'>
-                Họ và tên
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Họ và tên'
+              variant='outlined'
+              type='text'
+            />
             {/* Email input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='email'
-                id='form1Example13'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example13'>
-                Địa chỉ email
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Địa chỉ email'
+              variant='outlined'
+              type='email'
+            />
             {/* Gender check */}
             <div className='form-outline mb-4'>
               <div className='form-check form-check-inline'>
@@ -69,61 +64,46 @@ export default function LogIn() {
               </div>
             </div>
             {/* Phone number input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='text'
-                id='form1Example13'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example13'>
-                Số điện thoại
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Số điện thoại'
+              variant='outlined'
+              type='text'
+            />
             {/* Address input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='text'
-                id='form1Example13'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example13'>
-                Địa chỉ
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Địa chỉ'
+              variant='outlined'
+              type='text'
+            />
             {/* Birthday number input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='date'
-                id='form1Example13'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example13'>
-                Ngày sinh
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Ngày sinh'
+              variant='outlined'
+              type='date'
+            />
 
             {/* Password input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='password'
-                id='form1Example23'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example23'>
-                Mật khẩu
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Mật khẩu'
+              variant='outlined'
+              type='password'
+            />
             {/* Repeat Password input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='password'
-                id='form1Example23'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example23'>
-                Nhập lại mật khẩu
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='outlined-basic'
+              label='Nhập lại mật khẩu'
+              variant='outlined'
+              type='password'
+            />
             <div className='d-flex justify-content-around align-items-center mb-4'>
               {/* Checkbox */}
               <div className='form-check'>

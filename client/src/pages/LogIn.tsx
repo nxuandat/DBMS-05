@@ -1,7 +1,8 @@
 import React from "react";
 // import backgroundImage from "./images/loginBackground.png";
 import "./LogIn.css";
-import pictureLogin from "./images/Picture2.svg";
+import pictureLogin from "../images/Picture2.svg";
+import { TextField } from "@mui/material";
 
 export default function LogIn() {
   return (
@@ -20,27 +21,21 @@ export default function LogIn() {
           <h1>ĐĂNG NHẬP</h1>
           <form>
             {/* Email input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='email'
-                id='form1Example13'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example13'>
-                Địa chỉ email
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='standard-basic'
+              label='Email'
+              variant='standard'
+              type='email'
+            />
             {/* Password input */}
-            <div className='form-outline mb-4'>
-              <input
-                type='password'
-                id='form1Example23'
-                className='form-control form-control-lg'
-              />
-              <label className='form-label' htmlFor='form1Example23'>
-                Mật khẩu
-              </label>
-            </div>
+            <TextField
+              className='form-outline mb-4'
+              id='standard-basic'
+              label='Mật khẩu'
+              variant='standard'
+              type='password'
+            />
             <div className='d-flex justify-content-around align-items-center mb-4'>
               {/* Checkbox */}
               <div className='form-check'>

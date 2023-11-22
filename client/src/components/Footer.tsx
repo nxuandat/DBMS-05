@@ -6,11 +6,11 @@ export default function App() {
     <MDBFooter bgColor='light' className='text-center text-lg-left'>
       <div
         className='text-center p-3'
-        style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.05)" }}
       >
         &copy; {new Date().getFullYear()} Copyright:{" "}
         <a className='text-dark' href='#'>
-          phongkhamnhakhoaso1.com
+          PerfectSmileDental.com
         </a>
       </div>
     </MDBFooter>

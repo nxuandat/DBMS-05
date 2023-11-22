@@ -4,16 +4,15 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import { Link } from "react-router-dom";
+import NavMenu from "./NavMenu";
 
 export default function ButtonAppBar() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position='static' className='bg-white shadow-sm mb-3'>
         <Toolbar>
-          <IconButton
+          {/* <IconButton
             size='large'
             edge='start'
             color='inherit'
@@ -22,9 +21,10 @@ export default function ButtonAppBar() {
             style={{
               color: "#34C38F",
             }}
-          >
-            <MenuIcon />
-          </IconButton>
+          > */}
+          {/* <MenuIcon /> */}
+          <NavMenu />
+          {/* </IconButton> */}
           <Typography
             variant='h6'
             component='div'
@@ -33,7 +33,7 @@ export default function ButtonAppBar() {
               color: "#0FA958",
             }}
           >
-            PHÒNG KHÁM NHA KHOA
+            PerfectSmile Dental
           </Typography>
           <Button
             style={{
