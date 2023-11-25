@@ -9,6 +9,7 @@ import ButtonAppBar from "./components/ButtonAppBar";
 import Footer from "./components/Footer";
 import LogIn from "./pages/LogIn";
 import SignUp from "./pages/SignUp";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path='/about' element={<AboutUs />} />
           <Route path='/login' element={<LogIn />} />
           <Route path='/signup' element={<SignUp />} />
+          <Route path='/reset' element={<ResetPassword />} />
         </Routes>
       </Container>
       <Footer />
