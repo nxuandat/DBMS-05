@@ -2053,3 +2053,81 @@ BEGIN
     END TRY
 END;
 
+CREATE PROCEDURE UpdateBill
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    DECLARE @quantity INT;
+    SET @quantity = (SELECT Quantity FROM LOAITHUOC WHERE MaThuoc = T01);
+    WAITFOR DELAY '00:00:05';
+    UPDATE HOADON SET Total = @quantity * 1000 WHERE MaHoaDon = 1;
+    COMMIT TRANSACTION;
+END;
+
+
+CREATE PROCEDURE UpdateDrugQuantity
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    UPDATE LOAITHUOC SET SoLuong = LoaiThuoc - 1 WHERE MaThuoc = T01;
+    COMMIT TRANSACTION;
+END;
+
+create procedure sp_XemThongTinDV
+  @MaDV char(10),
+  @MaKH char(20)
+as
+begin
+  -- Đặt mức cô lập là read committed
+  set transaction isolation level read committed
+  -- Bắt đầu giao dịch
+  begin transaction
+    -- Truy vấn thông tin dịch vụ từ bảng LOAIDICHVU
+    select TenDV, MoTa, DongGia
+    from LOAIDICHVU
+    where MaDV = @MaDV
+    -- Truy vấn thông tin chi tiết dịch vụ từ bảng CHITIETDV
+    select STT, SoDT, SoLuong
+    from CHITIETDV
+    where MaDV = @MaDV and MaKH = @MaKH
+  -- Kết thúc giao dịch
+  commit transaction
+end
+
+create procedure sp_ThayDoiThongTinDV
+  @MaDV char(10),
+  @TenDV nvarchar(40),
+  @MoTa nvarchar(100),
+  @DongGia bigint
+as
+begin
+  -- Đặt mức cô lập là read committed
+  set transaction isolation level read committed
+  -- Bắt đầu giao dịch
+  begin transaction
+    -- Cập nhật thông tin dịch vụ vào bảng LOAIDICHVU
+    update LOAIDICHVU
+    set TenDV = @TenDV, MoTa = @MoTa, DongGia = @DongGia
+    where MaDV = @MaDV
+  -- Kết thúc giao dịch
+  commit transaction
+end
+
+create procedure sp_CapNhatMatKhau
+  @MaNS char(20),
+  @MatKhauMoi char(50)
+as
+begin
+  -- Đặt mức cô lập là read committed
+  set transaction isolation level read committed
+  -- Bắt đầu giao dịch
+  begin transaction
+    -- Cập nhật mật khẩu mới cho nha sĩ CCC vào bảng NHASI
+    update NHASI
+    set MatKhau = @MatKhauMoi
+    where MaNS = @MaNS
+    -- Gửi mật khẩu mới cho nha sĩ CCC qua email
+    exec sp_GuiEmail @MaNS, @MatKhauMoi
+  -- Kết thúc giao dịch
+  commit transaction
+end
