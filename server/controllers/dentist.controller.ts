@@ -12,6 +12,7 @@ import {
   refreshTokenOptions,
   sendDentistToken,
 } from "../utils/jwt";
+import { getDentistById } from "../services/dentist.service";
 
 //login dentist
 interface ILoginRequest {
@@ -91,3 +92,15 @@ export const logoutDentist = CatchAsyncError(
       }
     }
   );
+
+//get dentist info
+export const getDentistInfo = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.MaNS;
+      getDentistById(userId, res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);

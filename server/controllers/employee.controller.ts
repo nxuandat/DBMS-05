@@ -12,6 +12,7 @@ import {
   refreshTokenOptions,
   sendEmployeeToken,
 } from "../utils/jwt";
+import { getEmployeeById, getAllUsersByEmployeeService } from "../services/employee.service";
 
 //login dentist
 interface ILoginRequest {
@@ -90,3 +91,26 @@ export const logoutEmployee = CatchAsyncError(
       }
     }
   );
+
+//get employee info
+export const getEmployeeInfo = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.MaNV;
+      getEmployeeById(userId, res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// get all users 
+export const getAllUsers = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersByEmployeeService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
