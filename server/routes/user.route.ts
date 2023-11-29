@@ -11,7 +11,9 @@ import {
   getAllDentistsByUser,
   getAllDentistsScheduleByUser,
   sendResetPasswordEmail,
-  ResetPasswordByUser
+  ResetPasswordByUser,
+  updateProfilePictureUser,
+  getProfilePictureUser
 } from "../controllers/user.controller";
 
 import { isAuthenticatedUserLogin } from "../middleware/auth";
@@ -46,5 +48,9 @@ userRouter.get("/user/get-all-dentists-schedules", isAuthenticatedUserLogin, get
 userRouter.post("/user/sendEmail-reset-password", isAuthenticatedUserLogin, sendResetPasswordEmail);
 
 userRouter.put("/user/reset-password", isAuthenticatedUserLogin, ResetPasswordByUser);
+
+userRouter.put("/user/update-profile-picture", isAuthenticatedUserLogin, updateProfilePictureUser);
+
+userRouter.get("/user/get-profile-picture", isAuthenticatedUserLogin, getProfilePictureUser);
 
 export default userRouter;

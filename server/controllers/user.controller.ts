@@ -19,6 +19,8 @@ import sendEmail from "../utils/sendEmail";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IAppointment } from "../models/appointment.model";
 import { IMedicalRecord } from "../models/medicalrecord.model";
+import cloudinary from "cloudinary";
+
 
 
 
@@ -225,12 +227,16 @@ export const activateUser = CatchAsyncError(
             GRANT SELECT
             ON HOSOBENH TO ${MaKH}
 
+            GRANT SELECT,DELETE,UPDATE,INSERT
+            ON LUUTRUANH TO ${MaKH}
+
             GRANT EXECUTE ON UpdateUserInfo TO ${MaKH}
             GRANT EXECUTE ON InsertAppointment TO ${MaKH}
             GRANT EXECUTE ON GetMedicalRecordByID TO ${MaKH}
             GRANT EXECUTE ON GetAllDentistInfoByUser TO ${MaKH}
             GRANT EXECUTE ON GetAllLICHNHASI TO ${MaKH}
             GRANT EXECUTE ON UpdatePasswordByUser TO ${MaKH}
+            GRANT EXECUTE ON UpdateProfilePicture TO ${MaKH}
             `, (err) => {
               if (err) {
                 return next(new ErrorHandler(err.message, 400));
@@ -767,6 +773,129 @@ export const ResetPasswordByUser = CatchAsyncError(
   }
 );
 
+//Update User Avatar Picture
+export const updateProfilePictureUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { avatar } = req.body;
+      const MaKH = req.user?.MaKH;
+      const password = req.user?.MatKhau;
+      const SoDT = req.user?.SoDT;
 
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
 
+      connection.on('connect', async (err: Error | null) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
 
+        const request = new SQLRequest(`SELECT AvatarUrl FROM LUUTRUANH WHERE MaNguoiDung = @MaKH`, (err) => {
+          if (err) {
+            throw new ErrorHandler(err.message, 400);
+          }
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        let userAvatar: any;
+
+        request.on('row', (columns) => {
+          userAvatar = columns[0].value;
+        });
+
+        request.on('requestCompleted', async function () {
+          if (avatar && userAvatar) {
+            // first delete the old image
+            await cloudinary.v2.uploader.destroy(userAvatar);
+
+            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+              folder: "avatars",
+              width: 150,
+            });
+
+            userAvatar = myCloud.secure_url;
+          } else {
+            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+              folder: "avatars",
+              width: 150,
+            });
+
+            userAvatar = myCloud.secure_url;
+          }
+
+          const updateRequest = new SQLRequest(`EXEC UpdateProfilePicture @MaKH, @SoDT, @AvatarUrl`, (err) => {
+            if (err) {
+              throw new ErrorHandler(err.message, 400);
+            }
+          });
+
+          updateRequest.addParameter('MaKH', TYPES.Char, MaKH);
+          updateRequest.addParameter('SoDT', TYPES.Char, SoDT);
+          updateRequest.addParameter('AvatarUrl', TYPES.VarChar, userAvatar);
+
+          connection.execSql(updateRequest);
+
+          updateRequest.on('requestCompleted', function () {
+            res.status(200).json({
+              success: true,
+              user: {
+                MaNguoiDung: MaKH,
+                AvatarUrl: userAvatar
+              },
+            });
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//Get Avatar Url By User
+export const getProfilePictureUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const MaKH = req.user?.MaKH;
+      const password = req.user?.MatKhau;
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+      connection.on('connect', async (err: Error | null) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const request = new SQLRequest(`SELECT AvatarUrl FROM LUUTRUANH WHERE MaNguoiDung = @MaKH`, (err) => {
+          if (err) {
+            throw new ErrorHandler(err.message, 400);
+          }
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        let userAvatar: any;
+
+        request.on('row', (columns) => {
+          userAvatar = columns[0].value;
+        });
+
+        request.on('requestCompleted', function () {
+          res.status(200).json({
+            success: true,
+            user: {
+              MaNguoiDung: MaKH,
+              AvatarUrl: userAvatar
+            },
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
