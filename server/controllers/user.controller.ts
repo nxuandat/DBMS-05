@@ -19,6 +19,8 @@ import sendEmail from "../utils/sendEmail";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IAppointment } from "../models/appointment.model";
 import { IMedicalRecord } from "../models/medicalrecord.model";
+require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 import cloudinary from "cloudinary";
 
 
@@ -598,7 +600,7 @@ export const getAllDentistsScheduleByUser = CatchAsyncError(
   }
 );
 
-//create reset password token
+//create reset password token and code
 interface IResetpasswordToken {
   token: string;
   resetPasswordCode: string;
@@ -896,6 +898,42 @@ export const getProfilePictureUser = CatchAsyncError(
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+//  send stripe publishble key
+export const sendStripePublishableKey = CatchAsyncError(
+  async (req: Request, res: Response) => {
+    res.status(200).json({
+      publishablekey: process.env.STRIPE_PUBLISHABLE_KEY,
+    });
+  }
+);
+
+// create new payment by user
+export const newPaymentByUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const myPayment = await stripe.paymentIntents.create({
+        amount: req.body.amount,
+        currency: "USD",
+        // payment_method_types: ["card"],
+        metadata: {
+          company: "Dentist Clinic",
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.status(201).json({
+        success: true,
+        client_secret: myPayment.client_secret,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
     }
   }
 );

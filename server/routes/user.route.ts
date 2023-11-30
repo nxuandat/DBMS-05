@@ -13,7 +13,9 @@ import {
   sendResetPasswordEmail,
   ResetPasswordByUser,
   updateProfilePictureUser,
-  getProfilePictureUser
+  getProfilePictureUser,
+  newPaymentByUser,
+  sendStripePublishableKey
 } from "../controllers/user.controller";
 
 import { isAuthenticatedUserLogin } from "../middleware/auth";
@@ -23,9 +25,9 @@ import { updateUserAccessToken } from "../middleware/updatetoken";
 
 const userRouter = express.Router();
 
-userRouter.post("/registration", registrationUser);
+userRouter.post("/user/registration", registrationUser);
 
-userRouter.post("/activate-user", activateUser);
+userRouter.post("/user/activate-user", activateUser);
 
 userRouter.post("/user/login", loginUser);
 
@@ -52,5 +54,9 @@ userRouter.put("/user/reset-password", isAuthenticatedUserLogin, ResetPasswordBy
 userRouter.put("/user/update-profile-picture", isAuthenticatedUserLogin, updateProfilePictureUser);
 
 userRouter.get("/user/get-profile-picture", isAuthenticatedUserLogin, getProfilePictureUser);
+
+userRouter.get("/user/payment/stripepublishablekey", sendStripePublishableKey);
+
+userRouter.post("/user/payment", isAuthenticatedUserLogin, newPaymentByUser);
 
 export default userRouter;
