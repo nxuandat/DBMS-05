@@ -49,7 +49,7 @@ export const getAllUsersService = async (req: any, res: Response, next: NextFunc
             let users: IUser[] = [];
 
             request.on('row', function (columns) {
-                //   console.log(columns);
+                   console.log(columns);
                 const user = {
                     MaKH: columns[0].value.trim(),
                     SoDT: columns[1].value.trim(),
@@ -59,6 +59,7 @@ export const getAllUsersService = async (req: any, res: Response, next: NextFunc
                     DiaChi: columns[5].value.trim(),
                     MatKhau: columns[6].value.trim(),
                     Email: columns[7].value.trim(),
+                    NgayTao: new Date(columns[8].value)
                 };
                 users.push(user);
             });

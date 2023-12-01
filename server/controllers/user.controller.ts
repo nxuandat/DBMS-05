@@ -232,6 +232,9 @@ export const activateUser = CatchAsyncError(
             GRANT SELECT,DELETE,UPDATE,INSERT
             ON LUUTRUANH TO ${MaKH}
 
+            GRANT SELECT,UPDATE 
+            ON HOADON TO ${MaKH}
+
             GRANT EXECUTE ON UpdateUserInfo TO ${MaKH}
             GRANT EXECUTE ON InsertAppointment TO ${MaKH}
             GRANT EXECUTE ON GetMedicalRecordByID TO ${MaKH}
@@ -312,6 +315,7 @@ export const loginUser = CatchAsyncError(
             DiaChi: columns[5].value.trim(),
             MatKhau: columns[6].value.trim(),
             Email: columns[7].value.trim(),
+            NgayTao: new Date(columns[8].value)
           };
           sendUserToken(user, 200, res);
         });
@@ -419,6 +423,7 @@ export const updateUserInfo = CatchAsyncError(
                 DiaChi: columns[5].value.trim(),
                 MatKhau: columns[6].value.trim(),
                 Email: columns[7].value.trim(),
+                NgayTao: new Date(columns[8].value)
               };
               //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
               redis.set(MaKH, JSON.stringify(user));
@@ -743,6 +748,7 @@ export const ResetPasswordByUser = CatchAsyncError(
                 DiaChi: columns[5].value.trim(),
                 MatKhau: columns[6].value.trim(),
                 Email: columns[7].value.trim(),
+                NgayTao: new Date(columns[8].value)
               };
               //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
               redis.set(MaKH, JSON.stringify(user));
@@ -937,3 +943,5 @@ export const newPaymentByUser = CatchAsyncError(
     }
   }
 );
+
+//complete payment by user

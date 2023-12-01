@@ -7,4 +7,5 @@ export interface IUser {
     DiaChi: string;
     MatKhau: string;
     Email:string;
+    NgayTao: Date;
 }

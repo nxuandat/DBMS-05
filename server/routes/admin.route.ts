@@ -3,6 +3,9 @@ import {
   GetAllEmployee,
   getAdminInfo,
   getAllUsers,
+  getAppointmentsAnalytics,
+  getInvoicesAnalytics,
+  getUsersAnalytics,
   loginAdmin,
   logoutAdmin,
 } from "../controllers/admin.controller";
@@ -24,5 +27,11 @@ adminRouter.get("/admin/get-all-employees", isAuthenticatedAdminLogin,GetAllEmpl
 adminRouter.get("/admin/logout", isAuthenticatedAdminLogin, logoutAdmin);
 
 adminRouter.get("/admin/me", isAuthenticatedAdminLogin, getAdminInfo);
+
+adminRouter.get("/admin/get-users-analytics", isAuthenticatedAdminLogin, getUsersAnalytics);
+
+adminRouter.get("/admin/get-invoices-analytics", isAuthenticatedAdminLogin, getInvoicesAnalytics);
+
+adminRouter.get("/admin/get-appointments-analytics", isAuthenticatedAdminLogin, getAppointmentsAnalytics);
 
 export default adminRouter;
