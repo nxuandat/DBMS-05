@@ -50,6 +50,7 @@ create table KHACHHANG (
   DiaChi nvarchar(100),
   MatKhau char(50),
   Email varchar(40),
+  NgayTao datetime,
   constraint PK_SoDT_MaKH primary key(MaKH,SoDT)
 )
 
@@ -149,6 +150,15 @@ create table LUUTRUANH (
   constraint PK_MaNguoiDung primary key(MaNguoiDung)
 )
 
+CREATE TABLE THONGBAO (
+    title VARCHAR(255),
+    message TEXT,
+    status VARCHAR(255),
+    MaNguoiDung char(20),
+	SoDT char(15),
+    dateCreated DATETIME
+);
+
 
 ALTER TABLE HOADON
 ADD CONSTRAINT FK_HOADON_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
@@ -198,14 +208,18 @@ ADD CONSTRAINT FK_CHITIETDV_LOAIDICHVU foreign key(MaDV) references LOAIDICHVU(M
 ALTER TABLE CHITIETDV
 ADD CONSTRAINT FK_CHITIETDV_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
 
+ALTER TABLE THONGBAO
+ADD CONSTRAINT FK_THONGBAO_KHACHHANG foreign key(MaNguoiDUng,SoDT) references KHACHHANG(MaKH,SoDT)
+
 go
 
 
-INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email)
+INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email, NgayTao)
 VALUES 
-('KH01', '+12672133096', 'Nguyen Thi B', 'M', '1990-01-01 00:00:00.000', '123 Đường ABC, Phường XYZ, TP.HCM', 'password123', 'nguyen.vu.hung309@gmail.com'),
-('KH02', '0344805188', 'Bui Hoang Duc', 'F', '2000-01-01 00:00:00.000', '342 Đường 78, Phường CCD, Long An', 'password113', 'lamnguyenvu1612@gmail.com'),
-('KH03', '0912748492', 'Le Hoang Anh', 'M', '2000-01-01 00:00:00.000', '321 Đường 98, Phường CCD, Cần Thơ', 'password110', 'lamnguyenvu1612@gmail.com');
+('KH01', '+12672133096', 'Nguyen Thi B', 'M', '1990-01-01 00:00:00.000', '123 Đường ABC, Phường XYZ, TP.HCM', 'password123', 'nguyen.vu.hung309@gmail.com', GETDATE()),
+('KH02', '0344805188', 'Bui Hoang Duc', 'F', '2000-01-01 00:00:00.000', '342 Đường 78, Phường CCD, Long An', 'password113', 'lamnguyenvu1612@gmail.com', GETDATE()),
+('KH03', '0912748492', 'Le Hoang Anh', 'M', '2000-01-01 00:00:00.000', '321 Đường 98, Phường CCD, Cần Thơ', 'password110', 'lamnguyenvu1612@gmail.com', GETDATE());
+
 
 INSERT INTO NHANVIEN (MaNV, HoTen, Phai, TenDangNhap, MatKhau)
 VALUES 
@@ -245,7 +259,10 @@ insert into LOAITHUOC values
 
 insert into HOSOBENH values
 ('KH01', '+12672133096', 1, '2023-11-14 10:00:00', N'Răng sâu, đau nhức', 'NS01', 'DV03', 'T01', 'ChuaXuat'),
-('KH02', '0344805188', 2, '2023-11-14 10:30:00', N'Răng ố vàng, muốn tẩy trắng', 'NS02', 'DV01', NULL, 'ChuaXuat');
+('KH02', '0344805188', 2, '2023-11-14 10:30:00', N'Răng ố vàng, muốn tẩy trắng', 'NS02', 'DV01', 'T02', 'ChuaXuat');
+
+insert into HOSOBENH values
+('KH03', '0912748492', 3, '2023-12-12 10:30:00', N'Răng ố vàng, muốn cạo vôi răng', 'NS02', 'DV03', NULL, 'ChuaXuat');
 
 
 INSERT INTO LICHNHASI (MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
@@ -264,6 +281,9 @@ VALUES
 
 INSERT INTO LUUTRUANH (MaNguoiDung, SoDT, AvatarUrl)
 VALUES ('KH03', '0139438492', 'avatar1.jpg');
+
+INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
+VALUES ('HD03', 'KH03', '0912748492', 3, '2023-11-12 00:00:00', 500000, 'ChuaThanhToan', 'NV03', 'DV03');
 
 --/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -306,8 +326,8 @@ BEGIN
       RETURN
     END
     -- Insert the data from the inserted table into KHACHHANG table
-    INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email)
-    SELECT MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email FROM inserted
+    INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email,NgayTao)
+    SELECT MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email ,NgayTao FROM inserted
   -- Commit the transaction
   COMMIT TRANSACTION
 END
@@ -830,7 +850,7 @@ END
 
 
 
---STORE PROCEDURE
+---------------------------------------------------------STORE PROCEDURE---------------------------------------------------------------
 --Đăng ký tài khoản
 CREATE PROCEDURE DangKyTaiKhoan
     @MaKH char(20),
@@ -867,8 +887,8 @@ BEGIN
             END
 
             -- Thêm người dùng mới vào cơ sở dữ liệu
-            INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau,Email)
-            VALUES (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau,@Email);
+            INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email, NgayTao)
+            VALUES (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau, @Email, GETDATE());
 
             -- Nếu không có lỗi, commit giao tác
             COMMIT TRANSACTION;
@@ -895,6 +915,7 @@ BEGIN
 END;
 
 
+
 --Lấy tất cả thông tin tài khoản người khám
 CREATE PROCEDURE GetAllUsers
 AS
@@ -915,7 +936,8 @@ BEGIN
                 NgaySinh DATETIME,
                 DiaChi NVARCHAR(50),
                 MatKhau NVARCHAR(50),
-                Email NVARCHAR(50)
+                Email NVARCHAR(50),
+				NgayTao DATETIME
             );
 
             INSERT INTO @users
@@ -1408,6 +1430,11 @@ GRANT SELECT,DELETE,UPDATE,INSERT
 ON LUUTRUANH TO KH02
 GO
 
+USE PHONGKHAMNHASI
+GO
+GRANT SELECT,UPDATE
+ON HOADON TO KH02
+GO
 
 GRANT EXECUTE ON UpdateUserInfo TO KH02
 GRANT EXECUTE ON InsertAppointment TO KH02
@@ -1569,6 +1596,9 @@ GRANT SELECT,DELETE,UPDATE,INSERT
 ON LUUTRUANH TO NS03
 
 GRANT EXECUTE ON UpdateProfilePicture TO NS03
+
+
+
 
 
 
