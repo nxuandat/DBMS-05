@@ -159,6 +159,12 @@ CREATE TABLE THONGBAO (
     dateCreated DATETIME
 );
 
+CREATE TABLE DOANHTHU (
+	TongDoanhThu bigint,
+	Thang Date,
+)
+
+
 
 ALTER TABLE HOADON
 ADD CONSTRAINT FK_HOADON_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
@@ -282,8 +288,53 @@ VALUES
 INSERT INTO LUUTRUANH (MaNguoiDung, SoDT, AvatarUrl)
 VALUES ('KH03', '0139438492', 'avatar1.jpg');
 
+
+
 INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
-VALUES ('HD03', 'KH03', '0912748492', 3, '2023-11-12 00:00:00', 500000, 'ChuaThanhToan', 'NV03', 'DV03');
+VALUES ('HD01', 'KH03', '0912748492', 3, '2023-11-10 00:00:00', 1000000, 'DaThanhToan', 'NV02', 'DV01'),
+	   ('HD02', 'KH02', '0344805188', 2, '2023-10-13 00:00:00', 800000, 'DaThanhToan', 'NV02', 'DV01'),
+	   ('HD03', 'KH03', '0912748492', 3, '2023-11-14 00:00:00', 500000, 'ChuaThanhToan', 'NV03', 'DV03'),
+	   ('HD04', 'KH01', '+12672133096', 1, '2023-10-5 00:00:00', 700000, 'DaThanhToan', 'NV04', 'DV02'),
+	   ('HD05', 'KH01', '+12672133096', 1, '2023-12-7 00:00:00', 2500000, 'DaThanhToan', 'NV01', 'DV03');
+
+INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
+VALUES ('HD06', 'KH03', '0912748492', 3, '2023-12-10 00:00:00', 1000000, 'DaThanhToan', 'NV02', 'DV01');
+
+
+CREATE TRIGGER UpdateDoanhThu
+ON HOADON
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    -- Tính tổng doanh thu từ bảng HOADON dựa vào ngày xuất và chỉ tính khi TinhTrangThanhToan là 'DaThanhToan'
+    ;WITH CTE AS (
+        SELECT 
+            SUM(TongChiPhi) as TongDoanhThu, 
+            DATEPART(YEAR, NgayXuat) as Nam, 
+            DATEPART(MONTH, NgayXuat) as Thang
+        FROM 
+            inserted
+        WHERE 
+            TinhTrangThanhToan = 'DaThanhToan'
+        GROUP BY 
+            DATEPART(YEAR, NgayXuat), 
+            DATEPART(MONTH, NgayXuat)
+    )
+    -- Cập nhật bảng DOANHTHU
+    MERGE INTO DOANHTHU AS D
+    USING CTE AS C
+    ON D.Thang = DATEFROMPARTS(C.Nam, C.Thang, 1)
+    WHEN MATCHED THEN
+        UPDATE SET D.TongDoanhThu = D.TongDoanhThu + C.TongDoanhThu
+    WHEN NOT MATCHED THEN
+        INSERT (TongDoanhThu, Thang)
+        VALUES (C.TongDoanhThu, DATEFROMPARTS(C.Nam, C.Thang, 1));
+END;
+
+
+
+
+
 
 --/////////////////////////////////////////////////////////////////////////////////////////////////////////
 

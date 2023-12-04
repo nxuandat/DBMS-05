@@ -23,12 +23,15 @@ export async function generateLast12MonthsDataUser(MaQTV: any, password: any): P
         endDate.getMonth(),
         endDate.getDate() - 28
       );
-  
+
+     
       const monthYear = endDate.toLocaleString("default", {
         day: "numeric",
         month: "short",
         year: "numeric",
       });
+
+      
   
       return new Promise((resolve, reject) => {
         const connection: Connection = ConnectToDataBaseWithLogin(MaQTV, password);

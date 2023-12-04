@@ -2,6 +2,7 @@ import express from "express";
 import {
   GetAllEmployee,
   getAdminInfo,
+  getAllRevenue,
   getAllUsers,
   getAppointmentsAnalytics,
   getInvoicesAnalytics,
@@ -33,5 +34,7 @@ adminRouter.get("/admin/get-users-analytics", isAuthenticatedAdminLogin, getUser
 adminRouter.get("/admin/get-invoices-analytics", isAuthenticatedAdminLogin, getInvoicesAnalytics);
 
 adminRouter.get("/admin/get-appointments-analytics", isAuthenticatedAdminLogin, getAppointmentsAnalytics);
+
+adminRouter.get("/admin/get-revenue-analytics", isAuthenticatedAdminLogin, getAllRevenue);
 
 export default adminRouter;
