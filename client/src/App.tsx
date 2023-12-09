@@ -10,7 +10,10 @@ import Footer from "./components/Footer";
 import LogIn from "./pages/LogIn";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
-
+import UpdateInfo from "./pages/UpdateInfo";
+import AminListUser from "./pages/AdminListUser";
+import ListMedicine from "./pages/ListMedicine";
+import AddMedicine from "./pages/AddMedicine";
 function App() {
   return (
     <div
@@ -23,8 +26,12 @@ function App() {
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/login' element={<LogIn />} />
-          <Route path='/signup' element={<SignUp />} />
+          <Route path='/signUp' element={<SignUp />} />
           <Route path='/reset' element={<ResetPassword />} />
+          <Route path='/updateInfo' element={<UpdateInfo />} />
+          <Route path='/adminListUser' element={<AminListUser />} />
+          <Route path='/listMedicine' element={<ListMedicine />} />
+          <Route path='/addMedicine' element={<AddMedicine />} />
         </Routes>
       </Container>
       <Footer />

@@ -1,6 +1,6 @@
 import Carousel from "../components/Carousel";
-import banner1 from "../images/Banner1.svg";
-import banner2 from "../images/Banner2.svg";
+import banner1 from "../images/Banner1.png";
+import banner2 from "../images/Banner2.png";
 
 export function AboutUs() {
   return (

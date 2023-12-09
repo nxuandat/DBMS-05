@@ -1,9 +1,9 @@
 import doctorHomeImg from "../images/doctorHome.svg";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-import Carousel from "../components/Carousel";
-import banner1 from "../images/Banner1.svg";
-import banner2 from "../images/Banner2.svg";
+// import Carousel from "../components/Carousel";
+// import banner1 from "../images/Banner1.png";
+// import banner2 from "../images/Banner2.png";
 
 export function Home() {
   return (
@@ -44,7 +44,7 @@ export function Home() {
           </div>
         </div>
       </div>
-      <Carousel bannerImages={[banner1, banner2]} />
+      {/* <Carousel bannerImages={[banner1, banner2]} /> */}
     </div>
   );
 }

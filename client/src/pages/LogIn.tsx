@@ -23,7 +23,7 @@ export default function LogIn() {
             {/* Email input */}
             <TextField
               className='form-outline mb-4'
-              id='standard-basic'
+              id='username'
               label='Email'
               variant='standard'
               type='email'
@@ -31,7 +31,7 @@ export default function LogIn() {
             {/* Password input */}
             <TextField
               className='form-outline mb-4'
-              id='standard-basic'
+              id='password'
               label='Mật khẩu'
               variant='standard'
               type='password'
