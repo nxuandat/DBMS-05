@@ -1,6 +1,10 @@
-import * as React from "react";
+import React, { useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { TextField, Box, Button } from "@mui/material";
+// import Menu from "@material-ui/core/Menu";
+// import MenuItem from "@material-ui/core/MenuItem";
+import { useNavigate } from "react-router-dom";
+import { Dropdown } from "react-bootstrap";
 
 const columns: GridColDef[] = [
   {
@@ -109,6 +113,27 @@ export default function DataTable() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [rows, setRows] = React.useState(initialRows);
 
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleAddStaff = () => {
+    navigate("/addStaff");
+    handleClose();
+  };
+
+  const handleAddDoctor = () => {
+    navigate("/addDoctor");
+    handleClose();
+  };
+
   function handleEdit(id: number) {
     // Handle edit action here...
   }
@@ -129,9 +154,35 @@ export default function DataTable() {
     <div>
       <h1>QUẢN LÝ NGƯỜI DÙNG</h1>
       <Box display='flex' justifyContent='flex-end' m={1} p={1}>
-        <Button variant='contained' color='success'>
-          THÊM NGƯỜI DÙNG
+        {/* <Button
+          aria-controls='simple-menu'
+          aria-haspopup='true'
+          // variant='contained'
+          // color='success'
+          onClick={handleClick}
+        >
+          Thêm người dùng
         </Button>
+        <Menu
+          id='simple-menu'
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          <MenuItem onClick={handleAddStaff}>Thêm Nhân viên</MenuItem>
+          <MenuItem onClick={handleAddDoctor}>Thêm Nha sĩ</MenuItem>
+        </Menu> */}
+        <Dropdown>
+          <Dropdown.Toggle variant='success' id='dropdown-basic'>
+            Thêm người dùng
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={handleAddStaff}>Nhân viên</Dropdown.Item>
+            <Dropdown.Item onClick={handleAddDoctor}>Nha sĩ</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </Box>
       <Box display='flex' justifyContent='center' m={1} p={1}>
         <TextField

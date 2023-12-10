@@ -14,6 +14,8 @@ import UpdateInfo from "./pages/UpdateInfo";
 import AminListUser from "./pages/AdminListUser";
 import ListMedicine from "./pages/ListMedicine";
 import AddMedicine from "./pages/AddMedicine";
+import AddDoctor from "./pages/AddDoctor";
+import AddStaff from "./pages/AddStaff";
 function App() {
   return (
     <div
@@ -32,6 +34,8 @@ function App() {
           <Route path='/adminListUser' element={<AminListUser />} />
           <Route path='/listMedicine' element={<ListMedicine />} />
           <Route path='/addMedicine' element={<AddMedicine />} />
+          <Route path='/addDoctor' element={<AddDoctor />} />
+          <Route path='/addStaff' element={<AddStaff />} />
         </Routes>
       </Container>
       <Footer />

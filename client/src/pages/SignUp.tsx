@@ -3,8 +3,23 @@ import React from "react";
 import "./LogIn.css";
 import pictureLogin from "../images/Picture2.svg";
 import { TextField } from "@mui/material";
+import PasswordChecklist from "react-password-checklist";
+import { useState } from "react";
 
 export default function LogIn() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMeetsCriteria, setPasswordMeetsCriteria] = useState(false);
+
+  const customMessages = {
+    minLength: "Tối thiểu 8 ký tự",
+    specialChar: "Ít nhất một ký tự đặc biệt",
+    number: "Ít nhất một chữ số",
+    capital: "Ít nhất một chữ in hoa",
+    match: "Mật khẩu không khớp",
+  };
   return (
     // <section
     //   className='vh-100'
@@ -22,8 +37,8 @@ export default function LogIn() {
           <form>
             {/* Name input */}
             <TextField
-              className='form-outline mb-4'
-              id='outlined-basic'
+              className='form-outline mb-4 '
+              id='name'
               label='Họ và tên'
               variant='outlined'
               type='text'
@@ -31,7 +46,7 @@ export default function LogIn() {
             {/* Email input */}
             <TextField
               className='form-outline mb-4'
-              id='outlined-basic'
+              id='email'
               label='Địa chỉ email'
               variant='outlined'
               type='email'
@@ -66,7 +81,7 @@ export default function LogIn() {
             {/* Phone number input */}
             <TextField
               className='form-outline mb-4'
-              id='outlined-basic'
+              id='phoneNumber'
               label='Số điện thoại'
               variant='outlined'
               type='text'
@@ -74,7 +89,7 @@ export default function LogIn() {
             {/* Address input */}
             <TextField
               className='form-outline mb-4'
-              id='outlined-basic'
+              id='address'
               label='Địa chỉ'
               variant='outlined'
               type='text'
@@ -82,7 +97,7 @@ export default function LogIn() {
             {/* Birthday number input */}
             <TextField
               className='form-outline mb-4'
-              id='outlined-basic'
+              id='birthday'
               label='Ngày sinh'
               variant='outlined'
               type='date'
@@ -91,19 +106,33 @@ export default function LogIn() {
             {/* Password input */}
             <TextField
               className='form-outline mb-4'
-              id='outlined-basic'
+              id='password'
               label='Mật khẩu'
               variant='outlined'
               type='password'
+              onChange={(e) => setPassword(e.target.value)}
             />
-            {/* Repeat Password input */}
+            {/* Confirm Password input */}
             <TextField
               className='form-outline mb-4'
-              id='outlined-basic'
+              id='confirmPassword'
               label='Nhập lại mật khẩu'
               variant='outlined'
               type='password'
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
+            <PasswordChecklist
+              rules={["minLength", "specialChar", "number", "capital", "match"]}
+              minLength={8}
+              value={password}
+              valueAgain={confirmPassword}
+              onChange={(isValid) => setPasswordMeetsCriteria(isValid)}
+              messages={customMessages}
+            />
+            <div style={{ color: passwordMeetsCriteria ? "#31B373" : "red" }}>
+              Mật khẩu {passwordMeetsCriteria ? "đã" : "không"} đáp ứng các tiêu
+              chí
+            </div>
             <div className='d-flex justify-content-around align-items-center mb-4'>
               {/* Checkbox */}
               <div className='form-check'>
@@ -111,7 +140,7 @@ export default function LogIn() {
                   className='form-check-input'
                   type='checkbox'
                   defaultValue
-                  id='form1Example3'
+                  id='terms'
                   defaultChecked
                   // style={{ backgroundColor: "#51C888" }}
                 />
@@ -131,6 +160,8 @@ export default function LogIn() {
                 backgroundColor: "#2AB178",
                 borderColor: "transparent",
               }}
+              disabled={!passwordMeetsCriteria}
+              // onClick={(e) => handleSignUp(e)}
             >
               Đăng ký
             </button>
