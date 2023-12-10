@@ -15,7 +15,9 @@ import {
   updateProfilePictureUser,
   getProfilePictureUser,
   newPaymentByUser,
-  sendStripePublishableKey
+  sendStripePublishableKey,
+  getDoctorDetailsByUser,
+  getAppointmentByUser
 } from "../controllers/user.controller";
 
 import { isAuthenticatedUserLogin } from "../middleware/auth";
@@ -43,7 +45,7 @@ userRouter.post("/user/create-appointment",isAuthenticatedUserLogin,createAppoin
 
 userRouter.get("/user/get-medical-record", isAuthenticatedUserLogin, getMedicalRecordByUser);
 
-userRouter.get("/user/get-all-dentists", isAuthenticatedUserLogin, getAllDentistsByUser);
+userRouter.get("/user/get-all-dentists", getAllDentistsByUser);
 
 userRouter.get("/user/get-all-dentists-schedules", isAuthenticatedUserLogin, getAllDentistsScheduleByUser);
 
@@ -59,6 +61,9 @@ userRouter.get("/user/payment/stripepublishablekey", sendStripePublishableKey);
 
 userRouter.post("/user/payment", isAuthenticatedUserLogin, newPaymentByUser);
 
+userRouter.get("/user/get-details-doctor/:id",getDoctorDetailsByUser);
+
+userRouter.get("/user/get-appointment", isAuthenticatedUserLogin, getAppointmentByUser);
 
 
 export default userRouter;

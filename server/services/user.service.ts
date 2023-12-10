@@ -7,6 +7,7 @@ import { IUser } from "../models/user.model";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IDentist } from "../models/dentist.model";
 import { IDentistSchedule } from "../models/dentistschedule.model";
+import ConnectToDataBaseDefault from "../utils/db";
 
 
 // get user by id
@@ -25,10 +26,9 @@ export const getUserById = async (id: string, res: Response) => {
 
 export const getAllDentistByUserService = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const password = req.user?.MatKhau;
-    const MaKH = req.user?.MaKH;
 
-    const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+    const connection: Connection = ConnectToDataBaseDefault();
 
     connection.on('connect', (err) => {
       if (err) {

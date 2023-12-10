@@ -22,6 +22,7 @@ import { IMedicalRecord } from "../models/medicalrecord.model";
 require("dotenv").config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 import cloudinary from "cloudinary";
+import { IDentist } from "../models/dentist.model";
 
 
 
@@ -242,6 +243,8 @@ export const activateUser = CatchAsyncError(
             GRANT EXECUTE ON GetAllLICHNHASI TO ${MaKH}
             GRANT EXECUTE ON UpdatePasswordByUser TO ${MaKH}
             GRANT EXECUTE ON UpdateProfilePicture TO ${MaKH}
+            GRANT EXECUTE ON getDoctorDetailsByUser TO ${MaKH}
+            GRANT EXECUTE ON getAppointmentByUser TO ${MaKH}
             `, (err) => {
               if (err) {
                 return next(new ErrorHandler(err.message, 400));
@@ -945,3 +948,106 @@ export const newPaymentByUser = CatchAsyncError(
 );
 
 //complete payment by user
+
+//get doctor details by user
+export const getDoctorDetailsByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const MaNS = req.params.id;
+
+      const connection: Connection = ConnectToDataBaseDefault();
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC getDoctorDetailsByUser @MaNS`;
+
+        const request = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không tìm thấy thông tin bác sĩ cho mã này", 400));
+          }
+        });
+
+        request.addParameter('MaNS', TYPES.Char, MaNS);
+
+        request.on('row', function (columns) {
+          const doctorDetails: IDentist = {
+            MaNS: columns[0].value ? columns[0].value.trim() : null,
+            TenDangNhap: "none",
+            HoTen: columns[2].value ? columns[2].value.trim() : null,
+            Phai: columns[3].value ? columns[3].value.trim() : null,
+            GioiThieu: columns[4].value ? columns[4].value.trim() : null,
+            MatKhau: "none",
+          };
+          res.status(200).json({
+            success: true,
+            doctorDetails
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//get appointment by user id
+export const getAppointmentByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const password = req.user?.MatKhau;
+      const MaKH = req.user?.MaKH;
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC getAppointmentByUser @MaKH`;
+
+        const request = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không tìm thấy lịch hẹn cho mã khách hàng này", 400));
+          }
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        request.on('row', function (columns) {
+          const appointment: IAppointment = {
+            MaSoHen: columns[0].value ? columns[0].value.trim() : null,
+            NgayGioKham: new Date(columns[1].value),
+            LyDoKham: columns[2].value ? columns[2].value.trim() : null,
+            MaNS: columns[3].value ? columns[3].value.trim() : null,
+            MaKH: columns[4].value ? columns[4].value.trim() : null,
+            SoDT: columns[5].value ? columns[5].value.trim() : null,
+          };
+          res.status(200).json({
+            success: true,
+            appointment
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+

@@ -1410,6 +1410,111 @@ BEGIN
     END CATCH
 END
 
+CREATE PROCEDURE getDoctorDetailsByUser
+    @MaNS char(20),
+    @retry INT = 5
+AS
+BEGIN
+    -- Khai báo biến
+    DECLARE @retry_count INT = 0;
+    DECLARE @wait_time INT = 500; -- thời gian chờ (ms)
+
+    -- Bắt đầu vòng lặp while
+    WHILE @retry_count < @retry
+    BEGIN
+        BEGIN TRY
+            -- Bắt đầu giao dịch
+            BEGIN TRANSACTION;
+
+            -- Đặt mức cô lập
+            SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+            -- Truy vấn dữ liệu
+            SELECT * FROM NHASI WITH (ROWLOCK, READCOMMITTED)
+            WHERE MaNS = @MaNS;
+
+            -- Kết thúc giao dịch
+            COMMIT TRANSACTION;
+
+            -- Thoát khỏi vòng lặp
+            BREAK;
+        END TRY
+        BEGIN CATCH
+            -- Kiểm tra xem giao dịch có đang hoạt động không
+            IF @@TRANCOUNT > 0
+            BEGIN
+                -- Hủy giao dịch
+                ROLLBACK TRANSACTION;
+            END;
+
+            -- Tăng biến đếm lỗi
+            SET @retry_count += 1;
+
+            -- Nếu số lần thử lại vượt quá giới hạn, đưa ra lỗi
+            IF @retry_count >= @retry
+            BEGIN
+                THROW;
+            END;
+
+            -- Chờ một khoảng thời gian trước khi thử lại
+            WAITFOR DELAY @wait_time;
+        END CATCH;
+    END;
+END;
+
+CREATE PROCEDURE getAppointmentByUser
+    @MaKH char(20),
+    @retry INT = 5
+AS
+BEGIN
+    -- Khai báo biến
+    DECLARE @retry_count INT = 0;
+    DECLARE @wait_time INT = 500; -- thời gian chờ (ms)
+
+    -- Bắt đầu vòng lặp while
+    WHILE @retry_count < @retry
+    BEGIN
+        BEGIN TRY
+            -- Bắt đầu giao dịch
+            BEGIN TRANSACTION;
+
+            -- Đặt mức cô lập
+            SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+            -- Truy vấn dữ liệu
+            SELECT * FROM LICHHEN WITH (ROWLOCK, READCOMMITTED)
+            WHERE MaKH = @MaKH;
+
+            -- Kết thúc giao dịch
+            COMMIT TRANSACTION;
+
+            -- Thoát khỏi vòng lặp
+            BREAK;
+        END TRY
+        BEGIN CATCH
+            -- Kiểm tra xem giao dịch có đang hoạt động không
+            IF @@TRANCOUNT > 0
+            BEGIN
+                -- Hủy giao dịch
+                ROLLBACK TRANSACTION;
+            END;
+
+            -- Tăng biến đếm lỗi
+            SET @retry_count += 1;
+
+            -- Nếu số lần thử lại vượt quá giới hạn, đưa ra lỗi
+            IF @retry_count >= @retry
+            BEGIN
+                THROW;
+            END;
+
+            -- Chờ một khoảng thời gian trước khi thử lại
+            WAITFOR DELAY @wait_time;
+        END CATCH;
+    END;
+END;
+
+
 
 
 
@@ -1494,6 +1599,11 @@ GRANT EXECUTE ON GetAllDentistInfoByUser TO KH02
 GRANT EXECUTE ON GetAllLICHNHASI TO KH02
 GRANT EXECUTE ON UpdatePasswordByUser TO KH02
 GRANT EXECUTE ON UpdateProfilePicture TO KH02
+GRANT EXECUTE ON getDoctorDetailsByUser TO KH02
+GRANT EXECUTE ON getAppointmentByUser TO KH02
+
+
+
 
 
 --Phân quyền quản trị viên
