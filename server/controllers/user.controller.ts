@@ -19,6 +19,11 @@ import sendEmail from "../utils/sendEmail";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IAppointment } from "../models/appointment.model";
 import { IMedicalRecord } from "../models/medicalrecord.model";
+require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+import cloudinary from "cloudinary";
+import { IDentist } from "../models/dentist.model";
+
 
 
 
@@ -225,12 +230,21 @@ export const activateUser = CatchAsyncError(
             GRANT SELECT
             ON HOSOBENH TO ${MaKH}
 
+            GRANT SELECT,DELETE,UPDATE,INSERT
+            ON LUUTRUANH TO ${MaKH}
+
+            GRANT SELECT,UPDATE 
+            ON HOADON TO ${MaKH}
+
             GRANT EXECUTE ON UpdateUserInfo TO ${MaKH}
             GRANT EXECUTE ON InsertAppointment TO ${MaKH}
             GRANT EXECUTE ON GetMedicalRecordByID TO ${MaKH}
             GRANT EXECUTE ON GetAllDentistInfoByUser TO ${MaKH}
             GRANT EXECUTE ON GetAllLICHNHASI TO ${MaKH}
             GRANT EXECUTE ON UpdatePasswordByUser TO ${MaKH}
+            GRANT EXECUTE ON UpdateProfilePicture TO ${MaKH}
+            GRANT EXECUTE ON getDoctorDetailsByUser TO ${MaKH}
+            GRANT EXECUTE ON getAppointmentByUser TO ${MaKH}
             `, (err) => {
               if (err) {
                 return next(new ErrorHandler(err.message, 400));
@@ -304,6 +318,7 @@ export const loginUser = CatchAsyncError(
             DiaChi: columns[5].value.trim(),
             MatKhau: columns[6].value.trim(),
             Email: columns[7].value.trim(),
+            NgayTao: new Date(columns[8].value)
           };
           sendUserToken(user, 200, res);
         });
@@ -411,6 +426,7 @@ export const updateUserInfo = CatchAsyncError(
                 DiaChi: columns[5].value.trim(),
                 MatKhau: columns[6].value.trim(),
                 Email: columns[7].value.trim(),
+                NgayTao: new Date(columns[8].value)
               };
               //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
               redis.set(MaKH, JSON.stringify(user));
@@ -592,7 +608,7 @@ export const getAllDentistsScheduleByUser = CatchAsyncError(
   }
 );
 
-//create reset password token
+//create reset password token and code
 interface IResetpasswordToken {
   token: string;
   resetPasswordCode: string;
@@ -735,6 +751,7 @@ export const ResetPasswordByUser = CatchAsyncError(
                 DiaChi: columns[5].value.trim(),
                 MatKhau: columns[6].value.trim(),
                 Email: columns[7].value.trim(),
+                NgayTao: new Date(columns[8].value)
               };
               //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
               redis.set(MaKH, JSON.stringify(user));
@@ -767,6 +784,270 @@ export const ResetPasswordByUser = CatchAsyncError(
   }
 );
 
+//Update User Avatar Picture
+export const updateProfilePictureUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { avatar } = req.body;
+      const MaKH = req.user?.MaKH;
+      const password = req.user?.MatKhau;
+      const SoDT = req.user?.SoDT;
 
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+      connection.on('connect', async (err: Error | null) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const request = new SQLRequest(`SELECT AvatarUrl FROM LUUTRUANH WHERE MaNguoiDung = @MaKH`, (err) => {
+          if (err) {
+            throw new ErrorHandler(err.message, 400);
+          }
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        let userAvatar: any;
+
+        request.on('row', (columns) => {
+          userAvatar = columns[0].value;
+        });
+
+        request.on('requestCompleted', async function () {
+          if (avatar && userAvatar) {
+            // first delete the old image
+            await cloudinary.v2.uploader.destroy(userAvatar);
+
+            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+              folder: "avatars",
+              width: 150,
+            });
+
+            userAvatar = myCloud.secure_url;
+          } else {
+            const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+              folder: "avatars",
+              width: 150,
+            });
+
+            userAvatar = myCloud.secure_url;
+          }
+
+          const updateRequest = new SQLRequest(`EXEC UpdateProfilePicture @MaKH, @SoDT, @AvatarUrl`, (err) => {
+            if (err) {
+              throw new ErrorHandler(err.message, 400);
+            }
+          });
+
+          updateRequest.addParameter('MaKH', TYPES.Char, MaKH);
+          updateRequest.addParameter('SoDT', TYPES.Char, SoDT);
+          updateRequest.addParameter('AvatarUrl', TYPES.VarChar, userAvatar);
+
+          connection.execSql(updateRequest);
+
+          updateRequest.on('requestCompleted', function () {
+            res.status(200).json({
+              success: true,
+              user: {
+                MaNguoiDung: MaKH,
+                AvatarUrl: userAvatar
+              },
+            });
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//Get Avatar Url By User
+export const getProfilePictureUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const MaKH = req.user?.MaKH;
+      const password = req.user?.MatKhau;
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+      connection.on('connect', async (err: Error | null) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const request = new SQLRequest(`SELECT AvatarUrl FROM LUUTRUANH WHERE MaNguoiDung = @MaKH`, (err) => {
+          if (err) {
+            throw new ErrorHandler(err.message, 400);
+          }
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        let userAvatar: any;
+
+        request.on('row', (columns) => {
+          userAvatar = columns[0].value;
+        });
+
+        request.on('requestCompleted', function () {
+          res.status(200).json({
+            success: true,
+            user: {
+              MaNguoiDung: MaKH,
+              AvatarUrl: userAvatar
+            },
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+//  send stripe publishble key
+export const sendStripePublishableKey = CatchAsyncError(
+  async (req: Request, res: Response) => {
+    res.status(200).json({
+      publishablekey: process.env.STRIPE_PUBLISHABLE_KEY,
+    });
+  }
+);
+
+// create new payment by user
+export const newPaymentByUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const myPayment = await stripe.paymentIntents.create({
+        amount: req.body.amount,
+        currency: "USD",
+        // payment_method_types: ["card"],
+        metadata: {
+          company: "Dentist Clinic",
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.status(201).json({
+        success: true,
+        client_secret: myPayment.client_secret,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//complete payment by user
+
+//get doctor details by user
+export const getDoctorDetailsByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const MaNS = req.params.id;
+
+      const connection: Connection = ConnectToDataBaseDefault();
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC getDoctorDetailsByUser @MaNS`;
+
+        const request = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không tìm thấy thông tin bác sĩ cho mã này", 400));
+          }
+        });
+
+        request.addParameter('MaNS', TYPES.Char, MaNS);
+
+        request.on('row', function (columns) {
+          const doctorDetails: IDentist = {
+            MaNS: columns[0].value ? columns[0].value.trim() : null,
+            TenDangNhap: "none",
+            HoTen: columns[2].value ? columns[2].value.trim() : null,
+            Phai: columns[3].value ? columns[3].value.trim() : null,
+            GioiThieu: columns[4].value ? columns[4].value.trim() : null,
+            MatKhau: "none",
+          };
+          res.status(200).json({
+            success: true,
+            doctorDetails
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//get appointment by user id
+export const getAppointmentByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const password = req.user?.MatKhau;
+      const MaKH = req.user?.MaKH;
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC getAppointmentByUser @MaKH`;
+
+        const request = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không tìm thấy lịch hẹn cho mã khách hàng này", 400));
+          }
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        request.on('row', function (columns) {
+          const appointment: IAppointment = {
+            MaSoHen: columns[0].value ? columns[0].value.trim() : null,
+            NgayGioKham: new Date(columns[1].value),
+            LyDoKham: columns[2].value ? columns[2].value.trim() : null,
+            MaNS: columns[3].value ? columns[3].value.trim() : null,
+            MaKH: columns[4].value ? columns[4].value.trim() : null,
+            SoDT: columns[5].value ? columns[5].value.trim() : null,
+          };
+          res.status(200).json({
+            success: true,
+            appointment
+          });
+        });
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
 
 

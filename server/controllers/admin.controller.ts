@@ -12,7 +12,8 @@ import {
   sendAdminToken,
 } from "../utils/jwt";
 import { IAdmin } from "../models/admin.model";
-import { getAdminById, getAllDentistByAdminService, getAllEmployeeService, getAllUsersService } from "../services/admin.service";
+import { getAdminById, getAllDentistByAdminService, getAllEmployeeService, getAllRevenueService, getAllUsersService } from "../services/admin.service";
+import { generateLast12MonthsDataAppointment, generateLast12MonthsDataInvoice, generateLast12MonthsDataUser } from "../utils/analytics.generator";
 
 //login dentist
 interface ILoginRequest {
@@ -114,6 +115,76 @@ export const GetAllEmployee = CatchAsyncError(
   }
 );
 
+// get users analytics --- only for admin
+export const getUsersAnalytics = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const password = req.admin?.MatKhau;
+      const MaQTV = req.admin?.MaQTV;
+
+      const users = await generateLast12MonthsDataUser(MaQTV,password);
+
+      res.status(200).json({
+        success: true,
+        users,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+// get invoices analytics --- only for admin
+export const getInvoicesAnalytics = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const password = req.admin?.MatKhau;
+      const MaQTV = req.admin?.MaQTV;
+
+      const invoices = await generateLast12MonthsDataInvoice(MaQTV,password);
+
+      res.status(200).json({
+        success: true,
+        invoices,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+// get appointments analytics --- only for admin
+export const getAppointmentsAnalytics = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const password = req.admin?.MatKhau;
+      const MaQTV = req.admin?.MaQTV;
+
+      const appointments = await generateLast12MonthsDataAppointment(MaQTV,password);
+
+      res.status(200).json({
+        success: true,
+        appointments,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//get revenue every month
+export const getAllRevenue = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllRevenueService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+//logout admin
 export const logoutAdmin = CatchAsyncError(
     async (req: any, res: Response, next: NextFunction) => {
       try {
@@ -136,3 +207,4 @@ export const logoutAdmin = CatchAsyncError(
       }
     }
   );
+

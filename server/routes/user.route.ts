@@ -11,7 +11,13 @@ import {
   getAllDentistsByUser,
   getAllDentistsScheduleByUser,
   sendResetPasswordEmail,
-  ResetPasswordByUser
+  ResetPasswordByUser,
+  updateProfilePictureUser,
+  getProfilePictureUser,
+  newPaymentByUser,
+  sendStripePublishableKey,
+  getDoctorDetailsByUser,
+  getAppointmentByUser
 } from "../controllers/user.controller";
 
 import { isAuthenticatedUserLogin } from "../middleware/auth";
@@ -21,9 +27,9 @@ import { updateUserAccessToken } from "../middleware/updatetoken";
 
 const userRouter = express.Router();
 
-userRouter.post("/registration", registrationUser);
+userRouter.post("/user/registration", registrationUser);
 
-userRouter.post("/activate-user", activateUser);
+userRouter.post("/user/activate-user", activateUser);
 
 userRouter.post("/user/login", loginUser);
 
@@ -39,12 +45,25 @@ userRouter.post("/user/create-appointment",isAuthenticatedUserLogin,createAppoin
 
 userRouter.get("/user/get-medical-record", isAuthenticatedUserLogin, getMedicalRecordByUser);
 
-userRouter.get("/user/get-all-dentists", isAuthenticatedUserLogin, getAllDentistsByUser);
+userRouter.get("/user/get-all-dentists", getAllDentistsByUser);
 
 userRouter.get("/user/get-all-dentists-schedules", isAuthenticatedUserLogin, getAllDentistsScheduleByUser);
 
 userRouter.post("/user/sendEmail-reset-password", isAuthenticatedUserLogin, sendResetPasswordEmail);
 
 userRouter.put("/user/reset-password", isAuthenticatedUserLogin, ResetPasswordByUser);
+
+userRouter.put("/user/update-profile-picture", isAuthenticatedUserLogin, updateProfilePictureUser);
+
+userRouter.get("/user/get-profile-picture", isAuthenticatedUserLogin, getProfilePictureUser);
+
+userRouter.get("/user/payment/stripepublishablekey", sendStripePublishableKey);
+
+userRouter.post("/user/payment", isAuthenticatedUserLogin, newPaymentByUser);
+
+userRouter.get("/user/get-details-doctor/:id",getDoctorDetailsByUser);
+
+userRouter.get("/user/get-appointment", isAuthenticatedUserLogin, getAppointmentByUser);
+
 
 export default userRouter;

@@ -49,7 +49,7 @@ export const getAllUsersService = async (req: any, res: Response, next: NextFunc
             let users: IUser[] = [];
 
             request.on('row', function (columns) {
-                //   console.log(columns);
+                   console.log(columns);
                 const user = {
                     MaKH: columns[0].value.trim(),
                     SoDT: columns[1].value.trim(),
@@ -59,6 +59,7 @@ export const getAllUsersService = async (req: any, res: Response, next: NextFunc
                     DiaChi: columns[5].value.trim(),
                     MatKhau: columns[6].value.trim(),
                     Email: columns[7].value.trim(),
+                    NgayTao: new Date(columns[8].value)
                 };
                 users.push(user);
             });
@@ -182,6 +183,56 @@ export const getAllEmployeeService = async (req: any, res: Response, next: NextF
             connection.execSql(request);
         });
 
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+};
+
+export const getAllRevenueService = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const password = req.admin?.MatKhau;
+        const MaQTV = req.admin?.MaQTV;
+        console.log(MaQTV);
+        console.log(password);
+
+        const connection: Connection = ConnectToDataBaseWithLogin(MaQTV, password);
+        connection.on('connect', (err) => {
+            if (err) {
+                return next(new ErrorHandler(err.message, 400));
+            }
+
+            const sql = 'SELECT * FROM DOANHTHU';
+
+            const request = new SQLRequest(sql, (err, rowCount) => {
+                if (err) {
+                    return next(new ErrorHandler(err.message, 400));
+                }
+
+                if (rowCount === 0) {
+                    return next(new ErrorHandler('Không tìm thấy dữ liệu nào.', 400));
+                }
+            });
+
+            let doanhthu: IRevenue[] = [];
+
+            request.on('row', function (columns) {
+                console.log(columns);
+                const doanhthuItem = {
+                    TongDoanhThu: columns[0].value,
+                    Thang: new Date(columns[1].value)
+                };
+                doanhthu.push(doanhthuItem);
+            });
+
+            request.on('requestCompleted', function () {
+                res.status(201).json({
+                    success: true,
+                    doanhthu,
+                });
+            });
+
+            connection.execSql(request);
+        });
     } catch (error: any) {
         return next(new ErrorHandler(error.message, 400));
     }
