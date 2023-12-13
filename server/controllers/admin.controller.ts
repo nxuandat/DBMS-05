@@ -13,6 +13,7 @@ import {
 } from "../utils/jwt";
 import { IAdmin } from "../models/admin.model";
 import { getAdminById, getAllDentistByAdminService, getAllEmployeeService, getAllUsersService } from "../services/admin.service";
+import ConnectToDataBaseWithLogin from "../utils/dblogin";
 
 //login dentist
 interface ILoginRequest {
@@ -80,6 +81,91 @@ export const getAdminInfo = CatchAsyncError(
     }
   }
 );
+//update admin info
+interface IUpdateAdminInfo {
+  HoTen?: string;
+  Phai?: string;
+  TenDangNhap?: string;
+  MatKhau?: string;
+}
+export const updateAdminInfo = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { HoTen, Phai, TenDangNhap, MatKhau } = req.body as IUpdateAdminInfo;
+      const MaQTV = req.admin?.MaQTV; // Assuming you have a user object with MaQTV property
+      const password = req.admin?.MatKhau;
+
+      // Check if at least one property is provided
+      if (!HoTen && !Phai && !TenDangNhap && !MatKhau) {
+        return next(new ErrorHandler('Vui lòng cung cấp ít nhất một thuộc tính để cập nhật.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaQTV, password);
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const request = new SQLRequest('CapNhatThongTin_QuanTriVien', (err) => {
+          if (err) {
+            return res.status(400).json({
+              success: false,
+              message: err.message,
+            });
+          }
+
+          // Check the output parameter to determine the result
+          request.on('requestCompleted', function () {
+            const sql = `SELECT * FROM QUANTRIVIEN WHERE MaQTV = @MaQTV`;
+
+            const GetInfoAfterUpdateRequest = new SQLRequest(sql, (err, rowCount) => {
+              if (err) {
+                return next(new ErrorHandler(err.message, 400));
+              }
+
+              if (rowCount === 0) {
+                return next(new ErrorHandler("Mã số Admin ko hợp lệ", 400));
+              }
+            });
+
+            GetInfoAfterUpdateRequest.addParameter('MaQTV', TYPES.VarChar, MaQTV);
+
+            GetInfoAfterUpdateRequest.on('row', function (columns) {
+              const admin: IAdmin = {
+                MaQTV: columns[0].value.trim(),
+                HoTen: columns[1].value.trim(),
+                Phai: columns[2].value.trim(),
+                TenDangNhap: columns[3].value.trim(),
+                MatKhau: columns[4].value.trim(),
+              };
+              //sau khi update thông tin trên sql server thì update thông tin trên redis luôn
+              redis.set(MaQTV, JSON.stringify(admin));
+            });
+
+            connection.execSql(GetInfoAfterUpdateRequest);
+          });
+
+          return res.status(201).json({
+            success: true,
+            message: 'Thông tin admin đã được cập nhật thành công',
+          });
+
+        });
+
+        request.addParameter('MaQTV', TYPES.Char, MaQTV);
+        request.addParameter('HoTen', TYPES.NVarChar, HoTen);
+        request.addParameter('Phai', TYPES.Char, Phai);
+        request.addParameter('TenDangNhap', TYPES.Char, TenDangNhap);
+        request.addParameter('MatKhau', TYPES.Char, MatKhau);
+
+        connection.callProcedure(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+  
 
 // get all users 
 export const getAllUsers = CatchAsyncError(

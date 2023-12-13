@@ -5,6 +5,7 @@ import {
   getAllUsers,
   loginAdmin,
   logoutAdmin,
+  updateAdminInfo
 } from "../controllers/admin.controller";
 
 import { isAuthenticatedAdminLogin } from "../middleware/auth";
@@ -14,6 +15,8 @@ import { getAllDentistByAdminService } from "../services/admin.service";
 const adminRouter = express.Router();
 
 adminRouter.post("/admin/login", loginAdmin);
+
+adminRouter.put("/admin/update-admin-info", isAuthenticatedAdminLogin, updateAdminInfo);
 
 adminRouter.get("/admin/get-all-users", isAuthenticatedAdminLogin, getAllUsers);
 
