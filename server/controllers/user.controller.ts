@@ -69,8 +69,10 @@ export const registrationUser = CatchAsyncError(
 
             newMaKHNumber = result + 1;
 
+            const randomNumber = Math.floor(Math.random() * 1000) + 1;
+
             // Create the new MaKH by prepending 'KH' to the new number
-            const newMaKH: string = 'KH' + newMaKHNumber.toString().padStart(2, '0');
+            const newMaKH: string = 'KH' + randomNumber.toString().padStart(2, '0');
 
             const user: IRegistrationBody = {
               MaKH: newMaKH,
@@ -320,7 +322,7 @@ export const loginUser = CatchAsyncError(
             Email: columns[7].value.trim(),
             NgayTao: new Date(columns[8].value)
           };
-          sendUserToken(user, 200, res);
+          sendUserToken(req,user, 200, res);
         });
 
         connection.execSql(request);
@@ -1027,6 +1029,8 @@ export const getAppointmentByUser = CatchAsyncError(
 
         request.addParameter('MaKH', TYPES.Char, MaKH);
 
+        let appointments: IAppointment[] = [];
+
         request.on('row', function (columns) {
           const appointment: IAppointment = {
             MaSoHen: columns[0].value ? columns[0].value.trim() : null,
@@ -1036,11 +1040,16 @@ export const getAppointmentByUser = CatchAsyncError(
             MaKH: columns[4].value ? columns[4].value.trim() : null,
             SoDT: columns[5].value ? columns[5].value.trim() : null,
           };
+          appointments.push(appointment);
+          
+        });
+
+        request.on('requestCompleted', function () {
           res.status(200).json({
             success: true,
-            appointment
+            appointments,
           });
-        });
+      });
 
         connection.execSql(request);
       });

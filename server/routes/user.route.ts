@@ -66,4 +66,8 @@ userRouter.get("/user/get-details-doctor/:id",getDoctorDetailsByUser);
 userRouter.get("/user/get-appointment", isAuthenticatedUserLogin, getAppointmentByUser);
 
 
+
+
+
+
 export default userRouter;

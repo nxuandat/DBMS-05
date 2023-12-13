@@ -101,6 +101,8 @@ create table LICHNHASI(
   constraint PK_MaNS_STT primary key(MaNS,STT)
 )
 
+
+
 create table NHANVIEN(
   MaNV char(20),
   HoTen nvarchar(100),
@@ -219,6 +221,56 @@ ADD CONSTRAINT FK_THONGBAO_KHACHHANG foreign key(MaNguoiDUng,SoDT) references KH
 
 go
 
+-----------------------------------------------------------------
+
+ALTER TABLE HOADON ADD CONSTRAINT FK_HOADON_HOSOBENH 
+FOREIGN KEY(MaKH,SoDT,STT) REFERENCES HOSOBENH(MaKH,SoDT,STT) ON DELETE CASCADE;
+
+ALTER TABLE HOADON ADD CONSTRAINT 
+FK_HOADON_NHANVIEN FOREIGN KEY(MaNV) REFERENCES NHANVIEN(MaNV) ON DELETE CASCADE;
+
+ALTER TABLE HOADON ADD CONSTRAINT FK_HOADON_LOAIDICHVU 
+FOREIGN KEY(MaDV) REFERENCES LOAIDICHVU(MaDV) ON DELETE CASCADE;
+
+ALTER TABLE CHITIETTHUOC ADD CONSTRAINT FK_CHITIETTHUOC_HOSOBENH 
+FOREIGN KEY(MaKH,SoDT,STT) REFERENCES HOSOBENH(MaKH,SoDT,STT) ON DELETE CASCADE;
+
+ALTER TABLE CHITIETTHUOC ADD CONSTRAINT FK_CHITIETTHUOC_LOAITHUOC 
+FOREIGN KEY(MaThuoc) REFERENCES LOAITHUOC(MaThuoc) ON DELETE CASCADE;
+
+ALTER TABLE LICHNHASI ADD CONSTRAINT FK_LICHNHASI_NHASI 
+FOREIGN KEY(MaNS) REFERENCES NHASI(MaNS) ON DELETE CASCADE;
+
+ALTER TABLE HOSOBENH ADD CONSTRAINT FK_HOSOBENH_KHACHHANG 
+FOREIGN KEY(MaKH,SoDT) REFERENCES KHACHHANG(MaKH,SoDT) ON DELETE CASCADE;
+
+ALTER TABLE HOSOBENH ADD CONSTRAINT FK_HOSOBENH_NHASI 
+FOREIGN KEY(MaNS) REFERENCES NHASI(MaNS) ON DELETE CASCADE;
+
+ALTER TABLE HOSOBENH ADD CONSTRAINT FK_HOSOBENH_LOAITHUOC 
+FOREIGN KEY(MaThuoc) REFERENCES LOAITHUOC(MaThuoc) ON DELETE CASCADE;
+
+ALTER TABLE HOSOBENH ADD CONSTRAINT FK_HOSOBENH_LOAIDICHVU 
+FOREIGN KEY(MaDV) REFERENCES LOAIDICHVU(MaDV) ON DELETE CASCADE;
+
+ALTER TABLE LICHHEN ADD CONSTRAINT FK_LICHHEN_LOAIDICHVU 
+FOREIGN KEY(MaNS) REFERENCES NHASI(MaNS) ON DELETE CASCADE;
+
+ALTER TABLE LICHHEN ADD CONSTRAINT FK_LICHHEN_KHACHHANG
+FOREIGN KEY(MaKH, SoDT) REFERENCES KHACHHANG(MaKH, SoDT) ON DELETE CASCADE;
+
+ALTER TABLE CHITIETDV ADD CONSTRAINT FK_CHITIETDV_LOAIDICHVU 
+FOREIGN KEY(MaDV) REFERENCES LOAIDICHVU(MaDV) ON DELETE CASCADE;
+
+ALTER TABLE CHITIETDV ADD CONSTRAINT FK_CHITIETDV_HOSOBENH 
+FOREIGN KEY(MaKH,SoDT,STT) REFERENCES HOSOBENH(MaKH,SoDT,STT) ON DELETE CASCADE;
+
+ALTER TABLE THONGBAO ADD CONSTRAINT FK_THONGBAO_KHACHHANG 
+FOREIGN KEY(MaNguoiDUng,SoDT) REFERENCES KHACHHANG(MaKH,SoDT) ON DELETE CASCADE;
+
+
+
+
 
 INSERT INTO KHACHHANG (MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email, NgayTao)
 VALUES 
@@ -271,6 +323,11 @@ insert into HOSOBENH values
 ('KH03', '0912748492', 3, '2023-12-12 10:30:00', N'Răng ố vàng, muốn cạo vôi răng', 'NS02', 'DV03', NULL, 'ChuaXuat');
 
 
+insert into HOSOBENH values
+('KH890', '0333466788', 3, '2023-12-17 10:30:00', N'Răng ố vàng, muốn cạo vôi răng', 'NS02', 'DV03', NULL, 'ChuaXuat');
+
+
+
 INSERT INTO LICHNHASI (MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
 VALUES 
     ('NS01', 1, '2023-11-16 08:00:00', '2023-11-16 09:30:00', 'DaHen'),
@@ -293,12 +350,14 @@ VALUES ('KH03', '0139438492', 'avatar1.jpg');
 INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
 VALUES ('HD01', 'KH03', '0912748492', 3, '2023-11-10 00:00:00', 1000000, 'DaThanhToan', 'NV02', 'DV01'),
 	   ('HD02', 'KH02', '0344805188', 2, '2023-10-13 00:00:00', 800000, 'DaThanhToan', 'NV02', 'DV01'),
-	   ('HD03', 'KH03', '0912748492', 3, '2023-11-14 00:00:00', 500000, 'ChuaThanhToan', 'NV03', 'DV03'),
+	   ('HD03', 'KH03', '0912748492', 3, '2023-11-14 00:00:00', 500000, 'DaThanhToan', 'NV03', 'DV03'),
 	   ('HD04', 'KH01', '+12672133096', 1, '2023-10-5 00:00:00', 700000, 'DaThanhToan', 'NV04', 'DV02'),
 	   ('HD05', 'KH01', '+12672133096', 1, '2023-12-7 00:00:00', 2500000, 'DaThanhToan', 'NV01', 'DV03');
 
 INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
 VALUES ('HD06', 'KH03', '0912748492', 3, '2023-12-10 00:00:00', 1000000, 'DaThanhToan', 'NV02', 'DV01');
+
+
 
 
 CREATE TRIGGER UpdateDoanhThu
@@ -898,6 +957,77 @@ BEGIN
 END
 
 
+CREATE TRIGGER trg_KHACHHANG_delete
+ON KHACHHANG
+FOR DELETE
+AS
+BEGIN
+    UPDATE CHITIETDV SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
+    UPDATE LICHHEN SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
+    UPDATE HOSOBENH SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
+    UPDATE CHITIETTHUOC SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
+    UPDATE HOADON SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
+END
+GO
+
+CREATE PROCEDURE GetAllLichHen
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT * FROM LICHHEN;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+CREATE PROCEDURE GetAllHoaDon
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT * FROM HOADON;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+CREATE PROCEDURE CreateHoaDon
+    @MaHoaDon char(20),
+    @MaKH char(20),
+    @SoDT char(15),
+    @STT int,
+    @NgayXuat datetime,
+    @TongChiPhi bigint,
+    @TinhTrangThanhToan char(30),
+    @MaNV char(20),
+    @MaDV char(10)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
+        VALUES (@MaHoaDon, @MaKH, @SoDT, @STT, @NgayXuat, @TongChiPhi, @TinhTrangThanhToan, @MaNV, @MaDV);
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+
+
+
 
 
 
@@ -1048,7 +1178,7 @@ BEGIN
     END CATCH
 END;
 
---Thêm lịch hẹn của người dùng
+--Thêm lịch hẹn của người dùng và khách hàng
 CREATE PROCEDURE InsertAppointment
     @MaSoHen varchar(20),
     @NgayGioKham datetime,
@@ -1514,6 +1644,618 @@ BEGIN
     END;
 END;
 
+EXEC getAppointmentByUser 'KH03'
+
+
+CREATE PROCEDURE AddMedicineByAdmin
+    @MaThuoc char(30),
+    @TenThuoc nvarchar(100),
+    @DonViTinh nvarchar(100),
+    @ChiDinh nvarchar(200),
+    @SoLuong int,
+    @NgayHetHan date,
+    @GiaThuoc bigint
+AS
+BEGIN
+    BEGIN TRANSACTION
+    BEGIN TRY
+        INSERT INTO LOAITHUOC VALUES (@MaThuoc, @TenThuoc, @DonViTinh, @ChiDinh, @SoLuong, @NgayHetHan, @GiaThuoc)
+        COMMIT
+    END TRY
+    BEGIN CATCH
+        ROLLBACK
+    END CATCH
+END
+
+CREATE PROCEDURE DeleteMedicineByAdmin
+    @MaThuoc char(30)
+AS
+BEGIN
+    BEGIN TRANSACTION
+    BEGIN TRY
+        DELETE FROM LOAITHUOC WHERE MaThuoc = @MaThuoc
+        COMMIT
+    END TRY
+    BEGIN CATCH
+        ROLLBACK
+    END CATCH
+END
+
+CREATE PROCEDURE UpdateMedicineByAdmin
+    @MaThuoc char(30),
+    @SoLuong int
+AS
+BEGIN
+    BEGIN TRANSACTION
+    BEGIN TRY
+        UPDATE LOAITHUOC SET SoLuong = @SoLuong WHERE MaThuoc = @MaThuoc
+        COMMIT
+    END TRY
+    BEGIN CATCH
+        ROLLBACK
+    END CATCH
+END
+
+CREATE PROCEDURE GetAllMedicine
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SELECT * FROM LOAITHUOC WITH (ROWLOCK);
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+
+CREATE PROCEDURE AddUser
+    @MaKH char(20),
+    @SoDT char(15),
+    @HoTen nvarchar(50),
+    @Phai char(1),
+    @NgaySinh datetime,
+    @DiaChi nvarchar(100),
+    @MatKhau char(50),
+    @Email varchar(40)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO KHACHHANG VALUES (@MaKH, @SoDT, @HoTen, @Phai, @NgaySinh, @DiaChi, @MatKhau, @Email, GETDATE());
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+
+
+
+
+
+GO
+
+CREATE PROCEDURE DeleteUser
+    @MaKH char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DELETE FROM KHACHHANG WHERE MaKH = @MaKH;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+GO
+
+CREATE PROCEDURE UpdateUser
+    @MaKH char(20),
+    @SoDT char(15),
+    @HoTen nvarchar(50),
+    @Phai char(1),
+    @NgaySinh datetime,
+    @DiaChi nvarchar(100),
+    @MatKhau char(50),
+    @Email varchar(40)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE KHACHHANG SET SoDT = ISNULL(@SoDT,SoDT), 
+		HoTen = ISNULL(@HoTen,HoTen), 
+		Phai = ISNULL(@Phai,Phai), 
+		NgaySinh = ISNULL(@NgaySinh,NgaySinh), 
+		DiaChi = ISNULL(@DiaChi,DiaChi), 
+		MatKhau = ISNULL(@MatKhau,MatKhau), 
+		Email = ISNULL(@Email,Email) 
+		WHERE MaKH = @MaKH;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+GO
+
+CREATE PROCEDURE GetAllMedicalRecord
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+    BEGIN TRANSACTION;
+    SELECT * FROM HOSOBENH;
+    COMMIT TRANSACTION;
+END;
+
+
+CREATE PROCEDURE InsertMedicalRecord
+    @MaKH char(20),
+    @SoDT char(15),
+    @STT int,
+    @NgayKham datetime,
+    @DanDo nvarchar(300),
+    @MaNS char(20),
+    @MaDV char(10),
+    @MaThuoc char(30),
+    @TinhTrangXuatHoaDon CHAR(10)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    INSERT INTO HOSOBENH VALUES (@MaKH, @SoDT, @STT, @NgayKham, @DanDo, @MaNS, @MaDV, @MaThuoc, @TinhTrangXuatHoaDon);
+    COMMIT TRANSACTION;
+END;
+
+CREATE PROCEDURE DeleteMedicalRecordBySoDT
+    @SoDT char(15)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+    BEGIN TRANSACTION;
+    DELETE FROM HOSOBENH WHERE SoDT = @SoDT;
+    COMMIT TRANSACTION;
+END;
+
+
+CREATE PROCEDURE UpdateMedicalRecord
+    @MaKH char(20),
+    @SoDT char(15),
+    @STT int,
+    @NgayKham datetime,
+    @DanDo nvarchar(300),
+    @MaNS char(20),
+    @MaDV char(10),
+    @MaThuoc char(30),
+    @TinhTrangXuatHoaDon CHAR(10)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+    BEGIN TRANSACTION;
+    UPDATE HOSOBENH
+    SET NgayKham = ISNULL(@NgayKham,NgayKham), 
+	DanDo = ISNULL(@DanDo,DanDo), 
+	MaNS = ISNULL(@MaNS,MaNS), 
+	MaDV = ISNULL(@MaDV,MaDV), 
+	MaThuoc = ISNULL(@MaThuoc,MaThuoc),
+	TinhTrangXuatHoaDon = ISNULL(@TinhTrangXuatHoaDon,TinhTrangXuatHoaDon),
+	STT = ISNULL(@STT,STT)
+    WHERE MaKH = @MaKH AND SoDT = @SoDT 
+    COMMIT TRANSACTION;
+END;
+
+CREATE PROCEDURE ThemLichNhaSi
+    @MaNS char(20),
+    @STT int,
+    @GioBatDau datetime,
+    @GioKetThuc datetime,
+    @TinhTrangCuocHen char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO LICHNHASI(MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
+        VALUES (@MaNS, @STT, @GioBatDau, @GioKetThuc, @TinhTrangCuocHen);
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK;
+        THROW;
+    END CATCH
+END;
+
+CREATE PROCEDURE SuaLichNhaSi
+    @MaNS char(20),
+    @STT int,
+    @GioBatDau datetime,
+    @GioKetThuc datetime,
+    @TinhTrangCuocHen char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE LICHNHASI
+        SET GioBatDau = ISNULL(@GioBatDau,GioBatDau), 
+		GioKetThuc = ISNULL(@GioKetThuc,GioKetThuc), 
+		TinhTrangCuocHen = ISNULL(@TinhTrangCuocHen,TinhTrangCuocHen)
+        WHERE MaNS = @MaNS AND STT = @STT;
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK;
+        THROW;
+    END CATCH
+END;
+
+CREATE PROCEDURE GetAllLoaiDichVu
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SELECT * FROM LOAIDICHVU;
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK;
+        THROW;
+    END CATCH
+END;
+
+CREATE PROCEDURE GetAllLoaiThuoc
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SELECT * FROM LOAITHUOC;
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK;
+        THROW;
+    END CATCH
+END;
+
+
+CREATE PROCEDURE AddDentist
+    @MaNS char(20),
+    @TenDangNhap char(50),
+    @HoTen nvarchar(50),
+    @Phai char(1),
+    @GioiThieu nvarchar(300),
+    @MatKhau char(50)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO NHASI VALUES (@MaNS, @TenDangNhap, @HoTen, @Phai, @GioiThieu, @MatKhau);
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+CREATE PROCEDURE DeleteDentist
+    @MaNS char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DELETE FROM NHASI WHERE MaNS = @MaNS;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+CREATE PROCEDURE UpdateDentist
+    @MaNS char(20),
+    @TenDangNhap char(50),
+    @HoTen nvarchar(50),
+    @Phai char(1),
+    @GioiThieu nvarchar(300),
+    @MatKhau char(50)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE NHASI SET 
+		TenDangNhap = ISNULL(@TenDangNhap,TenDangNhap), 
+		HoTen = ISNULL(@HoTen,HoTen), 
+		Phai = ISNULL(@Phai,Phai), 
+		GioiThieu = ISNULL(@GioiThieu,GioiThieu), 
+		MatKhau = ISNULL(@MatKhau,MatKhau)
+		WHERE MaNS = @MaNS;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+CREATE PROCEDURE AddEmployee
+    @MaNV char(20),
+    @HoTen nvarchar(100),
+    @Phai char(1),
+    @TenDangNhap char(50),
+    @MatKhau char(50)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO NHANVIEN VALUES (@MaNV, @HoTen, @Phai, @TenDangNhap, @MatKhau);
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+CREATE PROCEDURE DeleteEmployee
+    @MaNV char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DELETE FROM NHANVIEN WHERE MaNV = @MaNV;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+CREATE PROCEDURE UpdateEmployee
+    @MaNV char(20),
+    @HoTen nvarchar(100),
+    @Phai char(1),
+    @TenDangNhap char(50),
+    @MatKhau char(50)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE NHANVIEN SET 
+		HoTen = ISNULL(@HoTen,HoTen), 
+		Phai = ISNULL(@Phai,Phai), 
+		TenDangNhap = ISNULL(@TenDangNhap,TenDangNhap), 
+		MatKhau = ISNULL(@MatKhau,MatKhau)
+		WHERE MaNV = @MaNV;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
+
+
+CREATE PROCEDURE GetAllLichHen
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT * FROM LICHHEN;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+CREATE PROCEDURE GetAllHoaDon
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT * FROM HOADON;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+CREATE PROCEDURE CreateHoaDon
+    @MaHoaDon char(20),
+    @SoDT char(15),
+    @STT int,
+    @NgayXuat datetime,
+    @TongChiPhi bigint,
+    @TinhTrangThanhToan char(30),
+    @MaNV char(20),
+    @TenDV nvarchar(40)
+AS
+BEGIN
+    DECLARE @MaKH char(20);
+    SELECT @MaKH = MaKH FROM KHACHHANG WHERE SoDT = @SoDT;
+
+	DECLARE @MaDV char(20);
+    SELECT @MaDV = MaDV FROM LOAIDICHVU WHERE TenDV = @TenDV;
+
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
+        VALUES (@MaHoaDon, @MaKH, @SoDT, @STT, @NgayXuat, @TongChiPhi, @TinhTrangThanhToan, @MaNV, @MaDV);
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+
+
+CREATE PROCEDURE UpdateLichHen
+    @MaSoHen char(20),
+	@MaKH char(20),
+    @NgayGioKham datetime,
+    @LyDoKham nvarchar(100),
+    @MaNS char(20),
+    @SoDT char(15)
+AS
+BEGIN
+    
+
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+	    
+        BEGIN TRANSACTION;
+        UPDATE LICHHEN
+        SET NgayGioKham = ISNULL(@NgayGioKham,NgayGioKham), 
+		LyDoKham = ISNULL(@LyDoKham,LyDoKham), 
+		MaNS = ISNULL(@MaNS,MaNS), 
+		MaKH = ISNULL(@MaKH,MaKH), 
+		SoDT = ISNULL(@SoDT,SoDT)
+        WHERE MaSoHen = @MaSoHen;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+CREATE PROCEDURE DeleteLichHen
+    @MaSoHen char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        DELETE FROM LICHHEN WHERE MaSoHen = @MaSoHen;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+
+CREATE PROCEDURE UpdateHoaDon
+    @MaHoaDon char(20),
+    @SoDT char(15),
+    @STT int,
+	@MaKH char(20),
+    @NgayXuat datetime,
+    @TongChiPhi bigint,
+    @TinhTrangThanhToan char(30),
+    @MaNV char(20),
+    @MaDV char(10)
+AS
+BEGIN
+	
+
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE HOADON
+        SET MaKH = ISNULL(@MaKH,MaKH), 
+		SoDT = ISNULL(@SoDT,SoDT), 
+		STT = ISNULL(@STT,STT), 
+		NgayXuat = ISNULL(@NgayXuat,NgayXuat), 
+		TongChiPhi = ISNULL(@TongChiPhi,TongChiPhi), 
+		TinhTrangThanhToan = ISNULL(@TinhTrangThanhToan,TinhTrangThanhToan), 
+		MaNV = ISNULL(@MaNV,MaNV), 
+		MaDV = ISNULL(@MaDV,MaDV)
+        WHERE MaHoaDon = @MaHoaDon;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+
+
+CREATE PROCEDURE DeleteHoaDon
+    @MaHoaDon char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        DELETE FROM HOADON WHERE MaHoaDon = @MaHoaDon;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+GO
+
+
+
+
+
+
+
+
 
 
 
@@ -1601,6 +2343,7 @@ GRANT EXECUTE ON UpdatePasswordByUser TO KH02
 GRANT EXECUTE ON UpdateProfilePicture TO KH02
 GRANT EXECUTE ON getDoctorDetailsByUser TO KH02
 GRANT EXECUTE ON getAppointmentByUser TO KH02
+GRANT EXECUTE ON GetAllLoaiDichVu TO KH02
 
 
 
@@ -1623,6 +2366,17 @@ GO
 
 EXEC sp_addrolemember 'db_owner', 'QTV01';
 GO
+
+USE master;
+GO
+GRANT ALTER ANY LOGIN TO QTV01;
+GO
+USE PHONGKHAMNHASI;
+GO
+GRANT ALTER ANY USER TO QTV01;
+GO
+
+
 
 --Phân quyền nha sĩ
 USE MASTER;
@@ -1691,6 +2445,14 @@ GRANT SELECT,DELETE,UPDATE,INSERT
 ON LUUTRUANH TO NS01
 
 GRANT EXECUTE ON UpdateProfilePicture TO NS01
+GRANT EXECUTE ON GetAllMedicalRecord TO NS01
+GRANT EXECUTE ON InsertMedicalRecord TO NS01
+GRANT EXECUTE ON UpdateMedicalRecord TO NS01
+GRANT EXECUTE ON DeleteMedicalRecordBySoDT TO NS01
+GRANT EXECUTE ON ThemLichNhaSi TO NS01
+GRANT EXECUTE ON SuaLichNhaSi TO NS01
+GRANT EXECUTE ON GetAllLoaiDichVu TO NS01
+GRANT EXECUTE ON GetAllLoaiThuoc TO NS01
 
 --Nha sĩ NS02
 USE PHONGKHAMNHASI
@@ -1724,6 +2486,15 @@ GRANT SELECT,DELETE,UPDATE,INSERT
 ON LUUTRUANH TO NS02
 
 GRANT EXECUTE ON UpdateProfilePicture TO NS02
+GRANT EXECUTE ON GetAllMedicalRecord TO NS02
+GRANT EXECUTE ON InsertMedicalRecord TO NS02
+GRANT EXECUTE ON UpdateMedicalRecord TO NS02
+GRANT EXECUTE ON DeleteMedicalRecordBySoDT TO NS02
+GRANT EXECUTE ON ThemLichNhaSi TO NS02
+GRANT EXECUTE ON SuaLichNhaSi TO NS02
+GRANT EXECUTE ON GetAllLoaiDichVu TO NS02
+GRANT EXECUTE ON GetAllLoaiThuoc TO NS02
+
 
 --Nha sĩ NS03
 USE PHONGKHAMNHASI
@@ -1757,6 +2528,43 @@ GRANT SELECT,DELETE,UPDATE,INSERT
 ON LUUTRUANH TO NS03
 
 GRANT EXECUTE ON UpdateProfilePicture TO NS03
+GRANT EXECUTE ON GetAllMedicalRecord TO NS03
+GRANT EXECUTE ON InsertMedicalRecord TO NS03
+GRANT EXECUTE ON UpdateMedicalRecord TO NS03
+GRANT EXECUTE ON DeleteMedicalRecordBySoDT TO NS03
+GRANT EXECUTE ON ThemLichNhaSi TO NS03
+GRANT EXECUTE ON SuaLichNhaSi TO NS03
+GRANT EXECUTE ON GetAllLoaiDichVu TO NS03
+GRANT EXECUTE ON GetAllLoaiThuoc TO NS03
+
+
+-------------------------
+--Phân quyền nhân viên
+USE MASTER;
+GO
+CREATE LOGIN NV04
+WITH PASSWORD = '901234',
+CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF,
+DEFAULT_DATABASE = PHONGKHAMNHASI
+GO
+
+USE PHONGKHAMNHASI
+GO 
+CREATE USER NV04
+for login NV04
+GO
+
+GRANT EXECUTE ON InsertAppointment TO NV04
+GRANT EXECUTE ON GetAllLichHen TO NV04
+GRANT EXECUTE ON GetAllHoaDon TO NV04
+GRANT EXECUTE ON CreateHoaDon TO NV04
+GRANT EXECUTE ON UpdateHoaDon TO NV04
+GRANT EXECUTE ON UpdateLichHen TO NV04
+GRANT EXECUTE ON DeleteLichHen TO NV04
+GRANT EXECUTE ON DeleteHoaDon TO NV04
+
+
+
 
 
 

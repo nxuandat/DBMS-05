@@ -45,7 +45,7 @@ export const refreshTokenOptions: ITokenOptions = {
     secure:true,
 };
 
-export const sendUserToken = (user: IUser, statusCode: number, res: Response) => {
+export const sendUserToken = (req:any, user: IUser, statusCode: number, res: Response) => {
     const accessToken = jwt.sign({user}, process.env.ACCESS_TOKEN || '',{
         expiresIn: "5m",
     });
@@ -63,6 +63,10 @@ export const sendUserToken = (user: IUser, statusCode: number, res: Response) =>
 
     res.cookie("access_token", accessToken, accessTokenOptions);
     res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+
+    const access_token = req.cookies.access_token as string;
+    console.log("access_token:",access_token)
+
 
     res.status(statusCode).json({
         success: true,

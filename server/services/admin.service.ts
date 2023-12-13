@@ -7,6 +7,7 @@ import { IUser } from "../models/user.model";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IDentist } from "../models/dentist.model";
 import { IEmployee } from "../models/employee.model";
+import { IMedicine } from "../models/medicine.model";
 
 export const getAdminById = async (id: string, res: Response) => {
     const adminJson = await redis.get(id);
@@ -228,6 +229,58 @@ export const getAllRevenueService = async (req: any, res: Response, next: NextFu
                 res.status(201).json({
                     success: true,
                     doanhthu,
+                });
+            });
+
+            connection.execSql(request);
+        });
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+};
+
+export const getAllMedicineService = async (req: any, res: Response, next: NextFunction) => {
+    try {
+        const password = req.admin?.MatKhau;
+        const MaQTV = req.admin?.MaQTV;
+
+        const connection: Connection = ConnectToDataBaseWithLogin(MaQTV, password);
+        connection.on('connect', (err) => {
+            if (err) {
+                return next(new ErrorHandler(err.message, 400));
+            }
+
+            const sql = 'EXEC GetAllMedicine';
+
+            const request = new SQLRequest(sql, (err, rowCount) => {
+                if (err) {
+                    return next(new ErrorHandler(err.message, 400));
+                }
+
+                if (rowCount === 0) {
+                    return next(new ErrorHandler('Không tìm thấy loại thuốc nào.', 400));
+                }
+            });
+
+            let medicines :IMedicine[] = [];
+
+            request.on('row', function (columns) {
+                const medicine = {
+                    MaThuoc: columns[0].value.trim(),
+                    TenThuoc: columns[1].value.trim(),
+                    DonViTinh: columns[2].value.trim(),
+                    ChiDinh: columns[3].value.trim(),
+                    SoLuong: columns[4].value,
+                    NgayHetHan: new Date(columns[5].value),
+                    GiaThuoc: columns[6].value
+                };
+                medicines.push(medicine);
+            });
+
+            request.on('requestCompleted', function () {
+                res.status(201).json({
+                    success: true,
+                    medicines,
                 });
             });
 
