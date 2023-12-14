@@ -465,12 +465,12 @@ export const updateUserInfo = CatchAsyncError(
 export const createAppointment = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { NgayGioKham, LyDoKham, MaNS } = req.body as IAppointment;
+      const { NgayGioKham, LyDoKham, HoTen } = req.body as any;
       const password = req.user?.MatKhau;
       const MaKH = req.user?.MaKH;
       const SoDT = req.user?.SoDT;
 
-      if (!NgayGioKham && !LyDoKham && !MaNS && !MaKH && !SoDT) {
+      if (!NgayGioKham && !LyDoKham && !HoTen && !MaKH && !SoDT) {
         return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin lịch hẹn nha sĩ.', 400));
       }
 
@@ -488,8 +488,10 @@ export const createAppointment = CatchAsyncError(
 
           let newMaSoHenNumber = result + 1;
 
+          const randomNumber = Math.floor(Math.random() * 1000) + 1;
+
           // Create the new MaSoHen by prepending 'MaSoHen' to the new number
-          const newMaSoHen: string = 'MSH' + newMaSoHenNumber.toString().padStart(2, '0');
+          const newMaSoHen: string = 'MSH' + randomNumber.toString().padStart(2, '0');
 
 
 
@@ -506,10 +508,13 @@ export const createAppointment = CatchAsyncError(
               }
             });
 
+            console.log(NgayGioKham);
+            
+
             insertAppointmentRequest.addParameter('MaSoHen', TYPES.VarChar, newMaSoHen);
-            insertAppointmentRequest.addParameter('NgayGioKham', TYPES.DateTime, NgayGioKham);
+            insertAppointmentRequest.addParameter('NgayGioKham', TYPES.DateTime,NgayGioKham);
             insertAppointmentRequest.addParameter('LyDoKham', TYPES.NVarChar, LyDoKham);
-            insertAppointmentRequest.addParameter('MaNS', TYPES.VarChar, MaNS);
+            insertAppointmentRequest.addParameter('HoTen', TYPES.NVarChar, HoTen);
             insertAppointmentRequest.addParameter('MaKH', TYPES.VarChar, MaKH);
             insertAppointmentRequest.addParameter('SoDT', TYPES.VarChar, SoDT);
 
