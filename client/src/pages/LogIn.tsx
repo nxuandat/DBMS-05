@@ -69,21 +69,22 @@ export default function LogIn() {
         fontFamily: "Roboto, sans-serif",
       }}
     >
-       <div className='login-container d-flex align-items-center justify-content-center py-5 h-100'>
-      <div className='row d-flex align-items-center justify-content-center h-80 w-80'>
-        <div className='col-md-8 col-lg-7 col-xl-6'>
+      <div className='login-container d-flex align-items-center justify-content-center py-5 h-100'>
+        <div className='row d-flex align-items-center justify-content-center h-80 w-80'>
           <img src={pictureLogin} className='img-fluid' alt='Phone image' />
         </div>
         <div className='col-md-7 col-lg-5 col-xl-5 offset-xl-1'>
           <h1>ĐĂNG NHẬP</h1>
-          <form>
-            {/* Email input */}
+          <form onSubmit={handleLogin}>
+            {/* PhoneNumber input */}
             <TextField
               className='form-outline mb-4'
               id='username'
-              label='Email'
+              label='Số điện thoại'
               variant='standard'
-              type='email'
+              type='phonenumber'
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
             />
             {/* Password input */}
             <TextField
@@ -92,6 +93,8 @@ export default function LogIn() {
               label='Mật khẩu'
               variant='standard'
               type='password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <div className='d-flex justify-content-around align-items-center mb-4'>
               {/* Checkbox */}
@@ -102,6 +105,8 @@ export default function LogIn() {
                   // defaultValue
                   id='form1Example3'
                   defaultChecked
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
                   // style={{ backgroundColor: "#51C888" }}
                 />
                 <label className='form-check-label' htmlFor='form1Example3'>
@@ -141,9 +146,9 @@ export default function LogIn() {
               Đăng nhập với Google
             </a>
           </form>
+          <ToastContainer />
         </div>
       </div>
     </div>
-  </div>
   );
 }
