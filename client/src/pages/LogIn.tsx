@@ -1,15 +1,14 @@
-import React , { useState } from "react";
-// import backgroundImage from "./images/loginBackground.png";
+import React, { useState } from "react";
+import backgroundImage from "../images/loginBackground.png";
 import "./LogIn.css";
 import pictureLogin from "../images/Picture2.svg";
 import { TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { userLoggedIn } from "../redux/features/auth/userSlice.ts"
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { userLoggedIn } from "../redux/features/auth/userSlice.ts";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-
 
 export default function LogIn() {
   const navigate = useNavigate();
@@ -18,52 +17,60 @@ export default function LogIn() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     try {
-      const response = await axios.post(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/login`, {
-        SoDT: phoneNumber,
-        MatKhau: password,
-      }, {
-        headers: {
-          "Content-Type": "application/json",
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/user/login`,
+        {
+          SoDT: phoneNumber,
+          MatKhau: password,
         },
-        withCredentials: true,
-      });
-  
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
       if (response.status === 200) {
         console.log(response.data);
-        dispatch(userLoggedIn({
-          accessToken: response.data.accessToken,
-          user: response.data.user,
-        }));
-
+        dispatch(
+          userLoggedIn({
+            accessToken: response.data.accessToken,
+            user: response.data.user,
+          })
+        );
 
         toast.success("Đăng Nhập thành công");
-        
+
         setTimeout(() => {
           navigate("/");
         }, 1500);
-
-  
-
       } else {
         // Handle login failure, show an error message, etc.
         console.error(response.data.message);
         toast.error("Đăng Nhập thất bại");
       }
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("An error occurred during login:", error.message);
       toast.error("Đăng Nhập thất bại");
     }
   };
   return (
-   
-    <div className='container py-5 h-100'>
-      <div className='row d-flex align-items-center justify-content-center h-100'>
-        <div className='col-md-8 col-lg-7 col-xl-6'>
+    <div
+      className='full-screen-background'
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+        fontFamily: "Roboto, sans-serif",
+      }}
+    >
+      <div className='login-container d-flex align-items-center justify-content-center py-5 h-100'>
+        <div className='row d-flex align-items-center justify-content-center h-80 w-80'>
           <img src={pictureLogin} className='img-fluid' alt='Phone image' />
         </div>
         <div className='col-md-7 col-lg-5 col-xl-5 offset-xl-1'>
@@ -143,6 +150,5 @@ export default function LogIn() {
         </div>
       </div>
     </div>
-    // </section>
   );
 }

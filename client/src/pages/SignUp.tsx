@@ -1,14 +1,14 @@
 import React from "react";
-// import backgroundImage from "./images/loginBackground.png";
-import "./LogIn.css";
+// import backgroundImage from "../images/loginBackground.png";
+import "./SignUp.css";
 import pictureLogin from "../images/Picture2.svg";
 import { TextField } from "@mui/material";
 import PasswordChecklist from "react-password-checklist";
 import { useState } from "react";
-import axios from 'axios'
+import axios from "axios";
 import { userRegistration } from "../redux/features/auth/userSlice";
 import { useDispatch } from "react-redux";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import Verification from "../components/VerificationModal";
 import CustomModal from "../utils/CustomModal";
 
@@ -17,7 +17,7 @@ export default function LogIn() {
   const [isRegistrationSuccess, setRegistrationSuccess] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [name, setName] = useState("");
-  const [gender, setGender] = useState(""); 
+  const [gender, setGender] = useState("");
   const [address, setAddress] = useState("");
   const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
@@ -35,23 +35,29 @@ export default function LogIn() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-  
+
     try {
-      const formattedBirthday = format(new Date(birthday), "yyyy-MM-dd'T'00:00:00.000'Z'");
+      const formattedBirthday = format(
+        new Date(birthday),
+        "yyyy-MM-dd'T'00:00:00.000'Z'"
+      );
       console.log(gender);
       const userData = {
-        SoDT: phoneNumber, 
+        SoDT: phoneNumber,
         HoTen: name,
-        Phai: gender, 
+        Phai: gender,
         NgaySinh: formattedBirthday,
         DiaChi: address,
         MatKhau: password,
         Email: email,
       };
-  
+
       // Gửi dữ liệu đăng ký lên server
-      const response = await axios.post(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/registration`, userData);
-  
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/user/registration`,
+        userData
+      );
+
       // Xử lý kết quả từ server nếu cần
       // console.log(response.data);
       setRegistrationSuccess(true);
@@ -60,17 +66,15 @@ export default function LogIn() {
           token: response.data.activationToken,
         })
       );
-  
-      
-    } catch (error:any) {
+    } catch (error: any) {
       // Xử lý lỗi nếu có
-      console.error('Error during registration:', error.message);
+      console.error("Error during registration:", error.message);
     }
   };
   return (
-    <div className='container py-5 h-100'>
+    <div className='signup-container py-5 h-100'>
       <div className='row d-flex align-items-center justify-content-center h-100'>
-        <div className='col-md-8 col-lg-7 col-xl-6'>
+        <div className='col-md-9 col-lg-7 col-xl-6'>
           <img src={pictureLogin} className='img-fluid' alt='Phone image' />
         </div>
         <div className='col-md-7 col-lg-5 col-xl-5 offset-xl-1'>
@@ -246,5 +250,3 @@ export default function LogIn() {
     // </section>
   );
 }
-
-
