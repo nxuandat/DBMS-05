@@ -1,19 +1,22 @@
 import React from "react";
-// import backgroundImage from "./images/loginBackground.png";
+import backgroundImage from "../images/loginBackground.png";
 import "./LogIn.css";
 import pictureLogin from "../images/Picture2.svg";
 import { TextField } from "@mui/material";
 
 export default function LogIn() {
   return (
-    // <section
-    //   className='vh-100'
-    //   //   style={{
-    //   //     backgroundImage: `url(${backgroundImage})`,
-    //   //   }}
-    // >
-    <div className='container py-5 h-100'>
-      <div className='row d-flex align-items-center justify-content-center h-100'>
+    <div
+      className='full-screen-background'
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center center",
+          fontFamily: "Roboto, sans-serif",
+        }}
+    >
+    <div className='login-container d-flex align-items-center justify-content-center py-5 h-100'>
+      <div className='row d-flex align-items-center justify-content-center h-80 w-80'>
         <div className='col-md-8 col-lg-7 col-xl-6'>
           <img src={pictureLogin} className='img-fluid' alt='Phone image' />
         </div>
@@ -42,7 +45,7 @@ export default function LogIn() {
                 <input
                   className='form-check-input'
                   type='checkbox'
-                  defaultValue
+                  // defaultValue
                   id='form1Example3'
                   defaultChecked
                   // style={{ backgroundColor: "#51C888" }}
@@ -87,6 +90,6 @@ export default function LogIn() {
         </div>
       </div>
     </div>
-    // </section>
+  </div>
   );
 }

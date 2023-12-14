@@ -1,6 +1,6 @@
 import React from "react";
-// import backgroundImage from "./images/loginBackground.png";
-import "./LogIn.css";
+// import backgroundImage from "../images/loginBackground.png";
+import "./SignUp.css";
 import pictureLogin from "../images/Picture2.svg";
 import { TextField } from "@mui/material";
 import PasswordChecklist from "react-password-checklist";
@@ -23,13 +23,14 @@ export default function LogIn() {
   return (
     // <section
     //   className='vh-100'
-    //   //   style={{
-    //   //     backgroundImage: `url(${backgroundImage})`,
-    //   //   }}
+    //     style={{
+    //       backgroundImage: `url(${backgroundImage})`,
+    //       fontSize: "10px",
+    //     }}
     // >
-    <div className='container py-5 h-100'>
+    <div className='signup-container py-5 h-100'>
       <div className='row d-flex align-items-center justify-content-center h-100'>
-        <div className='col-md-8 col-lg-7 col-xl-6'>
+        <div className='col-md-9 col-lg-7 col-xl-6'>
           <img src={pictureLogin} className='img-fluid' alt='Phone image' />
         </div>
         <div className='col-md-7 col-lg-5 col-xl-5 offset-xl-1'>
@@ -139,7 +140,7 @@ export default function LogIn() {
                 <input
                   className='form-check-input'
                   type='checkbox'
-                  defaultValue
+                  // defaultValue
                   id='terms'
                   defaultChecked
                   // style={{ backgroundColor: "#51C888" }}

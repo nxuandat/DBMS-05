@@ -4,3 +4,22 @@ h1 {
   margin-top: 2rem;
   margin-bottom: 2rem;
 }
+.row {
+  background-color: white;
+  width: 90%;
+  padding: 3rem;
+  border-radius: 20px;
+}
+.col-md-8{
+  background-color: #51C896;
+  padding: 3rem;
+  border-radius: 20px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.img-fluid {
+  width: 100%;
+  height: 100%;
+}
