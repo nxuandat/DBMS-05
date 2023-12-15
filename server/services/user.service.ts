@@ -8,6 +8,7 @@ import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IDentist } from "../models/dentist.model";
 import { IDentistSchedule } from "../models/dentistschedule.model";
 import ConnectToDataBaseDefault from "../utils/db";
+import { IService } from "../models/service.model";
 
 
 // get user by id
@@ -133,5 +134,53 @@ export const getAllDentistsScheduleByUserService = async (req: any, res: Respons
 
   } catch (error: any) {
     return next(new ErrorHandler(error.message, 400));
+  }
+};
+
+export const getAllServicesDentalClinicServiceByUser = async (req: any, res: Response, next: NextFunction) => {
+  try {
+      // const password = req.user?.MatKhau;
+      // const MaKH = req.user?.MaNS;
+
+      const connection: Connection = ConnectToDataBaseDefault();
+      connection.on('connect', (err) => {
+          if (err) {
+              return next(new ErrorHandler(err.message, 400));
+          }
+
+          const sql = 'EXEC GetAllLoaiDichVu';
+
+          const request = new SQLRequest(sql, (err, rowCount) => {
+              if (err) {
+                  return next(new ErrorHandler(err.message, 400));
+              }
+
+              if (rowCount === 0) {
+                  return next(new ErrorHandler('Không tìm thấy loại dịch vụ nào.', 400));
+              }
+              request.on('requestCompleted', function () {
+                  res.status(201).json({
+                      success: true,
+                      services,
+                  });
+              });
+          });
+
+          let services :IService[] = [];
+
+          request.on('row', function (columns) {
+              const service = {
+                  MaDV: columns[0].value.trim(),
+                  TenDV: columns[1].value.trim(),
+                  MoTa: columns[2].value.trim(),
+                  DongGia: columns[3].value
+              };
+              services.push(service);
+          });
+
+          connection.execSql(request);
+      });
+  } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
   }
 };

@@ -23,6 +23,7 @@ require("dotenv").config();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 import cloudinary from "cloudinary";
 import { IDentist } from "../models/dentist.model";
+import { IDetailMedicine } from "../models/detailmedicine.model";
 
 
 
@@ -247,6 +248,8 @@ export const activateUser = CatchAsyncError(
             GRANT EXECUTE ON UpdateProfilePicture TO ${MaKH}
             GRANT EXECUTE ON getDoctorDetailsByUser TO ${MaKH}
             GRANT EXECUTE ON getAppointmentByUser TO ${MaKH}
+            GRANT EXECUTE ON GetAllLoaiDichVu TO ${MaKH}
+            GRANT EXECUTE ON GetDetailMedicineByUser TO ${MaKH}
             `, (err) => {
               if (err) {
                 return next(new ErrorHandler(err.message, 400));
@@ -1063,5 +1066,64 @@ export const getAppointmentByUser = CatchAsyncError(
     }
   }
 );
+
+export const getDetailMedicineByUser = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const password = req.user?.MatKhau;
+      const MaKH = req.user?.MaKH;
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC GetDetailMedicineByUser @MaKH`;
+
+        const request = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không tìm thấy chi tiết thuốc cho mã khách hàng này", 400));
+          }
+          request.on('requestCompleted', function () {
+            res.status(200).json({
+              success: true,
+              medicines,
+            });
+          });
+        });
+
+        request.addParameter('MaKH', TYPES.Char, MaKH);
+
+        let medicines :IDetailMedicine[] = [];
+
+        request.on('row', function (columns) {
+          const medicine = {
+            MaThuoc: columns[0].value.trim(),
+            MaKH: columns[1].value.trim(),
+            STT: columns[2].value,
+            SoDT: columns[3].value.trim(),
+            SoLuong: columns[4].value,
+            ThoiDiemDung: columns[5].value.trim(),
+          };
+          medicines.push(medicine);
+        });
+
+       
+
+        connection.execSql(request);
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
 
 

@@ -17,11 +17,13 @@ import {
   newPaymentByUser,
   sendStripePublishableKey,
   getDoctorDetailsByUser,
-  getAppointmentByUser
+  getAppointmentByUser,
+  getDetailMedicineByUser
 } from "../controllers/user.controller";
 
 import { isAuthenticatedUserLogin } from "../middleware/auth";
 import { updateUserAccessToken } from "../middleware/updatetoken";
+import { getAllServiceByUser } from "../controllers/employee.controller";
 
 
 
@@ -65,9 +67,8 @@ userRouter.get("/user/get-details-doctor/:id",getDoctorDetailsByUser);
 
 userRouter.get("/user/get-appointment", isAuthenticatedUserLogin, getAppointmentByUser);
 
+userRouter.get("/user/get-all-services", getAllServiceByUser);
 
-
-
-
+userRouter.get("/user/get-detail-medicine", isAuthenticatedUserLogin, getDetailMedicineByUser);
 
 export default userRouter;

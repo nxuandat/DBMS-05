@@ -14,6 +14,7 @@ import {
 } from "../utils/jwt";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import cloudinary from "cloudinary";
+import {  getAllDetailMedicineService, getAllMedicalRecordService, getAllMedicineServiceByDoctor, getAllServicesDentalClinicServiceByDoctor, getDentistsScheduleByDentistService } from "../services/dentist.service";
 
 //login dentist
 interface ILoginRequest {
@@ -222,3 +223,456 @@ export const logoutDentist = CatchAsyncError(
     }
   }
 );
+
+export const getAllMedicineByDoctor = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllMedicineServiceByDoctor(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllServiceByDoctor = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllServicesDentalClinicServiceByDoctor(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllMedicalRecord = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllMedicalRecordService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getDentistsScheduleByDentist = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getDentistsScheduleByDentistService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllDetailMedicineByDoctor = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllDetailMedicineService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const createMedicalRecord = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { SoDT, NgayKham, DanDo, TenDV, TenThuoc, TinhTrangXuatHoaDon } = req.body as any;
+      const password = req.dentist?.MatKhau;
+      const MaNS = req.dentist?.MaNS;
+
+      if (!SoDT  || !NgayKham || !DanDo || !TenDV || !TinhTrangXuatHoaDon) {
+        return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin hồ sơ bệnh.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `InsertMedicalRecord`;
+
+        const STT = Math.floor(Math.random() * 1000) + 1;
+
+        const insertMedicalRecordRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể thêm hồ sơ bệnh", 400));
+          }
+          return res.status(201).json({
+            success: true,
+            message: "Thêm hồ sơ bệnh thành công"
+          });
+        });
+
+        insertMedicalRecordRequest.addParameter('SoDT', TYPES.Char, SoDT);
+        insertMedicalRecordRequest.addParameter('STT', TYPES.Int, STT);
+        insertMedicalRecordRequest.addParameter('NgayKham', TYPES.Date, NgayKham);
+        insertMedicalRecordRequest.addParameter('DanDo', TYPES.NVarChar, DanDo);
+        insertMedicalRecordRequest.addParameter('MaNS', TYPES.Char, MaNS);
+        insertMedicalRecordRequest.addParameter('TenDV', TYPES.NVarChar, TenDV);
+        insertMedicalRecordRequest.addParameter('TenThuoc', TYPES.NVarChar, TenThuoc);
+        insertMedicalRecordRequest.addParameter('TinhTrangXuatHoaDon', TYPES.Char, TinhTrangXuatHoaDon);
+
+        connection.callProcedure(insertMedicalRecordRequest);
+      })
+
+      
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+export const deleteMedicalRecord = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { SoDT } = req.body as any;
+      const password = req.dentist?.MatKhau;
+      const MaNS = req.dentist?.MaNS;
+
+
+      if (!SoDT) {
+        return next(new ErrorHandler('Vui lòng nhập số điện thoại.', 400));
+      }
+
+
+
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC DeleteMedicalRecordBySoDT '${SoDT}'
+        `;
+
+        const deleteMedicalRecordRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể xóa hồ sơ bệnh", 400));
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Xóa hồ sơ bệnh thành công"
+          });
+        });
+
+
+        connection.execSql(deleteMedicalRecordRequest);
+      })
+
+
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const createDentistSchedule = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { GioBatDau, GioKetThuc, TinhTrangCuocHen } = req.body as any;
+      const MaNS = req.dentist?.MaNS
+      const password = req.dentist?.MatKhau;
+
+      if (!MaNS || !GioBatDau || !GioKetThuc || !TinhTrangCuocHen) {
+        return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin lịch.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `ThemLichNhaSi`;
+
+        const STT = Math.floor(Math.random() * 1000) + 1;
+
+        const insertDentistScheduleRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể thêm lịch nha sĩ", 400));
+          }
+          return res.status(201).json({
+            success: true,
+            message: "Thêm lịch nha sĩ thành công"
+          });
+        });
+
+        insertDentistScheduleRequest.addParameter('MaNS', TYPES.Char, MaNS);
+        insertDentistScheduleRequest.addParameter('STT', TYPES.Int, STT);
+        insertDentistScheduleRequest.addParameter('GioBatDau', TYPES.DateTime, new Date(GioBatDau));
+        insertDentistScheduleRequest.addParameter('GioKetThuc', TYPES.DateTime, new Date(GioKetThuc));
+        insertDentistScheduleRequest.addParameter('TinhTrangCuocHen', TYPES.Char, TinhTrangCuocHen);
+
+        connection.callProcedure(insertDentistScheduleRequest);
+      })
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const deleteDentistSchedule = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { STT } = req.body as any;
+      const MaNS = req.dentist?.MaNS;
+      const password = req.dentist?.MatKhau;
+
+      if (!STT) {
+        return next(new ErrorHandler('Vui lòng nhập số thứ tự.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `EXEC XoaLichNhaSi '${MaNS}', ${STT}`;
+
+        const deleteDentistScheduleRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể xóa lịch nha sĩ", 400));
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Xóa lịch nha sĩ thành công"
+          });
+        });
+
+        connection.execSql(deleteDentistScheduleRequest);
+      })
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const updateDentistSchedule = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { STT, GioBatDau, GioKetThuc, TinhTrangCuocHen } = req.body as any;
+      const MaNS = req.dentist?.MaNS;
+      const password = req.dentist?.MatKhau;
+
+      if (!STT && !GioBatDau && !GioKetThuc && !TinhTrangCuocHen) {
+        return next(new ErrorHandler('Vui lòng cập nhật ít nhất 1 thông tin', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `SuaLichNhaSi`;
+
+        const updateDentistScheduleRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể cập nhật lịch nha sĩ", 400));
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Cập nhật lịch nha sĩ thành công"
+          });
+        });
+
+        updateDentistScheduleRequest.addParameter('MaNS', TYPES.Char, MaNS);
+        updateDentistScheduleRequest.addParameter('STT', TYPES.Int, STT);
+        updateDentistScheduleRequest.addParameter('GioBatDau', TYPES.DateTime, new Date(GioBatDau));
+        updateDentistScheduleRequest.addParameter('GioKetThuc', TYPES.DateTime, new Date(GioKetThuc));
+        updateDentistScheduleRequest.addParameter('TinhTrangCuocHen', TYPES.Char, TinhTrangCuocHen);
+
+        connection.callProcedure(updateDentistScheduleRequest);
+      })
+
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const createDetailMedicine = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { TenThuoc, HoTen, SoDT, SoLuong, ThoiDiemDung } = req.body as any;
+      const password = req.dentist?.MatKhau;
+      const MaNS = req.dentist?.MaNS;
+
+      if (!TenThuoc || !HoTen || !SoDT || !SoLuong || !ThoiDiemDung) {
+        return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin chi tiết thuốc.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `CreateCHITIETTHUOC`;
+
+        const createDetailMedicineRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể thêm chi tiết thuốc", 400));
+          }
+          return res.status(201).json({
+            success: true,
+            message: "Thêm chi tiết thuốc thành công"
+          });
+        });
+
+        createDetailMedicineRequest.addParameter('TenThuoc', TYPES.NVarChar, TenThuoc);
+        createDetailMedicineRequest.addParameter('HoTen', TYPES.NVarChar, HoTen);
+        createDetailMedicineRequest.addParameter('SoDT', TYPES.Char, SoDT);
+        createDetailMedicineRequest.addParameter('SoLuong', TYPES.Int, SoLuong);
+        createDetailMedicineRequest.addParameter('ThoiDiemDung', TYPES.NVarChar, ThoiDiemDung);
+
+        connection.callProcedure(createDetailMedicineRequest);
+      })
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const updateDetailMedicine = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { MaThuoc, MaKH, SoDT, STT, SoLuong, ThoiDiemDung } = req.body as any;
+      const password = req.dentist?.MatKhau;
+      const MaNS = req.dentist?.MaNS;
+
+      if (!MaThuoc || !MaKH || !SoDT || !STT) {
+        return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin chi tiết thuốc.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `UpdateCHITIETTHUOC`;
+
+        const updateDetailMedicineRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể cập nhật chi tiết thuốc", 400));
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Cập nhật chi tiết thuốc thành công"
+          });
+        });
+
+        updateDetailMedicineRequest.addParameter('MaThuoc', TYPES.Char, MaThuoc);
+        updateDetailMedicineRequest.addParameter('MaKH', TYPES.Char, MaKH);
+        updateDetailMedicineRequest.addParameter('SoDT', TYPES.Char, SoDT);
+        updateDetailMedicineRequest.addParameter('STT', TYPES.Int, STT);
+        updateDetailMedicineRequest.addParameter('SoLuong', TYPES.Int, SoLuong);
+        updateDetailMedicineRequest.addParameter('ThoiDiemDung', TYPES.NVarChar, ThoiDiemDung);
+
+        connection.callProcedure(updateDetailMedicineRequest);
+      })
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const deleteDetailMedicine = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const { MaThuoc, MaKH, SoDT, STT } = req.body as any;
+      const password = req.dentist?.MatKhau;
+      const MaNS = req.dentist?.MaNS;
+
+      if (!MaThuoc || !MaKH || !SoDT || !STT) {
+        return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin chi tiết thuốc.', 400));
+      }
+
+      const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+      connection.on('connect', (err) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+
+        const sql = `DeleteCHITIETTHUOC`;
+
+        const deleteDetailMedicineRequest = new SQLRequest(sql, (err, rowCount) => {
+          if (err) {
+            return next(new ErrorHandler(err.message, 400));
+          }
+
+          if (rowCount === 0) {
+            return next(new ErrorHandler("Không thể xóa chi tiết thuốc", 400));
+          }
+
+          return res.status(200).json({
+            success: true,
+            message: "Xóa chi tiết thuốc thành công"
+          });
+        });
+
+        deleteDetailMedicineRequest.addParameter('MaThuoc', TYPES.Char, MaThuoc);
+        deleteDetailMedicineRequest.addParameter('MaKH', TYPES.Char, MaKH);
+        deleteDetailMedicineRequest.addParameter('SoDT', TYPES.Char, SoDT);
+        deleteDetailMedicineRequest.addParameter('STT', TYPES.Int, STT);
+
+        connection.callProcedure(deleteDetailMedicineRequest);
+      })
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+
+

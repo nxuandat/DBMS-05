@@ -14,6 +14,7 @@ import {
 } from "../utils/jwt";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { getAllAppointmentsService, getAllInvoicesService } from "../services/employee.service";
+import { getAllServicesDentalClinicServiceByUser } from "../services/user.service";
 
 
 //login dentist
@@ -497,6 +498,16 @@ export const updateInvoice = CatchAsyncError(
 
 
 
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllServiceByUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllServicesDentalClinicServiceByUser(req, res, next);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }

@@ -166,61 +166,6 @@ CREATE TABLE DOANHTHU (
 	Thang Date,
 )
 
-
-
-ALTER TABLE HOADON
-ADD CONSTRAINT FK_HOADON_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
-
-ALTER TABLE HOADON
-ADD CONSTRAINT FK_HOADON_NHANVIEN foreign key(MaNV) references NHANVIEN(MaNV)
-
-ALTER TABLE HOADON
-ADD CONSTRAINT FK_HOADON_LOAIDICHVU FOREIGN KEY(MaDV) REFERENCES LOAIDICHVU(MaDV);
-
-ALTER TABLE CHITIETTHUOC
-ADD CONSTRAINT FK_CHITIETTHUOC_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
-
-ALTER TABLE CHITIETTHUOC
-ADD CONSTRAINT FK_CHITIETTHUOC_LOAITHUOC foreign key(MaThuoc) references LOAITHUOC(MaThuoc)
-
-
-ALTER TABLE LICHNHASI
-ADD CONSTRAINT FK_LICHNHASI_NHASI foreign key(MaNS) references NHASI(MaNS)
-
-
-ALTER TABLE HOSOBENH
-ADD CONSTRAINT FK_HOSOBENH_KHACHHANG foreign key(MaKH,SoDT) references KHACHHANG(MaKH,SoDT)
-
-
-ALTER TABLE HOSOBENH
-ADD CONSTRAINT FK_HOSOBENH_NHASI foreign key(MaNS) references NHASI(MaNS)
-
-ALTER TABLE HOSOBENH
-ADD CONSTRAINT FK_HOSOBENH_LOAITHUOC foreign key(MaThuoc) references LOAITHUOC(MaThuoc)
-
-ALTER TABLE HOSOBENH
-ADD CONSTRAINT FK_HOSOBENH_LOAIDICHVU foreign key(MaDV) references LOAIDICHVU(MaDV)
-
-
-
-ALTER TABLE LICHHEN
-ADD CONSTRAINT FK_LICHHEN_LOAIDICHVU foreign key(MaNS) references NHASI(MaNS)
-
-ALTER TABLE LICHHEN
-ADD CONSTRAINT FK_LICHHEN_KHACHHANG foreign key(MaKH, SoDT) references KHACHHANG(MaKH, SoDT)
-
-
-ALTER TABLE CHITIETDV
-ADD CONSTRAINT FK_CHITIETDV_LOAIDICHVU foreign key(MaDV) references LOAIDICHVU(MaDV)
-
-ALTER TABLE CHITIETDV
-ADD CONSTRAINT FK_CHITIETDV_HOSOBENH foreign key(MaKH,SoDT,STT) references HOSOBENH(MaKH,SoDT,STT)
-
-ALTER TABLE THONGBAO
-ADD CONSTRAINT FK_THONGBAO_KHACHHANG foreign key(MaNguoiDUng,SoDT) references KHACHHANG(MaKH,SoDT)
-
-go
-
 -----------------------------------------------------------------
 
 ALTER TABLE HOADON ADD CONSTRAINT FK_HOADON_HOSOBENH 
@@ -322,9 +267,10 @@ insert into HOSOBENH values
 insert into HOSOBENH values
 ('KH03', '0912748492', 3, '2023-12-12 10:30:00', N'Răng ố vàng, muốn cạo vôi răng', 'NS02', 'DV03', NULL, 'ChuaXuat');
 
-
 insert into HOSOBENH values
-('KH890', '0333466788', 3, '2023-12-17 10:30:00', N'Răng ố vàng, muốn cạo vôi răng', 'NS02', 'DV03', NULL, 'ChuaXuat');
+('KH305', '0142206188', 305, '2024-02-18 00:00:00', N'Răng ố vàng, muốn cạo vôi răng', 'NS02', 'DV03', 'T01', 'ChuaXuat');
+
+
 
 
 
@@ -338,6 +284,11 @@ VALUES
 INSERT INTO LICHNHASI (MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
 VALUES 
     ('NS02', 3, '2023-11-17 19:00:00', '2023-11-17 21:00:00', 'ChuaHen');
+
+INSERT INTO LICHNHASI (MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
+VALUES 
+    ('NS03', 4, '2024-02-17 17:00:00', '2024-02-17 21:00:00', 'ChuaHen'),
+	('NS03', 5, '2024-02-18 17:00:00', '2024-02-17 21:00:00', 'ChuaHen');
 
 
 
@@ -359,6 +310,7 @@ VALUES ('HD06', 'KH03', '0912748492', 3, '2023-12-10 00:00:00', 1000000, 'DaThan
 
 
 
+----------------------------------------------------TRIGGER-------------------------------------------------------
 
 
 CREATE TRIGGER UpdateDoanhThu
@@ -390,6 +342,41 @@ BEGIN
         INSERT (TongDoanhThu, Thang)
         VALUES (C.TongDoanhThu, DATEFROMPARTS(C.Nam, C.Thang, 1));
 END;
+
+GO
+
+CREATE TRIGGER UpdateDoanhThu_Delete
+ON HOADON
+AFTER DELETE
+AS
+BEGIN
+    -- Tính tổng doanh thu từ bảng HOADON dựa vào ngày xuất và chỉ tính khi TinhTrangThanhToan là 'DaThanhToan'
+    ;WITH CTE AS (
+        SELECT 
+            SUM(TongChiPhi) as TongDoanhThu, 
+            DATEPART(YEAR, NgayXuat) as Nam, 
+            DATEPART(MONTH, NgayXuat) as Thang
+        FROM 
+            deleted
+        WHERE 
+            TinhTrangThanhToan = 'DaThanhToan'
+        GROUP BY 
+            DATEPART(YEAR, NgayXuat), 
+            DATEPART(MONTH, NgayXuat)
+    )
+    -- Cập nhật bảng DOANHTHU
+    MERGE INTO DOANHTHU AS D
+    USING CTE AS C
+    ON D.Thang = DATEFROMPARTS(C.Nam, C.Thang, 1)
+    WHEN MATCHED THEN
+        UPDATE SET D.TongDoanhThu = D.TongDoanhThu - C.TongDoanhThu
+    WHEN NOT MATCHED THEN
+        INSERT (TongDoanhThu, Thang)
+        VALUES (C.TongDoanhThu, DATEFROMPARTS(C.Nam, C.Thang, 1));
+END;
+
+GO
+
 
 
 
@@ -442,6 +429,8 @@ BEGIN
   -- Commit the transaction
   COMMIT TRANSACTION
 END
+
+GO
 
 
 -- Trigger cho bảng "Nha sĩ"
@@ -496,6 +485,8 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 
+GO
+
 
 
 
@@ -544,6 +535,7 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 
+GO
 
 -- Trigger cho bảng "Đặt lịch hẹn" (LICHHEN)
 CREATE TRIGGER CheckLichHen
@@ -623,6 +615,8 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 
+GO
+
 --Trigger cho bảng Lịch Hẹn kiểm tra nếu lịch hẹn nằm trong khoảng giờ rảnh của Nha sĩ thì set DaHen
 CREATE TRIGGER LichHen_LichNhaSiChange
 ON LICHHEN
@@ -638,6 +632,8 @@ BEGIN
     WHERE ln.TinhTrangCuocHen = 'ChuaHen'
       AND i.NgayGioKham BETWEEN ln.GioBatDau AND ln.GioKetThuc;
 END;
+
+GO
 
 INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
 VALUES ('MSH02', '2023-11-16 10:30:00', N'Kiểm tra sức khỏe', 'NS01', 'KH01', '+12672133096');
@@ -710,6 +706,8 @@ BEGIN
      COMMIT TRANSACTION;
 END;
 
+GO
+
 
 
 --Trigger cho Chi tiết dịch vụ
@@ -754,6 +752,8 @@ BEGIN
   COMMIT TRANSACTION
 END
 
+GO
+
 --Trigger cho Loại dịch vụ
 CREATE TRIGGER CheckLoaiDichVu
 ON LOAIDICHVU
@@ -791,6 +791,8 @@ BEGIN
     -- Kết thúc giao tác
     COMMIT TRANSACTION;
 END;
+
+GO
 
 --Trigger cho nhân viên
 CREATE TRIGGER CheckNhanVien
@@ -830,6 +832,8 @@ BEGIN
   COMMIT TRANSACTION;
 END;
 
+GO
+
 --Trigger cho quản trị viên
 CREATE TRIGGER CheckQuantrivien
 ON QUANTRIVIEN
@@ -868,6 +872,8 @@ BEGIN
   COMMIT TRANSACTION;
 END;
 
+GO
+
 --trigger cho Hóa đơn
 CREATE TRIGGER CheckHoaDon
 ON HOADON
@@ -897,6 +903,8 @@ BEGIN
   -- Commit transaction
   COMMIT TRANSACTION;
 END;
+
+GO
 
 --trigger cho bảng lưu trữ ảnh
 CREATE TRIGGER trg_CheckLuuTruAnh
@@ -957,6 +965,8 @@ BEGIN
     ROLLBACK TRANSACTION;
 END
 
+GO
+
 
 CREATE TRIGGER trg_KHACHHANG_delete
 ON KHACHHANG
@@ -970,6 +980,8 @@ BEGIN
     UPDATE HOADON SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
 END
 GO
+
+---------------------------------------------------------STORE PROCEDURE---------------------------------------------------------------
 
 CREATE PROCEDURE GetAllLichHen
 AS
@@ -1003,12 +1015,6 @@ GO
 
 
 
-
-
-
-
-
----------------------------------------------------------STORE PROCEDURE---------------------------------------------------------------
 --Đăng ký tài khoản
 CREATE PROCEDURE DangKyTaiKhoan
     @MaKH char(20),
@@ -1072,7 +1078,7 @@ BEGIN
     END
 END;
 
-
+GO
 
 --Lấy tất cả thông tin tài khoản người khám
 CREATE PROCEDURE GetAllUsers
@@ -1116,6 +1122,7 @@ BEGIN
     END
 END;
 
+GO
 
 --cập nhật thông tin người khám
 CREATE PROCEDURE UpdateUserInfo
@@ -1154,6 +1161,8 @@ BEGIN
         END
     END CATCH
 END;
+
+GO
 
 --Thêm lịch hẹn của người dùng 
 CREATE PROCEDURE InsertAppointment
@@ -1207,7 +1216,7 @@ BEGIN
     END
 END;
 
-EXEC InsertAppointmentByEmployee 'MSH311','2024-01-1 19:30:00',N'bị đau tủy răng',N'Trần Văn B','0912748492'
+GO
 
 CREATE PROCEDURE InsertAppointmentByEmployee
     @MaSoHen varchar(20),
@@ -1249,7 +1258,7 @@ BEGIN
 END;
 
 
-
+GO
 
 --Lấy thông tin hồ sơ bệnh án theo mã người dùng
 CREATE PROCEDURE GetMedicalRecordByID
@@ -1307,6 +1316,8 @@ BEGIN
     END
 END
 
+GO
+
 --Lấy tất cả thông tin nha sĩ theo người dùng
 CREATE PROCEDURE GetAllDentistInfoByUser
 AS
@@ -1355,6 +1366,8 @@ BEGIN
   END
 END
 
+GO
+
 --Lấy Tất Cả Thông Tin lịch của nha sĩ
 CREATE PROCEDURE GetAllLICHNHASI
 AS
@@ -1397,6 +1410,8 @@ BEGIN
         END CATCH
     END
 END;
+
+GO
 
 --Lấy tất cả thông tin nha sĩ theo quản trị viên
 CREATE PROCEDURE GetAllDentistInfoByAdmin
@@ -1446,6 +1461,8 @@ BEGIN
   END
 END
 
+GO
+
 --Lấy tất cả thông tin nhân viên theo quản trị viên
 CREATE PROCEDURE GetAllEmployee
 AS
@@ -1493,6 +1510,8 @@ BEGIN
     END CATCH
   END
 END
+
+GO
 
 --Cật nhật mật khẩu bởi khách hàng
 CREATE PROCEDURE UpdatePasswordByUser
@@ -1542,6 +1561,8 @@ BEGIN
     END;
 END;
 
+GO
+
 CREATE PROCEDURE UpdateProfilePicture
     @MaNguoiDung char(20),
     @SoDT char(15),
@@ -1562,6 +1583,8 @@ BEGIN
         THROW;
     END CATCH
 END
+
+GO
 
 CREATE PROCEDURE getDoctorDetailsByUser
     @MaNS char(20),
@@ -1615,6 +1638,8 @@ BEGIN
     END;
 END;
 
+GO
+
 CREATE PROCEDURE getAppointmentByUser
     @MaKH char(20),
     @retry INT = 5
@@ -1667,7 +1692,7 @@ BEGIN
     END;
 END;
 
-EXEC getAppointmentByUser 'KH03'
+GO
 
 
 CREATE PROCEDURE AddMedicineByAdmin
@@ -1690,6 +1715,8 @@ BEGIN
     END CATCH
 END
 
+GO
+
 CREATE PROCEDURE DeleteMedicineByAdmin
     @MaThuoc char(30)
 AS
@@ -1703,6 +1730,8 @@ BEGIN
         ROLLBACK
     END CATCH
 END
+
+GO
 
 CREATE PROCEDURE UpdateMedicineByAdmin
     @MaThuoc char(30),
@@ -1718,6 +1747,8 @@ BEGIN
         ROLLBACK
     END CATCH
 END
+
+GO
 
 CREATE PROCEDURE GetAllMedicine
 AS
@@ -1736,6 +1767,8 @@ BEGIN
         RAISERROR(@ErrMsg, @ErrSeverity, 1);
     END CATCH;
 END;
+
+GO
 
 
 CREATE PROCEDURE AddUser
@@ -1763,11 +1796,6 @@ BEGIN
         RAISERROR(@ErrMsg, @ErrSeverity, 1);
     END CATCH;
 END;
-
-
-
-
-
 
 GO
 
@@ -1836,24 +1864,36 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 
+GO
+
 
 CREATE PROCEDURE InsertMedicalRecord
-    @MaKH char(20),
     @SoDT char(15),
     @STT int,
     @NgayKham datetime,
     @DanDo nvarchar(300),
     @MaNS char(20),
-    @MaDV char(10),
-    @MaThuoc char(30),
+    @TenDV nvarchar(40),
+    @TenThuoc nvarchar(100),
     @TinhTrangXuatHoaDon CHAR(10)
 AS
 BEGIN
+	DECLARE @MaKH char(20)
+	SELECT @MaKH = MaKH from KHACHHANG where SoDT = @SoDT
+
+	DECLARE @MaDV char(10)
+	SELECT @MaDV = MaDV from LOAIDICHVU where TenDV = @TenDV
+
+	DECLARE @MaThuoc char(30)
+	SELECT @MaThuoc = MaThuoc from LOAITHUOC where Tenthuoc = @TenThuoc
+	
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
     BEGIN TRANSACTION;
     INSERT INTO HOSOBENH VALUES (@MaKH, @SoDT, @STT, @NgayKham, @DanDo, @MaNS, @MaDV, @MaThuoc, @TinhTrangXuatHoaDon);
     COMMIT TRANSACTION;
 END;
+
+GO
 
 CREATE PROCEDURE DeleteMedicalRecordBySoDT
     @SoDT char(15)
@@ -1865,6 +1905,7 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 
+GO
 
 CREATE PROCEDURE UpdateMedicalRecord
     @MaKH char(20),
@@ -1892,6 +1933,8 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 
+GO
+
 CREATE PROCEDURE ThemLichNhaSi
     @MaNS char(20),
     @STT int,
@@ -1912,6 +1955,8 @@ BEGIN
         THROW;
     END CATCH
 END;
+
+GO
 
 CREATE PROCEDURE SuaLichNhaSi
     @MaNS char(20),
@@ -1937,6 +1982,8 @@ BEGIN
     END CATCH
 END;
 
+GO
+
 CREATE PROCEDURE GetAllLoaiDichVu
 AS
 BEGIN
@@ -1952,6 +1999,8 @@ BEGIN
     END CATCH
 END;
 
+GO
+
 CREATE PROCEDURE GetAllLoaiThuoc
 AS
 BEGIN
@@ -1966,6 +2015,8 @@ BEGIN
         THROW;
     END CATCH
 END;
+
+GO
 
 
 CREATE PROCEDURE AddDentist
@@ -1992,6 +2043,8 @@ BEGIN
     END CATCH;
 END;
 
+GO
+
 CREATE PROCEDURE DeleteDentist
     @MaNS char(20)
 AS
@@ -2010,6 +2063,8 @@ BEGIN
         RAISERROR(@ErrMsg, @ErrSeverity, 1);
     END CATCH;
 END;
+
+GO
 
 CREATE PROCEDURE UpdateDentist
     @MaNS char(20),
@@ -2041,6 +2096,8 @@ BEGIN
     END CATCH;
 END;
 
+GO
+
 CREATE PROCEDURE AddEmployee
     @MaNV char(20),
     @HoTen nvarchar(100),
@@ -2064,6 +2121,8 @@ BEGIN
     END CATCH;
 END;
 
+GO
+
 CREATE PROCEDURE DeleteEmployee
     @MaNV char(20)
 AS
@@ -2082,6 +2141,8 @@ BEGIN
         RAISERROR(@ErrMsg, @ErrSeverity, 1);
     END CATCH;
 END;
+
+GO
 
 CREATE PROCEDURE UpdateEmployee
     @MaNV char(20),
@@ -2110,6 +2171,8 @@ BEGIN
         RAISERROR(@ErrMsg, @ErrSeverity, 1);
     END CATCH;
 END;
+
+GO
 
 
 CREATE PROCEDURE GetAllLichHen
@@ -2176,9 +2239,10 @@ BEGIN
     END CATCH
 END;
 
+GO
 
-CREATE PROCEDURE UpdateLich
-Hen
+
+CREATE PROCEDURE UpdateLichHen
     @MaSoHen char(20),
 	@MaKH char(20),
     @NgayGioKham datetime,
@@ -2278,17 +2342,52 @@ BEGIN
 END;
 GO
 
+CREATE PROCEDURE GetDentistScheduleByMaNS
+    @MaNS char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SELECT * FROM LICHNHASI WHERE MaNS = @MaNS;
 
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
 
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
 
+GO
 
+CREATE PROCEDURE XoaLichNhaSi
+    @MaNS char(20),
+    @STT int
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DELETE FROM LICHNHASI WHERE MaNS = @MaNS AND STT = @STT;
 
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
 
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH;
+END;
 
-
-
-
-
+GO
 
 -----------------------------------------------------PHÂN QUYỀN----------------------------------------------------------------------------
 --Phân quyền code mẫu
@@ -2483,6 +2582,10 @@ GRANT EXECUTE ON ThemLichNhaSi TO NS01
 GRANT EXECUTE ON SuaLichNhaSi TO NS01
 GRANT EXECUTE ON GetAllLoaiDichVu TO NS01
 GRANT EXECUTE ON GetAllLoaiThuoc TO NS01
+GRANT EXECUTE ON GetDentistScheduleByMaNS TO NS01
+GRANT EXECUTE ON XoaLichNhaSi TO NS01
+
+
 
 --Nha sĩ NS02
 USE PHONGKHAMNHASI
@@ -2524,6 +2627,8 @@ GRANT EXECUTE ON ThemLichNhaSi TO NS02
 GRANT EXECUTE ON SuaLichNhaSi TO NS02
 GRANT EXECUTE ON GetAllLoaiDichVu TO NS02
 GRANT EXECUTE ON GetAllLoaiThuoc TO NS02
+GRANT EXECUTE ON GetDentistScheduleByMaNS TO NS02
+GRANT EXECUTE ON XoaLichNhaSi TO NS02
 
 
 --Nha sĩ NS03
@@ -2566,6 +2671,8 @@ GRANT EXECUTE ON ThemLichNhaSi TO NS03
 GRANT EXECUTE ON SuaLichNhaSi TO NS03
 GRANT EXECUTE ON GetAllLoaiDichVu TO NS03
 GRANT EXECUTE ON GetAllLoaiThuoc TO NS03
+GRANT EXECUTE ON GetDentistScheduleByMaNS TO NS03
+GRANT EXECUTE ON XoaLichNhaSi TO NS03
 
 
 -------------------------
@@ -2612,12 +2719,7 @@ GRANT EXECUTE ON UpdateLichHen TO NV01
 GRANT EXECUTE ON DeleteLichHen TO NV01
 GRANT EXECUTE ON DeleteHoaDon TO NV01
 
-EXEC CreateHoaDon 'HD36','0912748492',
-    '2023-12-15 02:30:00',
-    '600000',
-    'ChuaThanhToan',
-	'NV01',
-    N'Nhổ răng'
+
 
 
 

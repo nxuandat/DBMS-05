@@ -235,8 +235,10 @@ export const addMedicineByAdmin = CatchAsyncError(
 
           let newMaThuocNumber = result + 1;
 
+          const randomNumber = Math.floor(Math.random() * 1000) + 1;
+
           // Create the new MaThuoc by prepending 'T' to the new number
-          const newMaThuoc: string = 'T' + newMaThuocNumber.toString().padStart(2, '0');
+          const newMaThuoc: string = 'T' + randomNumber.toString().padStart(2, '0');
 
           const sql = `AddMedicineByAdmin`;
 
@@ -449,7 +451,10 @@ export const addUser = CatchAsyncError(
             GRANT EXECUTE ON UpdatePasswordByUser TO ${MaKH}
             GRANT EXECUTE ON UpdateProfilePicture TO ${MaKH}
             GRANT EXECUTE ON getDoctorDetailsByUser TO ${MaKH}
-            GRANT EXECUTE ON getAppointmentByUser TO ${MaKH}`;
+            GRANT EXECUTE ON getAppointmentByUser TO ${MaKH}
+            GRANT EXECUTE ON GetAllLoaiDichVu TO ${MaKH}
+            GRANT EXECUTE ON GetDetailMedicineByUser TO ${MaKH}
+            `;
 
           const addUserRequest = new SQLRequest(sql, (err, rowCount) => {
             if (err) {
@@ -686,7 +691,12 @@ export const addDentist = CatchAsyncError(
           GRANT EXECUTE ON SuaLichNhaSi TO ${MaNS}
           GRANT EXECUTE ON GetAllLoaiDichVu TO ${MaNS}
           GRANT EXECUTE ON GetAllLoaiThuoc TO ${MaNS}
-          
+          GRANT EXECUTE ON GetDentistScheduleByMaNS TO ${MaNS}
+          GRANT EXECUTE ON XoaLichNhaSi TO ${MaNS}
+          GRANT EXECUTE ON CreateCHITIETTHUOC TO ${MaNS}
+          GRANT EXECUTE ON UpdateCHITIETTHUOC TO ${MaNS}
+          GRANT EXECUTE ON DeleteCHITIETTHUOC TO ${MaNS}
+          GRANT EXECUTE ON GetAllCHITIETTHUOC TO ${MaNS}
           `;
 
           const addDentistRequest = new SQLRequest(sql, (err, rowCount) => {
@@ -1091,3 +1101,5 @@ export const addEmployee = CatchAsyncError(
     }
   }
 );
+
+
