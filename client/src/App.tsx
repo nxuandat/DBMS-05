@@ -17,6 +17,7 @@ import AddMedicine from "./pages/AddMedicine";
 import AddDoctor from "./pages/AddDoctor";
 import AddStaff from "./pages/AddStaff";
 import AppointmentForm from "./pages/AppointmentForm";
+import ProtectedIsLoginRoute from "./protected routes/ProtectedIsLoginRoutes";
 function App() {
   return (
     <div
@@ -37,7 +38,11 @@ function App() {
           <Route path='/addMedicine' element={<AddMedicine />} />
           <Route path='/addDoctor' element={<AddDoctor />} />
           <Route path='/addStaff' element={<AddStaff />} />
-          <Route path='/appointment' element={<AppointmentForm />} />
+          <Route path='/appointment' element={
+            <ProtectedIsLoginRoute>
+              <AppointmentForm />
+            </ProtectedIsLoginRoute>
+          } />
 
         </Routes>
       </Container>
