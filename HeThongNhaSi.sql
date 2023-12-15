@@ -253,10 +253,10 @@ insert into LOAIDICHVU values
 
 
 insert into LOAITHUOC values
-('T01', N'Paracetamol', N'Viên', N'Hạ sốt, giảm đau', 100, '2023-12-31', 5000),
+('T01', N'Paracetamol', N'Viên', N'Hạ sốt, giảm đau', 100, '2024-12-31', 5000),
 ('T02', N'Ibuprofen', N'Viên', N'Giảm đau, chống viêm', 50, '2024-01-31', 10000),
 ('T03', N'Chlorhexidine', N'Nước súc miệng', N'Sát khuẩn, ngừa viêm nha chu', 20, '2024-02-28', 30000),
-('T04', N'Lidocaine', N'Thuốc tiêm', N'Gây tê, làm dịu cơn đau', 10, '2024-03-31', 50000),
+('T04', N'Lidocaine', N'Thuốc tiêm', N'Gây tê, làm dịu cơn đau', 30, '2024-03-31', 50000),
 ('T05', N'Fluoride', N'Kem đánh răng', N'Bảo vệ men răng, ngừa sâu răng', 30, '2024-04-30', 20000);
 
 
@@ -307,6 +307,25 @@ VALUES ('HD01', 'KH03', '0912748492', 3, '2023-11-10 00:00:00', 1000000, 'DaThan
 
 INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
 VALUES ('HD06', 'KH03', '0912748492', 3, '2023-12-10 00:00:00', 1000000, 'DaThanhToan', 'NV01', 'DV01');
+
+-- Insert data into CHITIETTHUOC
+INSERT INTO CHITIETTHUOC(MaThuoc, MaKH, SoDT, STT, SoLuong, ThoiDiemDung)
+VALUES ('T05', 'KH03', '0912748492', 3, 20, '2024-01-07 10:00:00');
+
+INSERT INTO CHITIETTHUOC(MaThuoc, MaKH, SoDT, STT, SoLuong, ThoiDiemDung)
+VALUES ('T01', 'KH03', '0912748492', 3, 5, '2024-01-07 10:00:00'),
+	   ('T02', 'KH02', '0344805188', 2, 20, '2024-01-08 10:00:00'),
+	   ('T03', 'KH02', '0344805188', 2, 1, '2024-01-12 11:00:00');
+	  
+
+
+UPDATE CHITIETTHUOC
+SET SoLuong = 5
+WHERE MaThuoc = 'T05' AND MaKH = 'KH03' AND SoDT = '0912748492' AND STT = 3;
+
+       
+DELETE FROM CHITIETTHUOC
+WHERE MaThuoc = 'T05' AND MaKH = 'KH03' AND SoDT = '0912748492' AND STT = 3;
 
 
 
@@ -980,6 +999,51 @@ BEGIN
     UPDATE HOADON SET MaKH = NULL WHERE MaKH IN (SELECT MaKH FROM deleted)
 END
 GO
+
+-- Trigger for INSERT
+CREATE TRIGGER trg_after_insert ON CHITIETTHUOC
+AFTER INSERT
+AS
+BEGIN
+  UPDATE LOAITHUOC
+  SET LOAITHUOC.SoLuong = LOAITHUOC.SoLuong - inserted.SoLuong
+  FROM LOAITHUOC
+  INNER JOIN inserted ON LOAITHUOC.MaThuoc = inserted.MaThuoc;
+END;
+
+go
+
+-- Trigger for UPDATE
+CREATE TRIGGER trg_after_update ON CHITIETTHUOC
+AFTER UPDATE
+AS
+BEGIN
+  UPDATE LOAITHUOC
+  SET LOAITHUOC.SoLuong = LOAITHUOC.SoLuong + deleted.SoLuong - inserted.SoLuong
+  FROM LOAITHUOC
+  INNER JOIN inserted ON LOAITHUOC.MaThuoc = inserted.MaThuoc
+  INNER JOIN deleted ON LOAITHUOC.MaThuoc = deleted.MaThuoc;
+END;
+
+go
+
+-- Trigger for DELETE
+CREATE TRIGGER trg_after_delete ON CHITIETTHUOC
+AFTER DELETE
+AS
+BEGIN
+  UPDATE LOAITHUOC
+  SET LOAITHUOC.SoLuong = LOAITHUOC.SoLuong + deleted.SoLuong
+  FROM LOAITHUOC
+  INNER JOIN deleted ON LOAITHUOC.MaThuoc = deleted.MaThuoc;
+END;
+
+go
+
+
+
+
+
 
 ---------------------------------------------------------STORE PROCEDURE---------------------------------------------------------------
 
@@ -2389,6 +2453,123 @@ END;
 
 GO
 
+CREATE PROCEDURE GetDetailMedicineByUser
+    @MaKH char(20)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        SELECT *
+        FROM CHITIETTHUOC
+        WHERE MaKH = @MaKH;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH;
+END;
+
+go
+
+CREATE PROCEDURE CreateCHITIETTHUOC
+    @TenThuoc nvarchar(100),
+    @HoTen nvarchar(50),
+    @SoDT char(15),
+    @SoLuong int,
+    @ThoiDiemDung nvarchar(50)
+AS
+BEGIN
+
+	DECLARE @MaThuoc char(30);
+    SELECT @MaThuoc = MaThuoc FROM LOAITHUOC WHERE TenThuoc = @TenThuoc;
+
+	DECLARE @MaKH char(20);
+    SELECT @MaKH = MaKH FROM KHACHHANG WHERE HoTen = @HoTen;
+
+	DECLARE @STT int;
+    SELECT @STT =STT FROM HOSOBENH WHERE SoDT= @SoDT;
+
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        INSERT INTO CHITIETTHUOC(MaThuoc, MaKH, SoDT, STT, SoLuong, ThoiDiemDung)
+        VALUES (@MaThuoc, @MaKH, @SoDT, @STT, @SoLuong, @ThoiDiemDung);
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+
+go
+
+CREATE PROCEDURE UpdateCHITIETTHUOC
+    @MaThuoc char(30),
+    @MaKH char(20),
+    @SoDT char(15),
+    @STT int,
+    @SoLuong int,
+    @ThoiDiemDung nvarchar(50)
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE CHITIETTHUOC
+        SET SoLuong = ISNULL(@SoLuong,SoLuong), 
+            ThoiDiemDung = ISNULL(@ThoiDiemDung,ThoiDiemDung)
+        WHERE MaThuoc = @MaThuoc AND MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+
+go
+
+CREATE PROCEDURE DeleteCHITIETTHUOC
+    @MaThuoc char(30),
+    @MaKH char(20),
+    @SoDT char(15),
+    @STT int
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        DELETE FROM CHITIETTHUOC WHERE MaThuoc = @MaThuoc AND MaKH = @MaKH AND SoDT = @SoDT AND STT = @STT;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+
+go
+
+CREATE PROCEDURE GetAllCHITIETTHUOC
+AS
+BEGIN
+    SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT *
+        FROM CHITIETTHUOC;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+    END CATCH
+END;
+
+go
+
+
+
 -----------------------------------------------------PHÂN QUYỀN----------------------------------------------------------------------------
 --Phân quyền code mẫu
 USE MASTER;
@@ -2472,6 +2653,7 @@ GRANT EXECUTE ON UpdateProfilePicture TO KH03
 GRANT EXECUTE ON getDoctorDetailsByUser TO KH03
 GRANT EXECUTE ON getAppointmentByUser TO KH03
 GRANT EXECUTE ON GetAllLoaiDichVu TO KH03
+GRANT EXECUTE ON GetDetailMedicineByUser TO KH03
 
 
 
@@ -2584,7 +2766,10 @@ GRANT EXECUTE ON GetAllLoaiDichVu TO NS01
 GRANT EXECUTE ON GetAllLoaiThuoc TO NS01
 GRANT EXECUTE ON GetDentistScheduleByMaNS TO NS01
 GRANT EXECUTE ON XoaLichNhaSi TO NS01
-
+GRANT EXECUTE ON CreateCHITIETTHUOC TO NS01
+GRANT EXECUTE ON UpdateCHITIETTHUOC TO NS01
+GRANT EXECUTE ON DeleteCHITIETTHUOC TO NS01
+GRANT EXECUTE ON GetAllCHITIETTHUOC TO NS01
 
 
 --Nha sĩ NS02
@@ -2629,6 +2814,10 @@ GRANT EXECUTE ON GetAllLoaiDichVu TO NS02
 GRANT EXECUTE ON GetAllLoaiThuoc TO NS02
 GRANT EXECUTE ON GetDentistScheduleByMaNS TO NS02
 GRANT EXECUTE ON XoaLichNhaSi TO NS02
+GRANT EXECUTE ON CreateCHITIETTHUOC TO NS02
+GRANT EXECUTE ON UpdateCHITIETTHUOC TO NS02
+GRANT EXECUTE ON DeleteCHITIETTHUOC TO NS02
+GRANT EXECUTE ON GetAllCHITIETTHUOC TO NS02
 
 
 --Nha sĩ NS03
@@ -2673,6 +2862,10 @@ GRANT EXECUTE ON GetAllLoaiDichVu TO NS03
 GRANT EXECUTE ON GetAllLoaiThuoc TO NS03
 GRANT EXECUTE ON GetDentistScheduleByMaNS TO NS03
 GRANT EXECUTE ON XoaLichNhaSi TO NS03
+GRANT EXECUTE ON CreateCHITIETTHUOC TO NS03
+GRANT EXECUTE ON UpdateCHITIETTHUOC TO NS03
+GRANT EXECUTE ON DeleteCHITIETTHUOC TO NS03
+GRANT EXECUTE ON GetAllCHITIETTHUOC TO NS03
 
 
 -------------------------
