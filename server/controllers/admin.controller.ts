@@ -213,7 +213,7 @@ export const logoutAdmin = CatchAsyncError(
 export const addMedicineByAdmin = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc } = req.body;
+      const { TenThuoc, DonViTinh, ChiDinh, SoLuong, NgayHetHan, GiaThuoc } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -279,7 +279,7 @@ export const addMedicineByAdmin = CatchAsyncError(
 export const deleteMedicineByAdmin = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaThuoc } = req.body;
+      const { MaThuoc } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -325,7 +325,7 @@ export const deleteMedicineByAdmin = CatchAsyncError(
 export const updateMedicineByAdmin = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaThuoc, SoLuong } = req.body;
+      const { MaThuoc, SoLuong } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -383,7 +383,7 @@ export const getAllMedicine = CatchAsyncError(
 export const addUser = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email } = req.body;
+      const { SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -487,7 +487,7 @@ export const addUser = CatchAsyncError(
 export const deleteUser = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaKH } = req.body;
+      const { MaKH } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -541,7 +541,7 @@ export const deleteUser = CatchAsyncError(
 export const updateUserByAdmin = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email } = req.body;
+      const { MaKH, SoDT, HoTen, Phai, NgaySinh, DiaChi, MatKhau, Email } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -622,7 +622,7 @@ export const updateUserByAdmin = CatchAsyncError(
 export const addDentist = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { TenDangNhap, HoTen, Phai, GioiThieu, MatKhau } = req.body;
+      const { TenDangNhap, HoTen, Phai, GioiThieu, MatKhau } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -725,7 +725,7 @@ export const addDentist = CatchAsyncError(
 export const deleteDentist = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaNS } = req.body;
+      const { MaNS } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -781,7 +781,7 @@ export const deleteDentist = CatchAsyncError(
 export const updateDentistByAdmin = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaNS, TenDangNhap, HoTen, Phai, GioiThieu, MatKhau } = req.body;
+      const { MaNS, TenDangNhap, HoTen, Phai, GioiThieu, MatKhau } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -862,7 +862,7 @@ export const updateDentistByAdmin = CatchAsyncError(
 export const deleteEmployee = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaNV } = req.body;
+      const { MaNV } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -919,7 +919,7 @@ export const deleteEmployee = CatchAsyncError(
 export const updateEmployeeByAdmin = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { MaNV, HoTen, Phai, TenDangNhap, MatKhau } = req.body;
+      const { MaNV, HoTen, Phai, TenDangNhap, MatKhau } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -1000,7 +1000,7 @@ export const updateEmployeeByAdmin = CatchAsyncError(
 export const addEmployee = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { TenDangNhap, HoTen, Phai, MatKhau } = req.body;
+      const { TenDangNhap, HoTen, Phai, MatKhau } = req.body as any;
       const password = req.admin?.MatKhau;
       const MaQTV = req.admin?.MaQTV;
 
@@ -1025,7 +1025,7 @@ export const addEmployee = CatchAsyncError(
           const randomNumber = Math.floor(Math.random() * 1000) + 1;
 
 
-          // Create the new MaThuoc by prepending 'T' to the new number
+          
           const MaNV: string = 'NV' + randomNumber.toString().padStart(2, '0');
           console.log(MaNV);
           const sql = `EXEC AddEmployee '${MaNV}', N'${HoTen}', '${Phai}', '${TenDangNhap}', '${MatKhau}'
@@ -1038,7 +1038,19 @@ export const addEmployee = CatchAsyncError(
           CREATE USER ${MaNV}
           for login ${MaNV}
 
-          GRANT EXECUTE ON InsertAppointment TO ${MaNV}
+          GRANT SELECT,DELETE,UPDATE,INSERT
+          ON LICHHEN TO ${MaNV}
+
+          GRANT SELECT,DELETE,UPDATE,INSERT
+          ON HOADON TO ${MaNV}
+
+          GRANT SELECT
+          ON NHASI TO ${MaNV}
+
+          GRANT SELECT
+          ON KHACHHANG TO ${MaNV}
+
+          GRANT EXECUTE ON InsertAppointmentByEmployee TO ${MaNV}
           GRANT EXECUTE ON GetAllLichHen TO ${MaNV}
           GRANT EXECUTE ON GetAllHoaDon TO ${MaNV}
           GRANT EXECUTE ON CreateHoaDon TO ${MaNV}
