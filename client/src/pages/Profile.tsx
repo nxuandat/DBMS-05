@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import userProfile from "../images/userProfile.svg";
 import { TextField } from "@mui/material";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/rootReducer";
 
 import {
   MDBCol,
@@ -14,12 +17,38 @@ import {
   MDBTypography,
 } from "mdb-react-ui-kit";
 
-export default function UpdateInfo() {
+export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleEditClick = () => {
     setIsEditing((prevIsEditing) => !prevIsEditing);
   };
+
+  let user = useSelector((state: RootState) => state.user.user);
+
+  const getUserInfo = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/user/me`,
+        { withCredentials: true }
+      );
+
+      return response.data.user;
+    } catch (error: any) {
+      console.log(error);
+
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const userInfo = await getUserInfo();
+      user = userInfo;
+    };
+    // Gọi hàm async vừa tạo
+    fetchUserInfo();
+  }, []);
 
   return (
     <MDBContainer className='py-5 h-100'>
@@ -51,7 +80,7 @@ export default function UpdateInfo() {
                 </MDBBtn>
               </div>
               <div className='ms-3' style={{ marginTop: "130px" }}>
-                <MDBTypography tag='h5'>Nguyen Van A</MDBTypography>
+                <MDBTypography tag='h5'>{user.HoTen}</MDBTypography>
                 <MDBCardText>Role: Bệnh nhân</MDBCardText>
               </div>
             </div>
@@ -69,7 +98,7 @@ export default function UpdateInfo() {
                         <TextField
                           fullWidth
                           label='Họ và tên'
-                          defaultValue='NGUYEN VAN A'
+                          defaultValue={user?.HoTen}
                         />
                       </div>
                       <div className='mb-3'>
@@ -77,7 +106,7 @@ export default function UpdateInfo() {
                           fullWidth
                           label='Ngày sinh'
                           type='date'
-                          defaultValue='1999-09-01'
+                          defaultValue={user?.NgaySinh}
                           InputLabelProps={{ shrink: true }}
                         />
                       </div>
@@ -85,14 +114,14 @@ export default function UpdateInfo() {
                         <TextField
                           fullWidth
                           label='Số điện thoại'
-                          defaultValue='0987654321'
+                          defaultValue={user?.SoDT}
                         />
                       </div>
                       <div className='mb-3'>
                         <TextField
                           fullWidth
                           label='Email'
-                          defaultValue='nva@example.com'
+                          defaultValue={user?.Email}
                         />
                       </div>
                       <div className='mb-3'>
@@ -102,15 +131,15 @@ export default function UpdateInfo() {
                           select
                           defaultValue='Nam'
                         >
-                          <option value='Nam'>Nam</option>
-                          <option value='Nữ'>Nữ</option>
+                          <option value='M'>Nam</option>
+                          <option value='F'>Nữ</option>
                         </TextField>
                       </div>
                       <div className='mb-3'>
                         <TextField
                           fullWidth
                           label='Địa chỉ'
-                          defaultValue='227 Nguyễn Văn Cừ, P4, Q5, TP.HCM'
+                          defaultValue={user?.DiaChi}
                         />
                       </div>
                     </form>
@@ -118,22 +147,23 @@ export default function UpdateInfo() {
                 ) : (
                   <div className='p-4' style={{ backgroundColor: "#f8f9fa" }}>
                     <MDBCardText className='font-italic mb-1'>
-                      Họ và tên: NGUYEN VAN A
+                      Họ và tên: {user?.HoTen}
                     </MDBCardText>
                     <MDBCardText className='font-italic mb-1'>
-                      Ngày sinh: 01/09/1999
+                      Ngày sinh:{" "}
+                      {new Date(user?.NgaySinh).toLocaleDateString("vi-VN")}
                     </MDBCardText>
                     <MDBCardText className='font-italic mb-1'>
-                      Số điện thoại: 0987654321
+                      Số điện thoại: {user?.SoDT}
                     </MDBCardText>
                     <MDBCardText className='font-italic mb-1'>
-                      Email: nva@example.com
+                      Email: {user?.Email}
                     </MDBCardText>
                     <MDBCardText className='font-italic mb-1'>
-                      Giới tính: Nam
+                      Giới tính: {user?.Phai === "F" ? "Nữ" : "Nam"}
                     </MDBCardText>
                     <MDBCardText className='font-italic mb-0'>
-                      Địa chỉ: 227 Nguyễn Văn Cừ, P4, Q5, TP.HCM
+                      Địa chỉ: {user?.DiaChi}
                     </MDBCardText>
                   </div>
                 )}
