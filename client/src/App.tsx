@@ -34,7 +34,12 @@ function App() {
           <Route path='/login' element={<LogIn />} />
           <Route path='/signUp' element={<SignUp />} />
           <Route path='/reset' element={<ResetPassword />} />
-          <Route path='/updateInfo' element={<UpdateInfo />} />
+          <Route path='/updateInfo' element={
+            <ProtectedIsLoginRoute>
+              <UpdateInfo />
+            </ProtectedIsLoginRoute>
+            } 
+          />
           <Route path='/adminListUser' element={<AminListUser />} />
           <Route path='/listMedicine' element={<ListMedicine />} />
           <Route path='/addMedicine' element={<AddMedicine />} />

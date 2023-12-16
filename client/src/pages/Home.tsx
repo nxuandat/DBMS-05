@@ -2,7 +2,8 @@ import doctorHomeImg from "../images/doctorHome.svg";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import React, { useEffect } from 'react';
-import AppointmentForm from "./AppointmentForm";
+// import AppointmentForm from "./AppointmentForm";
+import ServiceList from "../components/ServiceList";
 // import Carousel from "../components/Carousel";
 // import banner1 from "../images/Banner1.png";
 // import banner2 from "../images/Banner2.png";
@@ -49,6 +50,7 @@ export function Home() {
           </div>
         </div>
       </div>
+      <ServiceList/>
       {/* <Carousel bannerImages={[banner1, banner2]} /> */}
     </div>
   );
