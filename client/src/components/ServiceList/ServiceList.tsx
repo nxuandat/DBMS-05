@@ -95,7 +95,7 @@ const ServiceList = () => {
     <div style={{ backgroundColor: '#d4edda', minHeight: '100vh' }}>
       <Container style={{ marginTop: 20 }}>
         <h1 style={{ textAlign: 'center', marginBottom: 20 }}>Danh sách các dịch vụ nha khoa</h1>
-        <Grid columns={3}>
+        <Grid stackable columns={3}>
           {services.map((service) => (
             <Grid.Column key={service.MaDV}>
               <ServiceCard service={service} />
@@ -108,3 +108,4 @@ const ServiceList = () => {
 };
 
 export default ServiceList;
+
