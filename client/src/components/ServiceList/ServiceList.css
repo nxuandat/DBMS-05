@@ -1,0 +1,34 @@
+/* Tạo hiệu ứng zoom cho ảnh khi hover */
+.image-zoom {
+    transition: transform 0.5s;
+  }
+  
+  .image-zoom:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Tạo hiệu ứng flip cho card khi click */
+  .card-flip {
+    transform: rotateY(180deg);
+    transition: transform 0.5s;
+  }
+  
+  /* Tạo hiệu ứng fade cho card khi rời khỏi card */
+  .card-hover {
+    opacity: 1;
+    transition: opacity 0.5s;
+  }
+  
+  .card-hover:hover {
+    opacity: 0.8;
+  }
+  
+  /* Tạo hiệu ứng rotate cho chip khi hover */
+  .chip-rotate {
+    transition: transform 0.5s;
+  }
+  
+  .chip-rotate:hover {
+    transform: rotate(360deg);
+  }
+  
