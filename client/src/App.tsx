@@ -18,6 +18,8 @@ import AddDoctor from "./pages/AddDoctor";
 import AddStaff from "./pages/AddStaff";
 import AppointmentForm from "./pages/AppointmentForm";
 import ProtectedIsLoginRoute from "./protected routes/ProtectedIsLoginRoutes";
+// import UserAnalytics from "./components/Analytics/UserAnalytics";
+import AnalyticsAdmin from "./pages/AnalyticsAdmin";
 function App() {
   return (
     <div
@@ -38,12 +40,13 @@ function App() {
           <Route path='/addMedicine' element={<AddMedicine />} />
           <Route path='/addDoctor' element={<AddDoctor />} />
           <Route path='/addStaff' element={<AddStaff />} />
+          <Route path='/admin/analytics' element={<AnalyticsAdmin />} />
           <Route path='/appointment' element={
-            <ProtectedIsLoginRoute>
-              <AppointmentForm />
-            </ProtectedIsLoginRoute>
-          } />
-
+              <ProtectedIsLoginRoute>
+                <AppointmentForm />
+              </ProtectedIsLoginRoute>
+            } 
+          />
         </Routes>
       </Container>
       <Footer />

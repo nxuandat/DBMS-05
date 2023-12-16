@@ -1,5 +1,6 @@
 import { Connection, Request as SQLRequest, TYPES } from 'tedious';
 import ConnectToDataBaseWithLogin from './dblogin';
+import ConnectToDataBaseDefault from './db';
 
 interface MonthData {
   month: string;
@@ -35,6 +36,7 @@ export async function generateLast12MonthsDataUser(MaQTV: any, password: any): P
   
       return new Promise((resolve, reject) => {
         const connection: Connection = ConnectToDataBaseWithLogin(MaQTV, password);
+        // const connection: Connection = ConnectToDataBaseDefault();
         connection.on('connect', err => {
           if (err) {
             console.error(err.message);

@@ -8,6 +8,7 @@ import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IDentist } from "../models/dentist.model";
 import { IEmployee } from "../models/employee.model";
 import { IMedicine } from "../models/medicine.model";
+import ConnectToDataBaseDefault from "../utils/db";
 
 export const getAdminById = async (id: string, res: Response) => {
     const adminJson = await redis.get(id);
@@ -197,6 +198,7 @@ export const getAllRevenueService = async (req: any, res: Response, next: NextFu
         console.log(password);
 
         const connection: Connection = ConnectToDataBaseWithLogin(MaQTV, password);
+        // const connection: Connection = ConnectToDataBaseDefault();
         connection.on('connect', (err) => {
             if (err) {
                 return next(new ErrorHandler(err.message, 400));
@@ -226,6 +228,7 @@ export const getAllRevenueService = async (req: any, res: Response, next: NextFu
             });
 
             request.on('requestCompleted', function () {
+                doanhthu.sort((a, b) => a.TongDoanhThu - b.TongDoanhThu);
                 res.status(201).json({
                     success: true,
                     doanhthu,

@@ -7,6 +7,7 @@ import AppointmentForm from "./AppointmentForm";
 // import banner1 from "../images/Banner1.png";
 // import banner2 from "../images/Banner2.png";
 
+
 export function Home() {
   
   return (
