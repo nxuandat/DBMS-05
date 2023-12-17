@@ -4,7 +4,7 @@ import userProfile from "../images/userProfile.svg";
 import { TextField } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/rootReducer";
-
+import { useDispatch } from "react-redux";
 import {
   MDBCol,
   MDBContainer,
@@ -16,15 +16,49 @@ import {
   MDBBtn,
   MDBTypography,
 } from "mdb-react-ui-kit";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { setUser } from "../redux/features/auth/userSlice";
 
 export default function Profile() {
+  const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
+  const [formValues, setFormValues] = useState({
+    SoDT: '',
+    HoTen: '',
+    Phai: '',
+    NgaySinh: '',
+    DiaChi: '',
+    Email: ''
+  });
+  
+
+
 
   const handleEditClick = () => {
     setIsEditing((prevIsEditing) => !prevIsEditing);
+    if (!isEditing) {
+      setFormValues({
+        SoDT: user.SoDT,
+        HoTen: user.HoTen,
+        Phai: user.Phai,
+        NgaySinh: user.NgaySinh,
+        DiaChi: user.DiaChi,
+        Email: user.Email
+      });
+    }
+  };
+
+  const handleInputChange = (event) => {
+    setFormValues({
+      ...formValues,
+      [event.target.name]: event.target.value
+    });
   };
 
   let user = useSelector((state: RootState) => state.user.user);
+
+
 
   const getUserInfo = async () => {
     try {
@@ -33,6 +67,11 @@ export default function Profile() {
         { withCredentials: true }
       );
 
+      dispatch(setUser({
+        user: response.data.user,
+      })
+      )
+
       return response.data.user;
     } catch (error: any) {
       console.log(error);
@@ -40,6 +79,39 @@ export default function Profile() {
       return null;
     }
   };
+
+  
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+    console.log(formValues);
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/user/update-user-info`,
+        formValues,
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        toast.success('Thông tin người dùng đã được cập nhật thành công', {
+          position: toast.POSITION.TOP_CENTER,
+          autoClose: 2000
+        });
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+       
+      }
+    } catch (error:any) {
+      toast.error(error.response.data.message, {
+        position: toast.POSITION.TOP_CENTER,
+        autoClose: 2000
+      });
+      
+    }
+  };
+  
+
+  
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -93,20 +165,24 @@ export default function Profile() {
                 <p className='lead fw-normal mb-1'>THÔNG TIN CÁ NHÂN</p>
                 {isEditing ? (
                   <div className='p-4' style={{ backgroundColor: "#f8f9fa" }}>
-                    <form>
+                    <form onSubmit={handleFormSubmit}>
                       <div className='mb-3'>
                         <TextField
                           fullWidth
                           label='Họ và tên'
+                          name='HoTen'
                           defaultValue={user?.HoTen}
+                          onChange={handleInputChange}
                         />
                       </div>
                       <div className='mb-3'>
                         <TextField
                           fullWidth
                           label='Ngày sinh'
+                          name='NgaySinh'
                           type='date'
                           defaultValue={user?.NgaySinh}
+                          onChange={handleInputChange}
                           InputLabelProps={{ shrink: true }}
                         />
                       </div>
@@ -114,22 +190,28 @@ export default function Profile() {
                         <TextField
                           fullWidth
                           label='Số điện thoại'
+                          name='SoDT'
                           defaultValue={user?.SoDT}
+                          onChange={handleInputChange}
                         />
                       </div>
                       <div className='mb-3'>
                         <TextField
                           fullWidth
                           label='Email'
+                          name='Email'
                           defaultValue={user?.Email}
+                          onChange={handleInputChange}
                         />
                       </div>
                       <div className='mb-3'>
                         <TextField
                           fullWidth
                           label='Giới tính'
+                          name='Phai'
                           select
                           defaultValue='Nam'
+                          onChange={handleInputChange}
                         >
                           <option value='M'>Nam</option>
                           <option value='F'>Nữ</option>
@@ -139,9 +221,12 @@ export default function Profile() {
                         <TextField
                           fullWidth
                           label='Địa chỉ'
+                          name='DiaChi'
                           defaultValue={user?.DiaChi}
+                          onChange={handleInputChange}
                         />
                       </div>
+                      <MDBBtn type='submit'>Lưu thông tin</MDBBtn>
                     </form>
                   </div>
                 ) : (
@@ -172,6 +257,9 @@ export default function Profile() {
           </MDBCard>
         </MDBCol>
       </MDBRow>
+      <ToastContainer/>
     </MDBContainer>
   );
 }
+
+
