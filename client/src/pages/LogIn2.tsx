@@ -28,6 +28,10 @@ export default function LogIn2() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if(!userName || !password) {
+      toast.error("Vui lòng nhập đủ thông tin khi đăng nhập")
+    }
+
     try {
       let loginFunction;
 
@@ -43,6 +47,7 @@ export default function LogIn2() {
           break;
         default:
           // Handle default case or show an error message
+          toast.error("Vui lòng chọn vai trò đăng nhập")
           console.error("Invalid role selected");
           return;
       }
