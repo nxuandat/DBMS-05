@@ -8,6 +8,7 @@ import { AboutUs } from "./pages/AboutUs";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import LogIn from "./pages/LogIn";
+import LogIn2 from "./pages/LogIn2";
 import SignUp from "./pages/SignUp";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
@@ -35,6 +36,7 @@ function App() {
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/login' element={<LogIn />} />
+          <Route path='/login2' element={<LogIn2 />} />
           <Route path='/signUp' element={<SignUp />} />
           <Route path='/reset' element={<ResetPassword />} />
           <Route
