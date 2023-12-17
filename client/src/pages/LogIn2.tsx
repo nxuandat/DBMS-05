@@ -77,7 +77,7 @@ export default function LogIn2() {
         dispatch(
           userLoggedIn({
             accessToken: response.data.accessToken,
-            user: response.data.user,
+            user: response.data.admin,
           })
         );
 
@@ -119,7 +119,7 @@ export default function LogIn2() {
         dispatch(
           userLoggedIn({
             accessToken: response.data.accessToken,
-            user: response.data.user,
+            user: response.data.dentist,
           })
         );
 
@@ -161,7 +161,7 @@ export default function LogIn2() {
         dispatch(
           userLoggedIn({
             accessToken: response.data.accessToken,
-            user: response.data.user,
+            user: response.data.employee,
           })
         );
 

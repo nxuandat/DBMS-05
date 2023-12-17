@@ -23,6 +23,7 @@ import ProtectedIsLoginRoute from "./protected routes/ProtectedIsLoginRoutes";
 import AppointmentButton from "./components/AppointmentButton";
 import AnalyticsAdmin from "./pages/AnalyticsAdmin";
 import PatientRecord from "./pages/PatientRecord";
+import ProtectedIsAdminRoute from "./protected routes/ProtectedIsAdminRoutes";
 function App() {
   return (
     <div
@@ -47,12 +48,42 @@ function App() {
               </ProtectedIsLoginRoute>
             }
           />
-          <Route path='/adminListUser' element={<AminListUser />} />
-          <Route path='/listMedicine' element={<ListMedicine />} />
-          <Route path='/addMedicine' element={<AddMedicine />} />
-          <Route path='/addDoctor' element={<AddDoctor />} />
-          <Route path='/addStaff' element={<AddStaff />} />
-          <Route path='/admin/analytics' element={<AnalyticsAdmin />} />
+          <Route path='/adminListUser' element={
+            <ProtectedIsAdminRoute>
+              <AminListUser />
+            </ProtectedIsAdminRoute>
+            } 
+          />
+          <Route path='/listMedicine' element={
+            <ProtectedIsAdminRoute>
+              <ListMedicine />
+            </ProtectedIsAdminRoute>
+            } 
+          />
+          <Route path='/addMedicine' element={
+            <ProtectedIsAdminRoute>
+              <AddMedicine />
+            </ProtectedIsAdminRoute>
+            } 
+          />
+          <Route path='/addDoctor' element={
+            <ProtectedIsAdminRoute>
+              <AddDoctor />
+            </ProtectedIsAdminRoute>
+            } 
+          />
+          <Route path='/addStaff' element={
+            <ProtectedIsAdminRoute>
+              <AddStaff />
+            </ProtectedIsAdminRoute>
+            } 
+          />
+          <Route path='/admin/analytics' element={
+            <ProtectedIsAdminRoute>
+              <AnalyticsAdmin />
+            </ProtectedIsAdminRoute>
+            } 
+          />
           <Route
             path='/appointment'
             element={

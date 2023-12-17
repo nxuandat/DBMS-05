@@ -26,7 +26,7 @@ const InvoiceAnalytics = () => {
             const response = await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/get-invoices-analytics`, { withCredentials: true });
             const analyticsData: any = [];
 
-            response.data.users.last12Months.forEach((item: any) => {
+            response.data.invoices.last12Months.forEach((item: any) => {
                 analyticsData.push({ name: item.month, count: item.count });
             });
 

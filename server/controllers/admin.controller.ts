@@ -62,7 +62,7 @@ export const loginAdmin = CatchAsyncError(
             TenDangNhap: columns[3].value.trim(),
             MatKhau: columns[4].value.trim(),
           };
-          sendAdminToken(admin, 200, res);
+          sendAdminToken(req,admin, 200, res);
         });
 
         connection.execSql(request);
