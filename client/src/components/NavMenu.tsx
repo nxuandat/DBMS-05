@@ -47,7 +47,7 @@ export default function TemporaryDrawer() {
       <List>
         {[
           { text: "Trang chủ", link: "/" },
-          { text: "Hồ sơ bệnh", link: "/file" },
+          { text: "Hồ sơ bệnh", link: "/record" },
           { text: "Lịch hẹn", link: "/appointment" },
         ].map((item, index) => (
           <ListItem key={item.text} disablePadding>
