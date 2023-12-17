@@ -372,22 +372,24 @@ export const getUserInfo = CatchAsyncError(
 );
 
 interface IUpdateUserInfo {
+  SoDT?:string;
   HoTen?: string;
   Phai?: string;
   NgaySinh?: Date;
   DiaChi?: string;
+  Email?:string;
 }
 
 //update user info
 export const updateUserInfo = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { HoTen, Phai, NgaySinh, DiaChi } = req.body as IUpdateUserInfo;
+      const { SoDT ,HoTen, Phai, NgaySinh, DiaChi, Email } = req.body as IUpdateUserInfo;
       const MaKH = req.user?.MaKH;
       const password = req.user?.MatKhau;
 
       // Kiểm tra xem ít nhất một thuộc tính không null
-      if (!HoTen && !Phai && !NgaySinh && !DiaChi) {
+      if (!SoDT && !HoTen && !Phai && !NgaySinh && !DiaChi && !Email) {
         return next(new ErrorHandler('Vui lòng cung cấp ít nhất một thuộc tính để cập nhật.', 400));
       }
 
@@ -452,6 +454,8 @@ export const updateUserInfo = CatchAsyncError(
         request.addParameter('NgaySinh', TYPES.DateTime, NgaySinh);
         request.addParameter('DiaChi', TYPES.NVarChar, DiaChi);
         request.addParameter('MaKH', TYPES.Char, MaKH);
+        request.addParameter('SoDT', TYPES.Char, SoDT);
+        request.addParameter('Email', TYPES.VarChar, Email);
 
         connection.callProcedure(request);
 
