@@ -7,6 +7,19 @@ import { IAppointment } from "../models/appointment.model";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import { IInvoice } from "../models/invoice.model";
 
+
+export const getEmployeeById = async (id: string, res: Response) => {
+    const employeeJson = await redis.get(id);
+  
+    if (employeeJson) {
+      const employee = JSON.parse(employeeJson);
+      res.status(201).json({
+        success: true,
+        employee,
+      });
+    }
+  };
+
 export const getAllAppointmentsService = async (req: any, res: Response, next: NextFunction) => {
     try {
         const password = req.employee?.MatKhau;

@@ -13,6 +13,18 @@ import { IService } from "../models/service.model";
 import { IDetailMedicine } from "../models/detailmedicine.model";
 
 
+export const getDentistById = async (id: string, res: Response) => {
+    const dentistJson = await redis.get(id);
+  
+    if (dentistJson) {
+      const dentist = JSON.parse(dentistJson);
+      res.status(201).json({
+        success: true,
+        dentist,
+      });
+    }
+  };
+
 export const getAllMedicineServiceByDoctor = async (req: any, res: Response, next: NextFunction) => {
     try {
         const password = req.dentist?.MatKhau;

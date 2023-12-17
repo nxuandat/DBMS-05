@@ -54,11 +54,12 @@ export const loginAdmin = CatchAsyncError(
         request.addParameter('MatKhau', TYPES.VarChar, MatKhau);
 
         request.on('row', function (columns) {
+          console.log(columns);
           const admin: IAdmin = {
             MaQTV: columns[0].value.trim(),
-            TenDangNhap: columns[1].value.trim(),
-            HoTen: columns[2].value.trim(),
-            Phai: columns[3].value.trim(),
+            HoTen: columns[1].value.trim(),
+            Phai: columns[2].value.trim(),
+            TenDangNhap: columns[3].value.trim(),
             MatKhau: columns[4].value.trim(),
           };
           sendAdminToken(admin, 200, res);

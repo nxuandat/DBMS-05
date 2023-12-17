@@ -13,7 +13,7 @@ import {
   sendEmployeeToken,
 } from "../utils/jwt";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
-import { getAllAppointmentsService, getAllInvoicesService } from "../services/employee.service";
+import { getAllAppointmentsService, getAllInvoicesService, getEmployeeById } from "../services/employee.service";
 import { getAllServicesDentalClinicServiceByUser } from "../services/user.service";
 
 
@@ -66,6 +66,17 @@ export const loginEmployee = CatchAsyncError(
 
         connection.execSql(request);
       });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getEmployeeInfo = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const employeeId = req.employee?.MaNV;
+      getEmployeeById(employeeId, res);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }

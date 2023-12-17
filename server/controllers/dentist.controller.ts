@@ -14,7 +14,7 @@ import {
 } from "../utils/jwt";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import cloudinary from "cloudinary";
-import {  getAllDetailMedicineService, getAllMedicalRecordService, getAllMedicineServiceByDoctor, getAllServicesDentalClinicServiceByDoctor, getDentistsScheduleByDentistService } from "../services/dentist.service";
+import {  getAllDetailMedicineService, getAllMedicalRecordService, getAllMedicineServiceByDoctor, getAllServicesDentalClinicServiceByDoctor, getDentistById, getDentistsScheduleByDentistService } from "../services/dentist.service";
 
 //login dentist
 interface ILoginRequest {
@@ -147,6 +147,18 @@ export const updateProfilePictureDentist = CatchAsyncError(
 
         connection.execSql(request);
       });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//Get Dentist Info
+export const getDentistInfo = CatchAsyncError(
+  async (req: any, res: Response, next: NextFunction) => {
+    try {
+      const dentistId = req.dentist?.MaNS;
+      getDentistById(dentistId, res);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }

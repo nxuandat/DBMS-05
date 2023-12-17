@@ -6,6 +6,7 @@ import {
   deleteInvoice,
   getAllAppointment,
   getAllInvoices,
+  getEmployeeInfo,
   loginEmployee,
   logoutEmployee,
   updateAppointment,
@@ -20,6 +21,8 @@ const employeeRouter = express.Router();
 employeeRouter.post("/employee/login", loginEmployee);
 
 employeeRouter.get("/employee/logout", isAuthenticatedEmployeeLogin, logoutEmployee);
+
+employeeRouter.get("/employee/me", isAuthenticatedEmployeeLogin, getEmployeeInfo);
 
 employeeRouter.post("/employee/create-appointment", isAuthenticatedEmployeeLogin, createAppointmentByEmployee);
 

@@ -10,6 +10,7 @@ import {
   getAllMedicalRecord,
   getAllMedicineByDoctor,
   getAllServiceByDoctor,
+  getDentistInfo,
   getDentistsScheduleByDentist,
   getProfilePictureDentist,
   loginDentist,
@@ -25,6 +26,8 @@ import { isAuthenticatedDentistLogin } from "../middleware/auth";
 const dentistRouter = express.Router();
 
 dentistRouter.post("/dentist/login", loginDentist);
+
+dentistRouter.get("/dentist/me", isAuthenticatedDentistLogin, getDentistInfo);
 
 dentistRouter.put("/dentist/update-profile-picture", isAuthenticatedDentistLogin, updateProfilePictureDentist);
 
