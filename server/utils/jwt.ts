@@ -30,8 +30,8 @@ const refreshTokenExpire = parseInt(
 
 // options for cookies
 export const accessTokenOptions: ITokenOptions = {
-    expires: new Date(Date.now() + accessTokenExpire * 60 * 60 * 1000),
-    maxAge: accessTokenExpire * 60 * 60 * 1000,
+    expires: new Date(Date.now() + accessTokenExpire * 60 * 1000),
+    maxAge: accessTokenExpire * 60 * 1000,
     httpOnly: true,
     sameSite: "none",
     secure:true,
@@ -45,9 +45,9 @@ export const refreshTokenOptions: ITokenOptions = {
     secure:true,
 };
 
-export const sendUserToken = (user: IUser, statusCode: number, res: Response) => {
+export const sendUserToken = (req:any, user: IUser, statusCode: number, res: Response) => {
     const accessToken = jwt.sign({user}, process.env.ACCESS_TOKEN || '',{
-        expiresIn: "5m",
+        expiresIn: "30m",
     });
     const refreshToken = jwt.sign({user}, process.env.REFRESH_TOKEN || '',{
         expiresIn: "3d",
@@ -64,6 +64,10 @@ export const sendUserToken = (user: IUser, statusCode: number, res: Response) =>
     res.cookie("access_token", accessToken, accessTokenOptions);
     res.cookie("refresh_token", refreshToken, refreshTokenOptions);
 
+    const access_token = req.cookies.access_token as string;
+    console.log("access_token:",access_token)
+
+
     res.status(statusCode).json({
         success: true,
         user,
@@ -73,7 +77,7 @@ export const sendUserToken = (user: IUser, statusCode: number, res: Response) =>
 
 export const sendDentistToken = (dentist: IDentist, statusCode: number, res: Response) => {
     const accessToken = jwt.sign({dentist}, process.env.ACCESS_TOKEN || '',{
-        expiresIn: "5m",
+        expiresIn: "30m",
     });
     const refreshToken = jwt.sign({dentist}, process.env.REFRESH_TOKEN || '',{
         expiresIn: "3d",
@@ -99,7 +103,7 @@ export const sendDentistToken = (dentist: IDentist, statusCode: number, res: Res
 
 export const sendEmployeeToken = (employee: IEmployee, statusCode: number, res: Response) => {
     const accessToken = jwt.sign({employee}, process.env.ACCESS_TOKEN || '',{
-        expiresIn: "5m",
+        expiresIn: "30m",
     });
     const refreshToken = jwt.sign({employee}, process.env.REFRESH_TOKEN || '',{
         expiresIn: "3d",
@@ -125,7 +129,7 @@ export const sendEmployeeToken = (employee: IEmployee, statusCode: number, res: 
 
 export const sendAdminToken = (admin: IAdmin, statusCode: number, res: Response) => {
     const accessToken = jwt.sign({admin}, process.env.ACCESS_TOKEN || '',{
-        expiresIn: "5m",
+        expiresIn: "30m",
     });
     const refreshToken = jwt.sign({admin}, process.env.REFRESH_TOKEN || '',{
         expiresIn: "3d",

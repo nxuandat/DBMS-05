@@ -1,8 +1,8 @@
 export interface IDetailMedicine {
     MaThuoc: string;
     MaKH: string;
-    SoDT: string;
     STT: number;
+    SoDT: string;
     SoLuong: number;
     ThoiDiemDung: string;
   }

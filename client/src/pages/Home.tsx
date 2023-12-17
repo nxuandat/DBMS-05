@@ -1,12 +1,19 @@
 import doctorHomeImg from "../images/doctorHome.svg";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
+import React, { useEffect } from 'react';
+// import AppointmentForm from "./AppointmentForm";
+import ServiceList from "../components/ServiceList/ServiceList";
+import Reviews from "../components/ReviewsList/Reviews";
 // import Carousel from "../components/Carousel";
 // import banner1 from "../images/Banner1.png";
 // import banner2 from "../images/Banner2.png";
 
+
 export function Home() {
+  
   return (
+    
     <div id='biggg' className='mt-11'>
       <div className='row mb-9 mt-11'>
         <div className='col-md-8 col-lg-7 col-xl-6'>
@@ -37,13 +44,15 @@ export function Home() {
                 border: "1px solid #34C38F",
               }}
               component={Link}
-              to='/appoinment'
+              to='/appointment'
             >
               Đặt lịch hẹn
             </Button>
           </div>
         </div>
       </div>
+      <ServiceList/>
+      <Reviews/>
       {/* <Carousel bannerImages={[banner1, banner2]} /> */}
     </div>
   );

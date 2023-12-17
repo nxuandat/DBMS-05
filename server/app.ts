@@ -27,6 +27,12 @@ app.use(
   })
 );
 
+
+
+// connect to database sql server
+const db = ConnectToDatabase();
+app.set('db', db);
+
 app.use(
   "/api/v1",
   userRouter,
@@ -34,12 +40,6 @@ app.use(
   employeeRouter,
   adminRouter,
 );
-
-// connect to database sql server
-const db = ConnectToDatabase();
-app.set('db', db);
-
-
 
 //api request limit
 const limiter = rateLimit({
