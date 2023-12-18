@@ -1,35 +1,44 @@
-import React, { useState } from "react";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { TextField, Box, Button } from "@mui/material";
-// import Menu from "@material-ui/core/Menu";
-// import MenuItem from "@material-ui/core/MenuItem";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { DataGrid, GridColDef, GridCellParams } from '@mui/x-data-grid';
+import { Box, Button, TextField } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { Dropdown } from "react-bootstrap";
+import axios from 'axios';
 
 const columns: GridColDef[] = [
   {
-    field: "id",
-    headerName: "ID",
+    field: 'id',
+    headerName: 'ID',
     flex: 1,
   },
   {
-    field: "fullName",
-    headerName: "Họ và tên",
+    field: 'fullName',
+    headerName: 'Họ và tên',
     flex: 2,
   },
   {
-    field: "email",
-    headerName: "Email",
+    field: 'phoneNumber',
+    headerName: 'Số ĐT',
+    flex: 2,
+  },
+  {
+    field: 'email',
+    headerName: 'Email',
     flex: 3,
   },
   {
-    field: "role",
-    headerName: "Vai trò",
+    field: 'gender',
+    headerName: 'Giới tính',
     flex: 2,
   },
   {
-    field: "actions",
-    headerName: "Thao tác",
+    field: 'password',
+    headerName: 'Mật Khẩu',
+    flex: 2,
+  },
+  {
+    field: 'actions',
+    headerName: 'Thao tác',
     flex: 2,
     renderCell: (params: GridCellParams) => (
       <div>
@@ -37,7 +46,7 @@ const columns: GridColDef[] = [
           variant='outlined'
           color='success'
           onClick={() => handleEdit(params.row.id)}
-          style={{ marginRight: "10px" }}
+          style={{ marginRight: '10px' }}
         >
           SỬA
         </Button>
@@ -52,69 +61,40 @@ const columns: GridColDef[] = [
     ),
   },
 ];
-const initialRows = [
-  {
-    id: 1,
-    fullName: "Snow Jon",
-    email: "jon.snow@example.com",
-    role: "Bác sĩ",
-  },
-  {
-    id: 2,
-    fullName: "Lannister Cersei",
-    email: "cersei.lannister@example.com",
-    role: "Nhân viên",
-  },
-  {
-    id: 3,
-    fullName: "Lannister Jaime",
-    email: "jaime.lannister@example.com",
-    role: "Nhân viên",
-  },
-  {
-    id: 4,
-    fullName: "Stark Arya",
-    email: "arya.stark@example.com",
-    role: "Bệnh nhân",
-  },
-  {
-    id: 5,
-    fullName: "Targaryen Daenerys",
-    email: "daenerys.targaryen@example.com",
-    role: "Bệnh nhân",
-  },
-  {
-    id: 6,
-    fullName: "Melisandre",
-    email: "melisandre@example.com",
-    role: "Bác sĩ",
-  },
-  {
-    id: 7,
-    fullName: "Clifford Ferrara",
-    email: "clifford.ferrara@example.com",
-    role: "Nhân viên",
-  },
-  {
-    id: 8,
-    fullName: "Frances Rossini",
-    email: "frances.rossini@example.com",
-    role: "Bác sĩ",
-  },
-  {
-    id: 9,
-    fullName: "Roxie Harvey",
-    email: "roxie.harvey@example.com",
-    role: "Bệnh nhân",
-  },
-];
 
 export default function DataTable() {
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [rows, setRows] = React.useState(initialRows);
-
-  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [rows, setRows] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/get-all-users`, { withCredentials: true })
+      .then(response => {
+        setRows(response.data.users.map(user => ({
+          id: user.MaKH,
+          fullName: user.HoTen,
+          phoneNumber: user.SoDT,
+          email: user.Email,
+          gender: user.Phai,
+          password: user.MatKhau
+        })));
+      })
+      .catch(error => {
+        console.error('There was an error!', error);
+      });
+  }, []);
+
+  function handleEdit(id: number) {
+    // Handle edit action here...
+  }
+
+  function handleDelete(id: number) {
+    // Handle delete action here...
+  }
+
+
+  
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -128,7 +108,7 @@ export default function DataTable() {
     navigate("/addStaff");
     handleClose();
   };
-
+ 
   const handleAddDoctor = () => {
     navigate("/addDoctor");
     handleClose();
@@ -142,37 +122,18 @@ export default function DataTable() {
     // Handle delete action here...
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     setRows(
-      initialRows.filter((row) =>
+      rows.filter((row) =>
         row.fullName.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
   }, [searchTerm]);
+
   return (
-    // <div style={{ height: 400, width: "100%" }}>
     <div>
       <h1>QUẢN LÝ NGƯỜI DÙNG</h1>
       <Box display='flex' justifyContent='flex-end' m={1} p={1}>
-        {/* <Button
-          aria-controls='simple-menu'
-          aria-haspopup='true'
-          // variant='contained'
-          // color='success'
-          onClick={handleClick}
-        >
-          Thêm người dùng
-        </Button>
-        <Menu
-          id='simple-menu'
-          anchorEl={anchorEl}
-          keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          <MenuItem onClick={handleAddStaff}>Thêm Nhân viên</MenuItem>
-          <MenuItem onClick={handleAddDoctor}>Thêm Nha sĩ</MenuItem>
-        </Menu> */}
         <Dropdown>
           <Dropdown.Toggle variant='success' id='dropdown-basic'>
             Thêm người dùng
