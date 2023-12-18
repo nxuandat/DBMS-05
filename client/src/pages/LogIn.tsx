@@ -85,6 +85,7 @@ export default function LogIn() {
                 variant='standard'
                 type='text'
                 value={phoneNumber}
+                required
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
               {/* Password input */}
@@ -95,6 +96,7 @@ export default function LogIn() {
                 variant='standard'
                 type='password'
                 value={password}
+                required
                 onChange={(e) => setPassword(e.target.value)}
               />
               <div className='d-flex justify-content-around align-items-center mb-4'>
@@ -106,7 +108,6 @@ export default function LogIn() {
                     // defaultValue
                     id='form1Example3'
                     defaultChecked
-                    checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
                     // style={{ backgroundColor: "#51C888" }}
                   />
@@ -140,11 +141,14 @@ export default function LogIn() {
                   borderColor: "transparent",
                   color: "#0a0a0a",
                 }}
-                href='#!'
+                href='/login2'
                 role='button'
               >
-                <i className='fab fa-google me-2' />
-                Đăng nhập với Google
+                <i
+                  className='far fa-id-badge'
+                  style={{ marginRight: "10px" }}
+                />
+                Đăng nhập với quyền Nhân sự
               </a>
             </form>
             <ToastContainer />

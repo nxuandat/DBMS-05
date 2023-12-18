@@ -28,8 +28,8 @@ export default function LogIn2() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if(!userName || !password) {
-      toast.error("Vui lòng nhập đủ thông tin khi đăng nhập")
+    if (!userName || !password) {
+      toast.error("Vui lòng nhập đủ thông tin khi đăng nhập");
     }
 
     try {
@@ -47,7 +47,7 @@ export default function LogIn2() {
           break;
         default:
           // Handle default case or show an error message
-          toast.error("Vui lòng chọn vai trò đăng nhập")
+          toast.error("Vui lòng chọn vai trò đăng nhập");
           console.error("Invalid role selected");
           return;
       }
@@ -267,6 +267,7 @@ export default function LogIn2() {
                 variant='standard'
                 type='text'
                 value={userName}
+                required
                 onChange={(e) => setuserName(e.target.value)}
               />
               {/* Password input */}
@@ -277,6 +278,7 @@ export default function LogIn2() {
                 variant='standard'
                 type='password'
                 value={password}
+                required
                 onChange={(e) => setPassword(e.target.value)}
               />
               <div className='d-flex justify-content-around align-items-center mb-4'>
@@ -288,7 +290,6 @@ export default function LogIn2() {
                     // defaultValue
                     id='form1Example3'
                     defaultChecked
-                    checked={rememberMe}
                     onChange={() => setRememberMe(!rememberMe)}
                     // style={{ backgroundColor: "#51C888" }}
                   />
@@ -312,22 +313,6 @@ export default function LogIn2() {
               >
                 Đăng nhập
               </button>
-              <div className='divider d-flex align-items-center justify-content-center my-4'>
-                <p className='text-center fw-bold mx-3 mb-0 text-muted'>HOẶC</p>
-              </div>
-              <a
-                className='btn btn-primary btn-lg btn-block'
-                style={{
-                  backgroundColor: "#f7f7f7",
-                  borderColor: "transparent",
-                  color: "#0a0a0a",
-                }}
-                href='#!'
-                role='button'
-              >
-                <i className='fab fa-google me-2' />
-                Đăng nhập với Google
-              </a>
             </form>
             <ToastContainer />
           </div>

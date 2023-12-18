@@ -1,5 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useEffect } from "react";
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { TextField, Box, Button } from "@mui/material";
@@ -71,85 +73,13 @@ const columns: GridColDef[] = [
 // test
 const initialRows = [
   {
-    id: 1,
-    drugName: "Fluoride Toothpaste",
-    unit: "g",
-    indication: "Chăm sóc răng",
-    quantity: 100,
-    expiryDate: "2023-12-31",
-    price: 4.99,
-  },
-  {
-    id: 2,
-    drugName: "Mouthwash",
-    unit: "ml",
-    indication: "Vệ sinh miệng",
-    quantity: 150,
-    expiryDate: "2024-02-28",
-    price: 6.49,
-  },
-  {
-    id: 3,
-    drugName: "Topical Anesthetic Gel",
-    unit: "g",
-    indication: "Gây tê cho các thủ tục nha khoa",
-    quantity: 30,
-    expiryDate: "2023-11-30",
-    price: 8.99,
-  },
-  {
-    id: 4,
-    drugName: "Dental Floss",
-    unit: "m",
-    indication: "Vệ sinh giữa răng",
-    quantity: 50,
-    expiryDate: "2023-10-15",
-    price: 2.99,
-  },
-  {
-    id: 5,
-    drugName: "Fluoride Mouth Rinse",
-    unit: "ml",
-    indication: "Ngăn chặn sâu răng",
-    quantity: 200,
-    expiryDate: "2024-01-20",
-    price: 9.99,
-  },
-  {
-    id: 6,
-    drugName: "Toothbrush",
-    unit: "unit",
-    indication: "Chăm sóc răng hàng ngày",
-    quantity: 10,
-    expiryDate: "2023-09-30",
-    price: 3.99,
-  },
-  {
-    id: 7,
-    drugName: "Dental Cement",
-    unit: "g",
-    indication: "Nha khoa phục hình",
-    quantity: 25,
-    expiryDate: "2024-03-15",
-    price: 12.99,
-  },
-  {
-    id: 8,
-    drugName: "Oral Antibiotic",
-    unit: "mg",
-    indication: "Phòng ngừa nhiễm trùng sau phẫu thuật",
-    quantity: 20,
-    expiryDate: "2023-08-25",
-    price: 14.49,
-  },
-  {
-    id: 9,
-    drugName: "Orthodontic Wax",
-    unit: "g",
-    indication: "Thoải mái với các thiết bị nha khoa",
-    quantity: 15,
-    expiryDate: "2023-07-10",
-    price: 5.99,
+    id: 0,
+    drugName: "",
+    unit: "",
+    indication: "",
+    quantity: 0,
+    expiryDate: "",
+    price: 0,
   },
 ];
 
@@ -174,6 +104,32 @@ export default function ListMedicine() {
       )
     );
   }, [searchTerm]);
+
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/get-all-medicine`, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setRows(
+          response.data.medicines.map((medicine) => ({
+            id: medicine.MaThuoc,
+            drugName: medicine.TenThuoc,
+            unit: medicine.DonViTinh,
+            indication: medicine.ChiDinh,
+            quantity: medicine.SoLuong,
+            expiryDate: new Date(medicine.NgayHetHan).toLocaleDateString(
+              "vi-VN"
+            ),
+            price: medicine.GiaThuoc,
+          }))
+        );
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
+      });
+  }, []);
+
   return (
     // <div style={{ height: 400, width: "100%" }}>
     <div>
