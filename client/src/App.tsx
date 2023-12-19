@@ -25,6 +25,7 @@ import AnalyticsAdmin from "./pages/AnalyticsAdmin";
 import PatientRecord from "./pages/PatientRecord";
 import ProtectedIsAdminRoute from "./protected routes/ProtectedIsAdminRoutes";
 import DentistSchedule from "./pages/DentistSchedule";
+import AppointmentListUser from "./pages/AppointmentListUser";
 function App() {
   return (
     <div
@@ -101,10 +102,18 @@ function App() {
             } 
           />
           <Route
-            path='/dentistSchedule'
+            path='/dentist-schedule'
             element={
               <ProtectedIsLoginRoute>
                 <DentistSchedule />
+              </ProtectedIsLoginRoute>
+            }
+          />
+          <Route
+            path='/appointment-list-user'
+            element={
+              <ProtectedIsLoginRoute>
+                <AppointmentListUser/>
               </ProtectedIsLoginRoute>
             }
           />
