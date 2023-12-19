@@ -1,21 +1,48 @@
-import React from "react";
+import React, { useEffect,useState } from "react";
 import Fullcalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import axios from 'axios'
 
 function AppointmentListUser() {
+  const [events, setEvents] = useState([]);
+  useEffect(() => {
+    
+    axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/get-appointment`,{ withCredentials:true }) // Thay đổi URL này thành URL của API của bạn
+      .then(response => {
+        // Chuyển đổi dữ liệu
+        const appointments = response.data.appointments;
+        const events = appointments.map(appointment => ({
+          title: appointment.LyDoKham,
+          start: appointment.NgayGioKham,
+          extendedProps: {
+            MaSoHen: appointment.MaSoHen,
+            MaNS: appointment.MaNS,
+            MaKH: appointment.MaKH,
+            SoDT: appointment.SoDT,
+          },
+        }));
+
+        // Cập nhật state
+        setEvents(events);
+      })
+      .catch(error => {
+        console.error("Error fetching appointments:", error);
+      });
+  }, []);
   return (
     <div>
       <Fullcalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView={"dayGridMonth"}
         headerToolbar={{
-          start: "today prev,next", // will normally be on the left. if RTL, will be on the right
+          start: "today prev,next", 
           center: "title",
-          end: "dayGridMonth,timeGridWeek,timeGridDay", // will normally be on the right. if RTL, will be on the left
+          end: "dayGridMonth,timeGridWeek,timeGridDay", 
         }}
         height={"90vh"}
+        events={events}
       />
     </div>
   );
