@@ -1,154 +1,134 @@
 import React, { useState } from "react";
-import { TextField, Button, Typography, Box } from "@mui/material";
-
+import axios from "axios";
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from "@mui/material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 interface Doctor {
-  email: string;
   doctorName: string;
+  userName: string;
   gender: string;
   doctorInfo: string;
   password: string;
 }
 
 const AddDoctor: React.FC = () => {
-  const [gender, setGender] = useState("");
-  const [doctor, setDoctor] = useState<Doctor[]>([
-    {
-      email: "",
-      doctorName: "",
-      gender: "",
-      doctorInfo: "",
-      password: "",
-    },
-  ]);
+  const [doctor, setDoctor] = useState<Doctor>({
+    doctorName: "",
+    userName: "",
+    doctorInfo: "",
+    gender: "M", // Default to male
+    password: "",
+  });
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    index: number
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setDoctor((prevDoctor) => {
-      const updatedDoctor = [...prevDoctor];
-      updatedDoctor[index] = {
-        ...updatedDoctor[index],
-        [name]: value,
-      };
-      return updatedDoctor;
-    });
-  };
-
-  const handleAddDoctor = () => {
-    setDoctor((prevDoctor) => [
+    setDoctor((prevDoctor) => ({
       ...prevDoctor,
-      {
-        email: "",
-        doctorName: "",
-        gender: "",
-        doctorInfo: "",
-        password: "",
-      },
-    ]);
+      [name]: value,
+    }));
   };
 
-  const handleRemoveDoctor = (index: number) => {
-    setDoctor((prevDoctor) => prevDoctor.filter((_, i) => i !== index));
+  const handleGenderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDoctor((prevDoctor) => ({
+      ...prevDoctor,
+      gender: e.target.value,
+    }));
   };
 
-  const handleSaveDoctor = () => {
-    // Add logic to save Doctors to your data source
-    console.log("Adding doctors:", doctor);
-    // You can reset the form or perform other actions after adding the Doctors
+  const handleAddDoctor = async () => {
+    try {
+      // const formattedExpiryDate = new Date(medicine.expiryDate).toISOString();
+      const doctorData = {
+        HoTen: doctor.doctorName,
+        Phai: doctor.gender,
+        TenDangNhap: doctor.userName,
+        GioiThieu: doctor.doctorInfo,
+        MatKhau: doctor.password,
+      };
+      console.log(
+        "Sending the following data:",
+        JSON.stringify(doctorData, null, 2)
+      );
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/admin/add-dentist`,
+        doctorData,
+        { withCredentials: true }
+      );
+
+      console.log("Dentist added successfully:", response.data);
+      toast.success("Thêm thành công");
+    } catch (error: any) {
+      console.error("Error adding dentist:", error.message);
+      toast.error("Thêm thất bại");
+    }
   };
 
   return (
     <Box>
+      <ToastContainer />
       <Typography variant='h4' mb={3}>
         Thêm Nha Sĩ Mới
       </Typography>
-      {doctor.map((doctor, index) => (
-        <Box
-          key={index}
-          display='flex'
-          flexDirection='row'
-          alignItems='center'
-          justifyContent='space-between'
-          mb={2}
-        >
-          <TextField
-            label='Họ và tên'
-            variant='outlined'
-            name='doctorName'
-            value={doctor.doctorName}
-            onChange={(e) => handleInputChange(e, index)}
-            fullWidth
-            sx={{ mr: 2 }}
-          />
-          <TextField
-            label='Email'
-            variant='outlined'
-            name='email'
-            value={doctor.email}
-            onChange={(e) => handleInputChange(e, index)}
-            fullWidth
-            sx={{ mr: 2 }}
-          />
-          {/* Gender check */}
-          <Box display='flex' justifyContent='center'>
-            <div className='form-check form-check-inline'>
-              <input
-                className='form-check-input'
-                type='radio'
-                name='inlineRadioOptions'
-                id='inlineRadio1'
-                defaultValue='option1'
-              />
-              <label className='form-check-label' htmlFor='inlineRadio1'>
-                Nam
-              </label>
-            </div>
-            <div className='form-check form-check-inline'>
-              <input
-                className='form-check-input'
-                type='radio'
-                name='inlineRadioOptions'
-                id='inlineRadio2'
-                defaultValue='option2'
-              />
-              <label className='form-check-label' htmlFor='inlineRadio2'>
-                Nữ
-              </label>
-            </div>
-          </Box>
-          <TextField
-            label='Giới thiệu'
-            variant='outlined'
-            type='text'
-            name='doctorInfo'
-            value={doctor.doctorInfo}
-            onChange={(e) => handleInputChange(e, index)}
-            fullWidth
-            sx={{ mr: 2 }}
-          />
-          <TextField
-            label='Mật khẩu'
-            variant='outlined'
-            type='password'
-            name='password'
-            value={doctor.password}
-            onChange={(e) => handleInputChange(e, index)}
-            fullWidth
-            sx={{ mr: 2 }}
-          />
-          {index !== 0 && (
-            <Button
-              variant='outlined'
-              color='error'
-              onClick={() => handleRemoveDoctor(index)}
-            >
-              Xóa
-            </Button>
-          )}
-        </Box>
-      ))}
+      <TextField
+        label='Họ và tên'
+        variant='outlined'
+        name='doctorName'
+        value={doctor.doctorName}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <TextField
+        label='Tên đăng nhập'
+        variant='outlined'
+        name='userName'
+        value={doctor.userName}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <RadioGroup
+        row
+        aria-label='gender'
+        name='gender'
+        value={doctor.gender}
+        onChange={(e) => handleGenderChange(e)}
+        sx={{ mb: 2 }}
+      >
+        <FormControlLabel value='M' control={<Radio />} label='Nam' />
+        <FormControlLabel value='F' control={<Radio />} label='Nữ' />
+      </RadioGroup>
+      <TextField
+        label='Giới thiệu'
+        variant='outlined'
+        type='text'
+        name='doctorInfo'
+        value={doctor.doctorInfo}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <TextField
+        label='Mật khẩu'
+        variant='outlined'
+        type='password'
+        name='password'
+        value={doctor.password}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
       <Button
         variant='contained'
         color='primary'
@@ -156,14 +136,6 @@ const AddDoctor: React.FC = () => {
         sx={{ mt: 2 }}
       >
         Thêm Nha sĩ mới
-      </Button>
-      <Button
-        variant='contained'
-        color='success'
-        onClick={handleSaveDoctor}
-        sx={{ mt: 2, ml: 2 }}
-      >
-        Lưu Nha Sĩ
       </Button>
     </Box>
   );

@@ -12,20 +12,24 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-interface Staff {
+interface User {
+  phoneNumber: string;
   email: string;
-  staffName: string;
-  userName: string;
+  fullName: string;
   gender: string;
+  birthday: string;
+  address: string;
   password: string;
 }
 
-const AddStaff: React.FC = () => {
-  const [staff, setStaff] = useState<Staff>({
+const AddUser: React.FC = () => {
+  const [user, setUser] = useState<User>({
+    phoneNumber: "",
     email: "",
-    staffName: "",
-    userName: "",
-    gender: "M", // Default to male
+    fullName: "",
+    gender: "M",
+    birthday: "",
+    address: "",
     password: "",
   });
 
@@ -33,43 +37,45 @@ const AddStaff: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setStaff((prevStaff) => ({
-      ...prevStaff,
+    setUser((prevUser) => ({
+      ...prevUser,
       [name]: value,
     }));
   };
 
   const handleGenderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStaff((prevStaff) => ({
-      ...prevStaff,
+    setUser((prevUser) => ({
+      ...prevUser,
       gender: e.target.value,
     }));
   };
 
-  const handleAddStaff = async () => {
+  const handleAddUser = async () => {
     try {
-      // const formattedExpiryDate = new Date(medicine.expiryDate).toISOString();
-      const staffData = {
-        HoTen: staff.staffName,
-        Phai: staff.gender,
-        TenDangNhap: staff.userName,
-        MatKhau: staff.password,
+      const userData = {
+        SoDT: user.phoneNumber,
+        HoTen: user.fullName,
+        Phai: user.gender,
+        DiaChi: user.address,
+        NgaySinh: new Date(user.birthday).toISOString(),
+        MatKhau: user.password,
+        Email: user.email,
       };
       console.log(
         "Sending the following data:",
-        JSON.stringify(staffData, null, 2)
+        JSON.stringify(userData, null, 2)
       );
 
       const response = await axios.post(
-        `${import.meta.env.VITE_REACT_SERVER_PORT}/admin/add-employee`,
-        staffData,
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/admin/add-user`,
+        userData,
         { withCredentials: true }
       );
 
-      console.log("Staff added successfully:", response.data);
+      console.log("User added successfully:", response.data);
       toast.success("Thêm thành công");
     } catch (error: any) {
-      console.error("Error adding staff:", error.message);
+      console.error("Error adding user:", error.message);
       toast.error("Thêm thất bại");
     }
   };
@@ -78,22 +84,31 @@ const AddStaff: React.FC = () => {
     <Box>
       <ToastContainer />
       <Typography variant='h4' mb={3}>
-        Thêm Nhân Viên Mới
+        Thêm Bệnh nhân Mới
       </Typography>
       <TextField
         label='Họ và tên'
         variant='outlined'
-        name='staffName'
-        value={staff.staffName}
+        name='fullName'
+        value={user.fullName}
         onChange={(e) => handleInputChange(e)}
         fullWidth
         sx={{ mb: 2 }}
       />
       <TextField
-        label='Tên đăng nhập'
+        label='Số điện thoại'
         variant='outlined'
-        name='userName'
-        value={staff.userName}
+        name='phoneNumber'
+        value={user.phoneNumber}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <TextField
+        label='Email'
+        variant='outlined'
+        name='email'
+        value={user.email}
         onChange={(e) => handleInputChange(e)}
         fullWidth
         sx={{ mb: 2 }}
@@ -102,7 +117,7 @@ const AddStaff: React.FC = () => {
         row
         aria-label='gender'
         name='gender'
-        value={staff.gender}
+        value={user.gender}
         onChange={(e) => handleGenderChange(e)}
         sx={{ mb: 2 }}
       >
@@ -110,11 +125,30 @@ const AddStaff: React.FC = () => {
         <FormControlLabel value='F' control={<Radio />} label='Nữ' />
       </RadioGroup>
       <TextField
+        label='Ngày sinh'
+        variant='outlined'
+        name='birthday'
+        type='date'
+        value={user.birthday}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <TextField
+        label='Địa chỉ'
+        variant='outlined'
+        name='address'
+        value={user.address}
+        onChange={(e) => handleInputChange(e)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+      <TextField
         label='Mật khẩu'
         variant='outlined'
         type='password'
         name='password'
-        value={staff.password}
+        value={user.password}
         onChange={(e) => handleInputChange(e)}
         fullWidth
         sx={{ mb: 2 }}
@@ -122,13 +156,13 @@ const AddStaff: React.FC = () => {
       <Button
         variant='contained'
         color='primary'
-        onClick={handleAddStaff}
+        onClick={handleAddUser}
         sx={{ mt: 2 }}
       >
-        Thêm Nhân viên mới
+        Thêm Bệnh nhân mới
       </Button>
     </Box>
   );
 };
 
-export default AddStaff;
+export default AddUser;

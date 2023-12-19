@@ -7,12 +7,14 @@ export const Notfound = (props) => {
   return (
     <>
       <Result
-        status="404"
-        title="404"
-        subTitle="Sorry, the page you visited does not exist."
+        status='404'
+        title='404'
+        subTitle='Xin lỗi, trang bạn truy cập không tồn tại!'
         extra={
-          <Button type="primary">
-            <Link to="/">Back home</Link>
+          <Button style={{ backgroundColor: "#2AB178", color: "#ffffff" }}>
+            <Link to='/' style={{ textDecoration: "none", color: "inherit" }}>
+              Quay về Trang chủ
+            </Link>
           </Button>
         }
       />
@@ -24,4 +26,4 @@ const mapStateToProps = (state) => ({});
 
 const mapDispatchToProps = {};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Notfound)
+export default connect(mapStateToProps, mapDispatchToProps)(Notfound);
