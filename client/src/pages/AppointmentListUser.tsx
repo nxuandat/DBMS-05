@@ -11,10 +11,12 @@ function AppointmentListUser() {
     
     axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/get-appointment`,{ withCredentials:true }) // Thay đổi URL này thành URL của API của bạn
       .then(response => {
-        // Chuyển đổi dữ liệu
         const appointments = response.data.appointments;
-        const events = appointments.map(appointment => ({
-          title: appointment.LyDoKham,
+       
+
+        
+        const events = appointments.map((appointment: { HoTen: any; NgayGioKham: any; MaSoHen: any; MaNS: any; MaKH: any; SoDT: any; }) => ({
+          title:`(Nha Sĩ: ${appointment.HoTen})`,
           start: appointment.NgayGioKham,
           extendedProps: {
             MaSoHen: appointment.MaSoHen,
@@ -41,6 +43,12 @@ function AppointmentListUser() {
           center: "title",
           end: "dayGridMonth,timeGridWeek,timeGridDay", 
         }}
+        slotLabelFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }}
+        timeZone='UTC'
         height={"90vh"}
         events={events}
       />

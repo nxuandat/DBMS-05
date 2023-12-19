@@ -5,4 +5,5 @@ export interface IAppointment {
     MaNS: string;
     MaKH: string;
     SoDT: string;
+    HoTen: string;
   }
