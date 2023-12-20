@@ -143,21 +143,23 @@ export function Dashboard() {
                                 <span className={styles.widgetTitle3}>Cuộc hẹn hôm nay <i className="fa fa-check" aria-hidden="true"></i></span>
                                 <hr />
                                 {/* Display grouped appointments here */}
+                                <div className={styles.dashWidgetInfoH4}>
                                 {Object.entries(groupedAppointments).map(([date, appointmentsByDate]) => (
                                     <div key={date}>
                                         <ul>
                                             {appointmentsByDate.map(appointment => (
                                                 <li key={appointment.STT}>
-                                                    <strong>Appointment ID:</strong> {appointment.STT}<br />
-                                                    <strong>Status:</strong> {appointment.TinhTrangCuocHen}<br />
-                                                    <strong>Start Time:</strong> {new Date(appointment.GioBatDau).toLocaleString()}<br />
-                                                    <strong>End Time:</strong> {new Date(appointment.GioKetThuc).toLocaleString()}<br />
+                                                    <strong>Mã số:</strong> {appointment.STT}<br />
+                                                    <strong>Tình trạng:</strong> {appointment.TinhTrangCuocHen}<br />
+                                                    <strong>Giờ bắt đầu:</strong> {new Date(appointment.GioBatDau).toLocaleString()}<br />
+                                                    <strong>Giờ kết thúc:</strong> {new Date(appointment.GioKetThuc).toLocaleString()}<br />
                                                     <hr />
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
                                 ))}
+                                </div>
                             </div>
                         </div>
 
@@ -170,6 +172,7 @@ export function Dashboard() {
                             <h3 className={styles.dashWidgetInfoH3}>{recordsCount}</h3>
                             <span className={styles.widgetTitle2}>Bệnh nhân gần đây <i className="fa fa-check" aria-hidden="true"></i></span>
                             <hr />
+                            <div className={styles.dashWidgetInfoH4}>
                             {Object.entries(groupedMedicalRecords).map(([date, records]) => (
                                 <div key={date}>
                                     
@@ -187,6 +190,7 @@ export function Dashboard() {
                                     <hr />
                                 </div>
                             ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -197,16 +201,18 @@ export function Dashboard() {
                                 <h3 className={styles.dashWidgetInfoH3}>{3}</h3>
                                 <span className={styles.widgetTitle4}>Dịch vụ hay sử dụng <i className="fa fa-check" aria-hidden="true"></i></span>
                                 <hr />
+                                <div className={styles.dashWidgetInfoH4}>
                                 <ul>
                                     {services.map(service => (
                                     <li key={service.MaDV}>
-                                        <strong>Service ID:</strong> {service.MaDV}<br />
-                                        <strong>Service Name:</strong> {service.TenDV}<br />
-                                        <strong>Description</strong> {service.MoTa}<br />
+                                        <strong>ID:</strong> {service.MaDV}<br />
+                                        <strong>Tên dịch vụ:</strong> {service.TenDV}<br />
+                                        <strong>Mô tả</strong> {service.MoTa}<br />
                                         <hr />
                                     </li>
                                     ))}
                                 </ul>
+                                </div>
                             </div>
                         </div>
                 </div>

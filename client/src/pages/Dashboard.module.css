@@ -28,13 +28,16 @@
 	/* height: 200px; */
 	background-color: white;
 	/* margin-top: 70px; */
+	margin-right: 7px;
 	margin-bottom: 20px;
-	padding: 0;
-	box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+	padding: 0px;
+	box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.1);
+	border-radius: 1rem;
 }
 
 .statCard:hover {
 	transform: scale(1.02);
+	background-color: #f0f0f0;
 }
 
 .dashWidget {
@@ -109,6 +112,10 @@
 	font-size: 24px;
 	font-weight: 500;
 	margin-bottom: 0.5rem;
+}
+
+.dashWidgetInfoH4 {
+	text-align: left;
 }
 
 .dashWidgetInfo span i {
@@ -199,6 +206,7 @@
 	width: 100%;
 	height:300px;
 	padding: 50px;
+	margin-top: 0px;
 	border-bottom-left-radius: 22px;
 	border-bottom-right-radius: 22px;
 }
