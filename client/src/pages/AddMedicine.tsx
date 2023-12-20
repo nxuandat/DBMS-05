@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
 import axios from "axios";
-import { setUser } from "../redux/features/auth/userSlice";
-import { useDispatch } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Medicine {
   drugName: string;
@@ -48,17 +48,21 @@ const AddMedicine: React.FC = () => {
 
       const response = await axios.post(
         `${import.meta.env.VITE_REACT_SERVER_PORT}/admin/add-medicine`,
-        medicineData
+        medicineData,
+        { withCredentials: true }
       );
 
       console.log("Medicine added successfully:", response.data);
+      toast.success("Thêm thành công");
     } catch (error: any) {
       console.error("Error adding medicine:", error.message);
+      toast.error("Thêm thất bại");
     }
   };
 
   return (
     <Box>
+      <ToastContainer />
       <Typography variant='h4' mb={3}>
         Thêm Thuốc Mới
       </Typography>

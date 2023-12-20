@@ -52,6 +52,11 @@ const Scheduler: React.FC<SchedulerProps> = ({ onDataUpdated, events, timeFormat
         scheduler.config.hour_date = '%g:%i %A';
         scheduler.xy.scale_width = 70;
 
+        // Set the color of the scheduler to green
+        scheduler.templates.event_class = function(start, end, event) {
+            return "green_event";
+        }
+
         initSchedulerEvents();
 
         scheduler.init(schedulerContainer.current, new Date(2020, 5, 10));
@@ -80,9 +85,9 @@ const Scheduler: React.FC<SchedulerProps> = ({ onDataUpdated, events, timeFormat
     }
 
     return (
-        <div
+        <div 
             ref={schedulerContainer}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '100%', height: '100%' , }}
         ></div>
     );
 }

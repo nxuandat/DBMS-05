@@ -1051,6 +1051,7 @@ export const getAppointmentByUser = CatchAsyncError(
             MaNS: columns[3].value ? columns[3].value.trim() : null,
             MaKH: columns[4].value ? columns[4].value.trim() : null,
             SoDT: columns[5].value ? columns[5].value.trim() : null,
+            HoTen: columns[6].value ? columns[6].value.trim() : null
           };
           appointments.push(appointment);
           
