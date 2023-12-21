@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef, GridCellParams } from "@mui/x-data-grid";
-import { Box, Button, TextField, Modal, Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Modal,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
 import axios from "axios";
@@ -15,8 +23,6 @@ interface User {
   MatKhau: string;
 }
 
-
-
 export default function TableListUser() {
   const [searchTerm, setSearchTerm] = useState("");
   const [rows, setRows] = useState([]);
@@ -30,7 +36,7 @@ export default function TableListUser() {
     const requestData = {
       MaKH: id,
     };
-  
+
     axios
       .delete(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/delete-user`, {
         withCredentials: true,
@@ -272,22 +278,27 @@ export default function TableListUser() {
         pageSizeOptions={[5, 10]}
         checkboxSelection
       />
-      <Modal open={isEditModalOpen} onClose={handleEditModalClose} disableEnforceFocus disableAutoFocus>
+      <Modal
+        open={isEditModalOpen}
+        onClose={handleEditModalClose}
+        disableEnforceFocus
+        disableAutoFocus
+      >
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'white',
-            borderRadius: '8px',
-            padding: '50px',
-            minWidth: '500px', // Adjust the width as needed
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "white",
+            borderRadius: "8px",
+            padding: "50px",
+            minWidth: "500px", // Adjust the width as needed
           }}
         >
           {/* Render the fields of the editingUser for modification */}
           <TextField
-            label='Ho Ten'
+            label='Họ và tên'
             variant='outlined'
             value={editingUser?.fullName || ""}
             onChange={(e) =>
@@ -296,11 +307,11 @@ export default function TableListUser() {
                 fullName: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
           <TextField
-            label='So dien thoai'
+            label='Số điện thoại'
             variant='outlined'
             value={editingUser?.phoneNumber || ""}
             onChange={(e) =>
@@ -309,7 +320,7 @@ export default function TableListUser() {
                 phoneNumber: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
           <TextField
@@ -322,12 +333,12 @@ export default function TableListUser() {
                 email: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
           {/* Gender (Phai) Radio Group */}
           <RadioGroup
-            aria-label='Gioi tinh'
+            aria-label='Giới tính'
             name='gender'
             value={editingUser?.gender || ""}
             onChange={(e) =>
@@ -336,7 +347,7 @@ export default function TableListUser() {
                 gender: e.target.value,
               }))
             }
-            sx={{ flexDirection: 'row', marginBottom: '16px'}}
+            sx={{ flexDirection: "row", marginBottom: "16px" }}
           >
             <FormControlLabel value='M' control={<Radio />} label='Male' />
             <FormControlLabel value='F' control={<Radio />} label='Female' />
@@ -344,7 +355,7 @@ export default function TableListUser() {
 
           {/* Address (DiaChi) TextField */}
           <TextField
-            label='Dia Chi'
+            label='Địa chỉ'
             variant='outlined'
             value={editingUser?.address || ""}
             onChange={(e) =>
@@ -353,11 +364,11 @@ export default function TableListUser() {
                 address: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
           <TextField
-            label='Mat Khau'
+            label='Mật khẩu'
             variant='outlined'
             value={editingUser?.password || ""}
             onChange={(e) =>
@@ -366,51 +377,51 @@ export default function TableListUser() {
                 password: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
-        <Box
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              marginTop: "16px",
+            }}
+          >
+            <Button
+              onClick={handleSaveChanges}
               sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                width: '100%',
-                marginTop: '16px',
+                marginTop: "16px",
+                backgroundColor: "#2AB178",
+                color: "white",
+                width: "120px",
+                borderRadius: "5px",
+                ":hover": {
+                  backgroundColor: "#31B373",
+                },
               }}
             >
-          <Button onClick={handleSaveChanges}
-            sx={{
-              marginTop: '16px',
-              backgroundColor: 'blue', // Set the background color to blue
-              color: 'white', // Set the text color to white for better contrast
-              width: '120px',
-              borderRadius: '5px',
-              ":hover": {
-                backgroundColor: 'darkblue' // Add hover color
-              },
-            }}
-          >
-            Save Changes
-          </Button>
-          <Button
-            onClick={handleEditModalClose}
-            sx={{
-              marginTop: '16px',
-              backgroundColor: 'red',
-              color: 'white',
-              width: '120px',
-              marginLeft: '2rem',
-              borderRadius: '5px',
-              ":hover": {
-                backgroundColor: 'darkred',
-              },
-            }}
-          >
-                Cancel
-              </Button>
+              Lưu thay đổi
+            </Button>
+            <Button
+              onClick={handleEditModalClose}
+              sx={{
+                marginTop: "16px",
+                backgroundColor: "red",
+                color: "white",
+                width: "120px",
+                marginLeft: "2rem",
+                borderRadius: "5px",
+                ":hover": {
+                  backgroundColor: "darkred",
+                },
+              }}
+            >
+              Hủy
+            </Button>
           </Box>
         </Box>
       </Modal>
-      
     </div>
   );
 }

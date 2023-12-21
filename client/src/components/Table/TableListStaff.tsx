@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { DataGrid, GridColDef, GridCellParams } from "@mui/x-data-grid";
-import { Box, Button, TextField, Modal, Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Modal,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
 import axios from "axios";
@@ -12,7 +20,6 @@ interface Staff {
   Phai: string;
   MatKhau: string;
 }
-
 
 export default function TableListStaff() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,12 +124,15 @@ export default function TableListStaff() {
     const requestData = {
       MaNV: id,
     };
-  
+
     axios
-      .delete(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/delete-employee`, {
-        withCredentials: true,
-        data: requestData,
-      })
+      .delete(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/admin/delete-employee`,
+        {
+          withCredentials: true,
+          data: requestData,
+        }
+      )
       .then((response) => {
         // Handle successful deletion, you might want to update the state or refresh the data
         console.log(`Employee with ID ${id} deleted successfully`);
@@ -145,9 +155,12 @@ export default function TableListStaff() {
 
   function reloadData() {
     axios
-      .get(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/get-all-employees`, {
-        withCredentials: true,
-      })
+      .get(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/admin/get-all-employees`,
+        {
+          withCredentials: true,
+        }
+      )
       .then((response) => {
         setRows(
           response.data.employees.map((user: Staff) => ({
@@ -263,22 +276,27 @@ export default function TableListStaff() {
         checkboxSelection
       />
 
-      <Modal open={isEditModalOpen} onClose={handleEditModalClose} disableEnforceFocus disableAutoFocus>
+      <Modal
+        open={isEditModalOpen}
+        onClose={handleEditModalClose}
+        disableEnforceFocus
+        disableAutoFocus
+      >
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: 'white',
-            borderRadius: '8px',
-            padding: '50px',
-            minWidth: '500px', // Adjust the width as needed
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "white",
+            borderRadius: "8px",
+            padding: "50px",
+            minWidth: "500px", // Adjust the width as needed
           }}
         >
           {/* Render the fields of the editingUser for modification */}
           <TextField
-            label='Ten dang nhap'
+            label='Tên đăng nhập'
             variant='outlined'
             value={editingUser?.userName || ""}
             onChange={(e) =>
@@ -287,11 +305,11 @@ export default function TableListStaff() {
                 userName: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
           <TextField
-            label='Ho Ten'
+            label='Họ và tên'
             variant='outlined'
             value={editingUser?.fullName || ""}
             onChange={(e) =>
@@ -300,12 +318,12 @@ export default function TableListStaff() {
                 fullName: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
           {/* Gender (Phai) Radio Group */}
           <RadioGroup
-            aria-label='Gioi tinh'
+            aria-label='Giới tính'
             name='gender'
             value={editingUser?.gender || ""}
             onChange={(e) =>
@@ -314,14 +332,14 @@ export default function TableListStaff() {
                 gender: e.target.value,
               }))
             }
-            sx={{ flexDirection: 'row', marginBottom: '16px'}}
+            sx={{ flexDirection: "row", marginBottom: "16px" }}
           >
             <FormControlLabel value='M' control={<Radio />} label='Male' />
             <FormControlLabel value='F' control={<Radio />} label='Female' />
           </RadioGroup>
 
           <TextField
-            label='Mat Khau'
+            label='Mật khẩu'
             variant='outlined'
             value={editingUser?.password || ""}
             onChange={(e) =>
@@ -330,47 +348,48 @@ export default function TableListStaff() {
                 password: e.target.value,
               }))
             }
-            sx={{ width: '100%', marginBottom: '16px' }}
+            sx={{ width: "100%", marginBottom: "16px" }}
           />
 
-        <Box
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              marginTop: "16px",
+            }}
+          >
+            <Button
+              onClick={handleSaveChanges}
               sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                width: '100%',
-                marginTop: '16px',
+                marginTop: "16px",
+                backgroundColor: "#2AB178",
+                color: "white",
+                width: "120px",
+                borderRadius: "5px",
+                ":hover": {
+                  backgroundColor: "#31B373",
+                },
               }}
             >
-          <Button onClick={handleSaveChanges}
-            sx={{
-              marginTop: '16px',
-              backgroundColor: 'blue',
-              color: 'white',
-              width: '120px',
-              borderRadius: '5px',
-              ":hover": {
-                backgroundColor: 'darkblue' 
-              },
-            }}
-          >
-            Save Changes
-          </Button>
-          <Button
-            onClick={handleEditModalClose}
-            sx={{
-              marginTop: '16px',
-              backgroundColor: 'red',
-              color: 'white',
-              width: '120px',
-              marginLeft: '2rem',
-              borderRadius: '5px',
-              ":hover": {
-                backgroundColor: 'darkred',
-              },
-            }}
-          >
-                Cancel
-              </Button>
+              Lưu thay đổi
+            </Button>
+            <Button
+              onClick={handleEditModalClose}
+              sx={{
+                marginTop: "16px",
+                backgroundColor: "red",
+                color: "white",
+                width: "120px",
+                marginLeft: "2rem",
+                borderRadius: "5px",
+                ":hover": {
+                  backgroundColor: "darkred",
+                },
+              }}
+            >
+              Hủy
+            </Button>
           </Box>
         </Box>
       </Modal>
