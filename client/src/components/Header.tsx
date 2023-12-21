@@ -5,24 +5,27 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-import NavMenu from "./NavMenu";
-import { RootState } from '../redux/rootReducer';
+import NavMenuUser from "./NavMenuUser";
+import NavMenuAdmin from "./NavMenuAdmin";
+import NavMenuAnonymous from "./NavMenuAnonymous";
+import NavMenuStaff from "./NavMenuStaff";
+import NavMenuDentist from "./NavMenuDentist";
+import { RootState } from "../redux/rootReducer";
 import { useSelector, useDispatch } from "react-redux";
 import { userLoggedOut } from "../redux/features/auth/userSlice";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Avatar from "@mui/material/Avatar";
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
-
 
 export default function Header() {
   // Khai báo biến user và dispatch từ redux store
   const user = useSelector((state: RootState) => state.user.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const [menuAnchor, setMenuAnchor] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -35,19 +38,22 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      let apiEndpoint = '';
+      let apiEndpoint = "";
       if (user.MaKH) {
-        apiEndpoint = '/user/logout';
+        apiEndpoint = "/user/logout";
       } else if (user.MaNS) {
-        apiEndpoint = '/dentist/logout';
+        apiEndpoint = "/dentist/logout";
       } else if (user.MaQTV) {
-        apiEndpoint = '/admin/logout';
+        apiEndpoint = "/admin/logout";
       } else if (user.MaNV) {
-        apiEndpoint = '/employee/logout';
+        apiEndpoint = "/employee/logout";
       }
-  
+
       if (apiEndpoint) {
-        await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}${apiEndpoint}`, { withCredentials: true });
+        await axios.get(
+          `${import.meta.env.VITE_REACT_SERVER_PORT}${apiEndpoint}`,
+          { withCredentials: true }
+        );
         dispatch(userLoggedOut());
         handleMenuClose();
         navigate("/");
@@ -62,22 +68,25 @@ export default function Header() {
 
   const getUserInfo = async () => {
     try {
-      let apiEndpoint = '';
+      let apiEndpoint = "";
       if (user.MaKH) {
-        apiEndpoint = '/user/me';
+        apiEndpoint = "/user/me";
       } else if (user.MaNS) {
-        apiEndpoint = '/dentist/me';
+        apiEndpoint = "/dentist/me";
       } else if (user.MaQTV) {
-        apiEndpoint = '/admin/me';
+        apiEndpoint = "/admin/me";
       } else if (user.MaNV) {
-        apiEndpoint = '/employee/me';
+        apiEndpoint = "/employee/me";
       }
-  
+
       if (apiEndpoint) {
-        const response = await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}${apiEndpoint}`, { withCredentials: true });
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_SERVER_PORT}${apiEndpoint}`,
+          { withCredentials: true }
+        );
         return response.data.user;
       } else {
-        console.log('No valid user type found.');
+        console.log("No valid user type found.");
         return null;
       }
     } catch (error: any) {
@@ -85,17 +94,16 @@ export default function Header() {
       return null;
     }
   };
-  
+
   useEffect(() => {
     // Tạo một hàm async để sử dụng await
     const fetchUserInfo = async () => {
       // Gọi hàm getUserInfo và lưu kết quả vào biến userInfo
-      
+
       const userInfo = await getUserInfo();
-      
+
       // Nếu userInfo là null, tức là không lấy được thông tin người dùng
       if (userInfo === null) {
-       
         dispatch(userLoggedOut());
       } else {
         // Nếu userInfo không phải null, tức là lấy được thông tin người dùng
@@ -125,7 +133,17 @@ export default function Header() {
             }}
           > */}
           {/* <MenuIcon /> */}
-          <NavMenu />
+          {user ? (
+            <>
+              {user.MaKH && <NavMenuUser />}
+              {user.MaQTV && <NavMenuAdmin />}
+              {user.MaNS && <NavMenuDentist />}
+              {user.MaNV && <NavMenuStaff />}
+            </>
+          ) : (
+            <NavMenuAnonymous />
+          )}
+          {/* <NavMenuUser /> */}
           {/* </IconButton> */}
           <Typography
             variant='h6'
@@ -140,6 +158,7 @@ export default function Header() {
           {/* Kiểm tra nếu biến user có giá trị, tức là đã đăng nhập */}
           {user ? (
             // Nếu đã đăng nhập, hiển thị icon người dùng
+
             <div>
               <Avatar
                 alt={user.TenKH}
@@ -152,12 +171,10 @@ export default function Header() {
                 open={Boolean(menuAnchor)}
                 onClose={handleMenuClose}
               >
-                <MenuItem component={Link} to="/profile">
+                <MenuItem component={Link} to='/profile'>
                   Thông Tin Người Dùng
                 </MenuItem>
-                <MenuItem onClick={handleLogout}>
-                  Đăng Xuất
-                </MenuItem>
+                <MenuItem onClick={handleLogout}>Đăng Xuất</MenuItem>
               </Menu>
             </div>
           ) : (

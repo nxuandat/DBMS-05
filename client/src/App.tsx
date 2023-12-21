@@ -29,6 +29,8 @@ import ProtectedIsAdminRoute from "./protected routes/ProtectedIsAdminRoutes";
 import DentistSchedule from "./pages/DentistSchedule";
 import AppointmentListUser from "./pages/AppointmentListUser";
 import LoadingError from "./components/LoadingError.tsx";
+import ForgetPassword from "./pages/ForgetPassword.tsx";
+
 const Notfound = React.lazy(() => import("./components/NotFound.tsx"));
 
 function useDelayRender(delay = 300) {
@@ -58,12 +60,20 @@ function App() {
         <AppointmentButton />
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/dashboard' element={<ProtectedIsDentistRoute><Dashboard /></ProtectedIsDentistRoute>} />
+          <Route
+            path='/dashboard'
+            element={
+              <ProtectedIsDentistRoute>
+                <Dashboard />
+              </ProtectedIsDentistRoute>
+            }
+          />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/login' element={<LogIn />} />
           <Route path='/login2' element={<LogIn2 />} />
           <Route path='/signUp' element={<SignUp />} />
           <Route path='/reset' element={<ResetPassword />} />
+          <Route path='/forget' element={<ForgetPassword />} />
           <Route
             path='/profile'
             element={

@@ -116,7 +116,7 @@ export default function LogIn() {
                     Ghi nhớ tôi{" "}
                   </label>
                 </div>
-                <a href='#!' style={{ color: "#51C888" }}>
+                <a href='/forget' style={{ color: "#51C888" }}>
                   Quên mật khẩu?
                 </a>
               </div>
