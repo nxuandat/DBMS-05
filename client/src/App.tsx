@@ -30,6 +30,9 @@ import DentistSchedule from "./pages/DentistSchedule";
 import AppointmentListUser from "./pages/AppointmentListUser";
 import LoadingError from "./components/LoadingError.tsx";
 import ForgetPassword from "./pages/ForgetPassword.tsx";
+import ProtectedIsDentistRoute from "./protected routes/ProtectedIsEmployeeRoutes";
+import { EmployeeDashboard } from "./pages/EmployeeDashboard.tsx";
+import ProtectedIsEmployeeRoute from "./protected routes/ProtectedIsDentistRoutes.ts";
 
 const Notfound = React.lazy(() => import("./components/NotFound.tsx"));
 
@@ -44,7 +47,7 @@ function useDelayRender(delay = 300) {
   return loading;
 }
 
-import ProtectedIsDentistRoute from "./protected routes/ProtectedIsEmployeeRoutes";
+
 function App() {
   const loading = useDelayRender();
 
@@ -74,6 +77,14 @@ function App() {
           <Route path='/signUp' element={<SignUp />} />
           <Route path='/reset' element={<ResetPassword />} />
           <Route path='/forget' element={<ForgetPassword />} />
+          <Route 
+            path='/employee-dashboard' 
+            element={
+              <ProtectedIsEmployeeRoute>
+                <EmployeeDashboard />
+              </ProtectedIsEmployeeRoute>
+            }
+          />
           <Route
             path='/profile'
             element={

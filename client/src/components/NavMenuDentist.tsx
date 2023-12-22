@@ -15,6 +15,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import FileIcon from "@mui/icons-material/ContentPaste";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import { Link } from "react-router-dom";
 type Anchor = "left";
@@ -51,12 +52,14 @@ export default function TemporaryDrawer() {
           { text: "Hồ sơ bệnh", link: "/allRecord" },
           { text: "Danh sách Lịch hẹn", link: "/appointment-list-dentist" },
           { text: "Danh sách thuốc", link: "/ListMedicineDoctor" },
+          { text: "Trang tổng quan", link: "/dashboard" },
         ].map((item, index) => {
           const icons = [
             <HomeIcon />,
             <FileIcon />,
             <CalendarMonthIcon />,
             <LocalPharmacyIcon />,
+            <DashboardIcon />,
           ];
           return (
             <ListItem key={item.text} disablePadding>
