@@ -219,7 +219,9 @@ export const getDentistsScheduleByDentistService = async (req: any, res: Respons
                     STT: columns[1]?.value,
                     GioBatDau: new Date(columns[2]?.value),
                     GioKetThuc: new Date(columns[3]?.value),
-                    TinhTrangCuocHen: columns[4]?.value.trim()
+                    TinhTrangCuocHen: columns[4]?.value.trim(),
+                    MaKH: columns[5]?.value ? columns[5]?.value.trim() : null,
+                    SoDT: columns[6]?.value ? columns[6]?.value.trim() : null,
                 };
                 dentistsSchedules.push(dentist);
             });

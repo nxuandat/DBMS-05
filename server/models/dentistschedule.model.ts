@@ -4,4 +4,6 @@ export interface IDentistSchedule {
     GioBatDau: Date;
     GioKetThuc: Date;
     TinhTrangCuocHen: string;
+    MaKH: string;
+    SoDT: string;
 }
