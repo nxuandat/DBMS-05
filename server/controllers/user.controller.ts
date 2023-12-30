@@ -1050,8 +1050,7 @@ export const getAppointmentByUser = CatchAsyncError(
             LyDoKham: columns[2].value ? columns[2].value.trim() : null,
             MaNS: columns[3].value ? columns[3].value.trim() : null,
             MaKH: columns[4].value ? columns[4].value.trim() : null,
-            SoDT: columns[5].value ? columns[5].value.trim() : null,
-            HoTen: columns[6].value ? columns[6].value.trim() : null
+            SoDT: columns[5].value ? columns[5].value.trim() : null
           };
           appointments.push(appointment);
           
@@ -1111,8 +1110,8 @@ export const getDetailMedicineByUser = CatchAsyncError(
           const medicine = {
             MaThuoc: columns[0].value.trim(),
             MaKH: columns[1].value.trim(),
-            STT: columns[2].value,
-            SoDT: columns[3].value.trim(),
+            STT: columns[3].value,
+            SoDT: columns[2].value.trim(),
             SoLuong: columns[4].value,
             ThoiDiemDung: columns[5].value.trim(),
           };
