@@ -129,18 +129,23 @@ const AppointmentForm = () => {
 
   const fetchDentistsSchedules = async () => {
     try {
-      const response = await axios.get<{ success: boolean; schedules: IDentistSchedule[] }>(
+      const response = await axios.get<{ success: boolean; dentistsSchedules: IDentistSchedule[] }>(
         `${import.meta.env.VITE_REACT_SERVER_PORT}/user/get-all-dentists-schedules`,
         { withCredentials: true }
       );
-
+  
       if (response.data.success) {
-        // Get GioBatDau and GioKetThuc
-        const startTimes = response.data.schedules.map((schedule) => new Date(schedule.GioBatDau));
-        setGioBatDau(startTimes);
-
-        const endTimes = response.data.schedules.map((schedule) => new Date(schedule.GioKetThuc));
-        setGioKetThuc(endTimes);
+        // Check if schedules array is defined before using map
+        if (response.data.dentistsSchedules && Array.isArray(response.data.dentistsSchedules)) {
+          // Get GioBatDau and GioKetThuc
+          const startTimes = response.data.dentistsSchedules.map((schedule) => new Date(schedule.GioBatDau));
+          setGioBatDau(startTimes);
+  
+          const endTimes = response.data.dentistsSchedules.map((schedule) => new Date(schedule.GioKetThuc));
+          setGioKetThuc(endTimes);
+        } else {
+          console.error("Khong co lich cua nha si");
+        }
       } else {
         console.error("Khong the lay lich nha si");
       }
