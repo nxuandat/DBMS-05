@@ -19,6 +19,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { setUser } from "../redux/features/auth/userSlice";
+import ResetPassword from "../components/ResetPassword/ResetPasswordRequest";
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -276,6 +277,7 @@ export default function Profile() {
                       </MDBCardText>
                     </div>
                   )}
+                  <ResetPassword />
                 </div>
               </MDBCardBody>
             </MDBCard>
