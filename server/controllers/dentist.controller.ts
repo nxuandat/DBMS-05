@@ -406,6 +406,10 @@ export const createDentistSchedule = CatchAsyncError(
         return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin lịch.', 400));
       }
 
+      if (TinhTrangCuocHen !== 'ChuaHen') {
+        return next(new ErrorHandler('TinhTrangCuocHen phải là "ChuaHen".', 400));
+      }
+
       const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
 
       connection.on('connect', (err) => {
@@ -493,11 +497,11 @@ export const deleteDentistSchedule = CatchAsyncError(
 export const updateDentistSchedule = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { STT, GioBatDau, GioKetThuc, TinhTrangCuocHen } = req.body as any;
+      const { STT, GioBatDau, GioKetThuc } = req.body as any;
       const MaNS = req.dentist?.MaNS;
       const password = req.dentist?.MatKhau;
 
-      if (!STT && !GioBatDau && !GioKetThuc && !TinhTrangCuocHen) {
+      if (!STT && !GioBatDau && !GioKetThuc ) {
         return next(new ErrorHandler('Vui lòng cập nhật ít nhất 1 thông tin', 400));
       }
 
@@ -529,7 +533,6 @@ export const updateDentistSchedule = CatchAsyncError(
         updateDentistScheduleRequest.addParameter('STT', TYPES.Int, STT);
         updateDentistScheduleRequest.addParameter('GioBatDau', TYPES.DateTime, new Date(GioBatDau));
         updateDentistScheduleRequest.addParameter('GioKetThuc', TYPES.DateTime, new Date(GioKetThuc));
-        updateDentistScheduleRequest.addParameter('TinhTrangCuocHen', TYPES.Char, TinhTrangCuocHen);
 
         connection.callProcedure(updateDentistScheduleRequest);
       })

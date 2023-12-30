@@ -1293,56 +1293,41 @@ END;
 
 GO
 
+
 --Thêm lịch hẹn của người dùng 
 CREATE PROCEDURE InsertAppointment
     @MaSoHen varchar(20),
     @NgayGioKham datetime,
     @LyDoKham nvarchar(100),
     @HoTen nvarchar(50),
-    @MaKH varchar(20),
+    @MaKH char(20),
     @SoDT varchar(15)
 AS
 BEGIN
     -- Khai báo biến
-    DECLARE @retry INT;
-	DECLARE @MaNS varchar(20)
-	SELECT @MaNS = MaNS from NHASI where HoTen = @HoTen
-    SET @retry = 5;
+    DECLARE @MaNS varchar(20)
+    SELECT @MaNS = MaNS from NHASI where HoTen = @HoTen
 
-    -- Bắt đầu vòng lặp
-    WHILE @retry > 0
-    BEGIN
-        BEGIN TRY
-            -- Bắt đầu giao tác
-            BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Bắt đầu giao tác
+        BEGIN TRANSACTION;
 
-            -- Chờ 5 giây trước khi thực hiện giao tác để giảm thiểu thời gian giữ khóa
-            WAITFOR DELAY '00:00:05';
+        -- Thực hiện truy vấn INSERT với mức cô lập SERIALIZABLE để tránh dirty read, lost update, phantom read và unrepeatable read
+        SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-            -- Thực hiện truy vấn INSERT với mức cô lập SERIALIZABLE để tránh dirty read, lost update, phantom read và unrepeatable read
-            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+        INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT) 
+        VALUES (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT);
 
-            INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT) 
-            VALUES (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT);
+        -- Kết thúc giao tác
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Nếu có lỗi, hủy giao tác
+        ROLLBACK TRANSACTION;
 
-            -- Kết thúc giao tác
-            COMMIT TRANSACTION;
-
-            -- Đặt lại số lần thử lại
-            SET @retry = 0;
-        END TRY
-        BEGIN CATCH
-            -- Nếu có lỗi, hủy giao tác
-            ROLLBACK TRANSACTION;
-
-            -- Giảm số lần thử lại
-            SET @retry = @retry - 1;
-
-            -- Nếu hết số lần thử lại, đưa ra lỗi
-            IF @retry = 0
-                THROW;
-        END CATCH
-    END
+        -- Đưa ra lỗi
+        THROW;
+    END CATCH
 END;
 
 GO
@@ -2065,19 +2050,22 @@ END;
 
 GO
 
+
 CREATE PROCEDURE ThemLichNhaSi
     @MaNS char(20),
     @STT int,
     @GioBatDau datetime,
     @GioKetThuc datetime,
-    @TinhTrangCuocHen char(20)
+    @TinhTrangCuocHen char(20),
+    @MaKH char(20) = NULL,
+    @SoDT char(15) = NULL
 AS
 BEGIN
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
     BEGIN TRANSACTION;
     BEGIN TRY
-        INSERT INTO LICHNHASI(MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
-        VALUES (@MaNS, @STT, @GioBatDau, @GioKetThuc, @TinhTrangCuocHen);
+        INSERT INTO LICHNHASI(MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen, MaKH, SoDT)
+        VALUES (@MaNS, @STT, @GioBatDau, @GioKetThuc, @TinhTrangCuocHen, @MaKH, @SoDT);
         COMMIT;
     END TRY
     BEGIN CATCH
@@ -2087,23 +2075,33 @@ BEGIN
 END;
 
 GO
+DROP PROCEDURE SuaLichNhaSi
 
 CREATE PROCEDURE SuaLichNhaSi
     @MaNS char(20),
     @STT int,
     @GioBatDau datetime,
-    @GioKetThuc datetime,
-    @TinhTrangCuocHen char(20)
+    @GioKetThuc datetime
 AS
 BEGIN
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
     BEGIN TRANSACTION;
     BEGIN TRY
-        UPDATE LICHNHASI
-        SET GioBatDau = ISNULL(@GioBatDau,GioBatDau), 
-		GioKetThuc = ISNULL(@GioKetThuc,GioKetThuc), 
-		TinhTrangCuocHen = ISNULL(@TinhTrangCuocHen,TinhTrangCuocHen)
-        WHERE MaNS = @MaNS AND STT = @STT;
+        DECLARE @TinhTrangCuocHen char(20);
+        SELECT @TinhTrangCuocHen = TinhTrangCuocHen FROM LICHNHASI WHERE MaNS = @MaNS AND STT = @STT;
+
+        IF @TinhTrangCuocHen = 'ChuaHen'
+        BEGIN
+            UPDATE LICHNHASI
+            SET GioBatDau = ISNULL(@GioBatDau,GioBatDau), 
+                GioKetThuc = ISNULL(@GioKetThuc,GioKetThuc)
+            WHERE MaNS = @MaNS AND STT = @STT;
+        END
+        ELSE IF @TinhTrangCuocHen = 'DaHen'
+        BEGIN
+            THROW 51000, 'ko thể sửa lịch do khách hàng đã đặt giờ đó', 1;
+        END
+
         COMMIT;
     END TRY
     BEGIN CATCH
@@ -2111,6 +2109,8 @@ BEGIN
         THROW;
     END CATCH
 END;
+
+
 
 GO
 
