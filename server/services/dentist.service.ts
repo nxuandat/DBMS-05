@@ -144,6 +144,8 @@ export const getAllMedicalRecordService = async (req: any, res: Response, next: 
                     return next(new ErrorHandler(err.message, 400));
                 }
 
+                console.log(rowCount)
+
                 if (rowCount === 0) {
                     return next(new ErrorHandler('Không tìm thấy hồ sơ bệnh nào.', 400));
                 }

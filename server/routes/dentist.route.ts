@@ -10,6 +10,7 @@ import {
   getAllMedicalRecord,
   getAllMedicineByDoctor,
   getAllServiceByDoctor,
+  getAppointmentByDentist,
   getDentistInfo,
   getDentistsScheduleByDentist,
   getProfilePictureDentist,
@@ -60,5 +61,7 @@ dentistRouter.put("/dentist/update-detail-medicine", isAuthenticatedDentistLogin
 dentistRouter.delete("/dentist/delete-detail-medicine", isAuthenticatedDentistLogin, deleteDetailMedicine);
 
 dentistRouter.get("/dentist/get-all-detail-medicine", isAuthenticatedDentistLogin, getAllDetailMedicineByDoctor);
+
+dentistRouter.get("/dentist/get-appointment", isAuthenticatedDentistLogin, getAppointmentByDentist);
 
 export default dentistRouter;

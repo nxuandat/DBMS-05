@@ -698,6 +698,7 @@ export const addDentist = CatchAsyncError(
           GRANT EXECUTE ON UpdateCHITIETTHUOC TO ${MaNS}
           GRANT EXECUTE ON DeleteCHITIETTHUOC TO ${MaNS}
           GRANT EXECUTE ON GetAllCHITIETTHUOC TO ${MaNS}
+          GRANT EXECUTE ON GetAppointmentByDentist TO ${MaNS}
           `;
 
           const addDentistRequest = new SQLRequest(sql, (err, rowCount) => {
