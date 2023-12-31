@@ -71,33 +71,34 @@ export default function AppointmentDentist() {
         <div className='col-md-8 col-lg-7 col-xl-6'>{renderCalendar()}</div>
         <div className='col-md-7 col-lg-5 col-xl-5 offset-xl-1'>
           <h2>
-            <strong>Ngày đã chọn: </strong>
-          </h2>
-          <p style={{ fontSize: 20 }}>
-            Ngày:
-            {value
-              ? [
-                  " Chủ Nhật",
-                  " Thứ Hai",
-                  " Thứ Ba",
-                  " Thứ Tư",
-                  " Thứ Năm",
-                  " Thứ Sáu",
-                  " Thứ Bảy",
-                ][value.day()] +
-                ", " +
-                value.format("DD-MM-YYYY")
-              : "No date selected"}
-          </p>
-        </div>
-        <h2>Lịch hẹn theo ngày chọn:</h2>
-        <ul>
-          {filteredAppointments.map((appointment) => (
-            <li key={appointment.STT}>
-              {`STT: ${appointment.STT}, GioBatDau: ${appointment.GioBatDau}, GioKetThuc: ${appointment.GioKetThuc}, TinhTrangCuocHen: ${appointment.TinhTrangCuocHen}`}
-            </li>
-          ))}
-        </ul>
+              <strong>Ngày đã chọn: </strong>
+              <p style={{ fontSize: 20 }}>
+                {value
+                  ? [
+                      " Chủ Nhật",
+                      " Thứ Hai",
+                      " Thứ Ba",
+                      " Thứ Tư",
+                      " Thứ Năm",
+                      " Thứ Sáu",
+                      " Thứ Bảy",
+                    ][value.day()] +
+                    ", " +
+                    value.format("DD-MM-YYYY")
+                  : "No date selected"}
+              </p>
+            </h2>
+            <h2>Lịch hẹn theo ngày chọn:</h2>
+            {filteredAppointments.map((appointment) => (
+              <div key={appointment.STT} style={{ backgroundColor: '#9ED2BE', marginBottom: '15px', borderBottom: '2px solid #ccc', padding: '10px', paddingLeft: '30px', borderRadius: '10px' }}>
+                <strong>Mã nha sĩ:</strong> {appointment.MaNS}. <br />
+                <strong>Giờ bắt đầu:</strong> {new Date(appointment.GioBatDau).toLocaleString()}. <br />
+                <strong>Giờ kết thúc:</strong> {new Date(appointment.GioKetThuc).toLocaleString()}. <br />
+                <strong>Tình trạng cuộc hẹn:</strong> {appointment.TinhTrangCuocHen}. <br />
+                <hr />
+              </div>
+            ))}
+          </div>
       </div>
     </>
   );

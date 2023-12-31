@@ -30,7 +30,7 @@ export function Home() {
                 border: "1px solid #34C38F",
               }}
               component={Link}
-              to='#'
+              to='/about'
             >
               (028) 3838 8388
             </Button>
