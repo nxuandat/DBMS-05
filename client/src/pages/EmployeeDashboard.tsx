@@ -6,6 +6,7 @@ import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { get } from "http";
 // import Invoice from "../components/Invoice";
+import CreateInvoice from "../components/CreateInvoice";
 
 export function EmployeeDashboard() {
   const [appointments, setAppointments] = useState([]);
@@ -158,10 +159,10 @@ export function EmployeeDashboard() {
             justifyContent: "space-between",
           }}
         >
-          {/* <div style={{ marginRight: "10px" }}>
-            <Invoice />
+          <div style={{ marginRight: "10px" }}>
+            <CreateInvoice />
           </div>
-          <div style={{ marginLeft: "10px" }}>
+          {/* <div style={{ marginLeft: "10px" }}>
             <Invoice />
           </div> */}
         </div>
