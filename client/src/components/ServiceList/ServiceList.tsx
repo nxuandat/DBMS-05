@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Card, Container, Grid, Image, Label } from 'semantic-ui-react';
-import 'semantic-ui-css/semantic.min.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './ServiceList.css'
-
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Card, Container, Grid, Image, Label } from "semantic-ui-react";
+import "semantic-ui-css/semantic.min.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./ServiceList.css";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/rootReducer";
 // Tạo interface cho dịch vụ
 interface IService {
   MaDV: string;
@@ -15,7 +16,18 @@ interface IService {
 
 // Tạo component ServiceCard để hiển thị thông tin của một dịch vụ
 const ServiceCard = ({ service }: { service: IService }) => {
-  const keywords = ['dentist', 'teeth', 'toothbrush', 'smile', 'braces', 'implant', 'whitening', 'cavity', 'floss', 'oral'];
+  const keywords = [
+    "dentist",
+    "teeth",
+    "toothbrush",
+    "smile",
+    "braces",
+    "implant",
+    "whitening",
+    "cavity",
+    "floss",
+    "oral",
+  ];
   const getRandomKeywords = (n: number) => {
     // Tạo một mảng để lưu trữ các từ khóa ngẫu nhiên
     const randomKeywords = [];
@@ -28,7 +40,7 @@ const ServiceCard = ({ service }: { service: IService }) => {
       randomKeywords.push(randomKeyword);
     }
     // Trả về một chuỗi nối các từ khóa bằng dấu phẩy
-    return randomKeywords.join(',');
+    return randomKeywords.join(",");
   };
 
   // Tạo state để lưu trữ trạng thái của card
@@ -42,8 +54,13 @@ const ServiceCard = ({ service }: { service: IService }) => {
 
   return (
     <Card
-      style={{ maxWidth: 345, margin: 10, boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)', transition: '0.3s' }}
-      className="card-hover"
+      style={{
+        maxWidth: 345,
+        margin: 10,
+        boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)",
+        transition: "0.3s",
+      }}
+      className='card-hover'
       onClick={handleClick}
     >
       <Image
@@ -51,13 +68,16 @@ const ServiceCard = ({ service }: { service: IService }) => {
         alt={service.TenDV}
         wrapped
         ui={false}
-        className="image-zoom" // Thêm class để tạo hiệu ứng zoom cho ảnh
+        className='image-zoom' // Thêm class để tạo hiệu ứng zoom cho ảnh
       />
-      <Card.Content className={flipped ? 'card-flip' : ''}> 
+      <Card.Content className={flipped ? "card-flip" : ""}>
         <Card.Description>{service.MoTa}</Card.Description>
       </Card.Content>
-      <Card.Content extra style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Label color="green" tag className="chip-rotate"> 
+      <Card.Content
+        extra
+        style={{ display: "flex", justifyContent: "flex-end" }}
+      >
+        <Label color='green' tag className='chip-rotate'>
           {service.DongGia.toLocaleString()} VND
         </Label>
       </Card.Content>
@@ -69,17 +89,27 @@ const ServiceCard = ({ service }: { service: IService }) => {
 const ServiceList = () => {
   // Tạo state để lưu trữ danh sách các dịch vụ
   const [services, setServices] = useState<IService[]>([]);
+  let user = useSelector((state: RootState) => state.user.user);
 
   // Sử dụng useEffect để gọi api khi component được mount
   useEffect(() => {
     // Tạo hàm async để gọi api
     const fetchServices = async () => {
       try {
-        // Gọi api bằng axios có withCredential
-        const response = await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/get-all-services`, { withCredentials: true });
-        // Nếu thành công, cập nhật state bằng dữ liệu trả về
-        if (response.data.success) {
-          setServices(response.data.services);
+        if (!user) {
+          throw new Error("User is not defined");
+        }
+
+        if (user.MaKH) {
+          // Gọi api bằng axios có withCredential
+          const response = await axios.get(
+            `${import.meta.env.VITE_REACT_SERVER_PORT}/user/get-all-services`,
+            { withCredentials: true }
+          );
+          // Nếu thành công, cập nhật state bằng dữ liệu trả về
+          if (response.data.success) {
+            setServices(response.data.services);
+          }
         }
       } catch (error) {
         // Nếu có lỗi, hiển thị lỗi ra console
@@ -91,10 +121,12 @@ const ServiceList = () => {
   }, []); // Chỉ gọi api một lần khi component được mount
 
   // Trả về jsx để hiển thị danh sách các dịch vụ
-  return (
-    <div style={{ backgroundColor: '#d4edda', minHeight: '100vh' }}>
+  return user.MaKH ? (
+    <div style={{ backgroundColor: "#d4edda", minHeight: "100vh" }}>
       <Container style={{ marginTop: 20 }}>
-        <h1 style={{ textAlign: 'center', marginBottom: 20 }}>Danh sách các dịch vụ nha khoa</h1>
+        <h1 style={{ textAlign: "center", marginBottom: 20 }}>
+          Danh sách các dịch vụ nha khoa
+        </h1>
         <Grid stackable columns={3}>
           {services.map((service) => (
             <Grid.Column key={service.MaDV}>
@@ -104,8 +136,9 @@ const ServiceList = () => {
         </Grid>
       </Container>
     </div>
+  ) : (
+    <></>
   );
 };
 
 export default ServiceList;
-

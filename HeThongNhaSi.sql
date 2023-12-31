@@ -301,7 +301,6 @@ VALUES
 INSERT INTO LUUTRUANH (MaNguoiDung, SoDT, AvatarUrl)
 VALUES ('KH03', '0139438492', 'avatar1.jpg');
 
-use 
 
 INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
 VALUES ('HD01', 'KH03', '0912748492', 3, '2023-11-10 00:00:00', 1000000, 'DaThanhToan', 'NV01', 'DV01'),
