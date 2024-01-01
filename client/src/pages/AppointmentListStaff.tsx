@@ -6,6 +6,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import StaffCreateAppointment from "../components/StaffCreateAppointment";
+import StaffUpdateAppointment from "../components/StaffUpdateAppointment";
 
 interface Appointment {
   MaSoHen: string;
@@ -14,7 +16,7 @@ interface Appointment {
   MaKH: string;
   MaNS: string;
   SoDT: string;
-};
+}
 
 export default function AppointmentStaff() {
   const [value, setValue] = React.useState<Dayjs | null>(dayjs());
@@ -71,9 +73,20 @@ export default function AppointmentStaff() {
     }
 
     return filteredAppointments.map((appointment) => (
-      <div key={appointment.MaSoHen} style={{ backgroundColor: '#9ED2BE', marginBottom: '15px', borderBottom: '2px solid #ccc', padding: '10px', paddingLeft: '30px', borderRadius: '10px'}}>
+      <div
+        key={appointment.MaSoHen}
+        style={{
+          backgroundColor: "#9ED2BE",
+          marginBottom: "15px",
+          borderBottom: "2px solid #ccc",
+          padding: "10px",
+          paddingLeft: "30px",
+          borderRadius: "10px",
+        }}
+      >
         <strong>Mã Số Hẹn:</strong> {appointment.MaSoHen}. <br />
-        <strong>Giờ Khám:</strong> {new Date(appointment.NgayGioKham).toLocaleString()}. <br />
+        <strong>Giờ Khám:</strong>{" "}
+        {new Date(appointment.NgayGioKham).toLocaleString()}. <br />
         <strong>Lý Do Khám:</strong> {appointment.LyDoKham}. <br />
         <strong>Khách Hàng:</strong> {appointment.MaKH}. <br />
         <strong>Số điện thoại: </strong> {appointment.SoDT}. <br />
@@ -84,7 +97,14 @@ export default function AppointmentStaff() {
 
   return (
     <>
-      <h1> <strong>Danh sách lịch hẹn</strong> </h1>
+      <h1>
+        {" "}
+        <strong>Danh sách lịch hẹn</strong>{" "}
+      </h1>
+      <div className='d-flex justify-content-center gap-2'>
+        <StaffCreateAppointment />
+        <StaffUpdateAppointment />
+      </div>
       <div className='row d-flex align-items-center justify-content-center h-80 w-80'>
         <div className='col-md-8 col-lg-7 col-xl-6'>{renderCalendar()}</div>
         <div className='col-md-7 col-lg-5 col-xl-5 offset-xl-1'>

@@ -8,6 +8,7 @@ import { get } from "http";
 // import Invoice from "../components/Invoice";
 import CreateInvoice from "../components/CreateInvoice";
 import PaymentAndUpdateInvoice from "../components/PaymentAndUpdateInvoice";
+import StaffCreateAppointment from "../components/StaffCreateAppointment";
 
 interface Appointment {
   MaSoHen: string;
@@ -168,7 +169,10 @@ export function EmployeeDashboard() {
             justifyContent: "space-between",
           }}
         >
-          <div style={{ marginRight: "10px" }}>
+          <div style={{ marginLeft: "10px" }}>
+            <StaffCreateAppointment />
+          </div>
+          <div style={{ marginLeft: "10px" }}>
             <CreateInvoice />
           </div>
           <div style={{ marginLeft: "10px" }}>
