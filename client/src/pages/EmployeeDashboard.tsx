@@ -8,6 +8,14 @@ import { get } from "http";
 // import Invoice from "../components/Invoice";
 import CreateInvoice from "../components/CreateInvoice";
 
+interface Appointment {
+  MaSoHen: string;
+  MaKH: string;
+  MaNV: string;
+  NgayGioKham: string;
+  SoDT: string;
+}
+
 export function EmployeeDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -100,7 +108,7 @@ export function EmployeeDashboard() {
   // Group appointments by date
   const groupedAppointments = appointments
     ? appointments.reduce((acc, appointment) => {
-        const date = new Date(appointment.GioBatDau).toLocaleDateString();
+        const date = new Date(appointment.NgayGioKham).toLocaleDateString();
         if (!acc[date]) {
           acc[date] = [];
         }
@@ -193,7 +201,7 @@ export function EmployeeDashboard() {
                             <strong>Mã khách hàng:</strong> {appointment.MaKH}
                             <br />
                             <strong>Ngày giờ khám:</strong>{" "}
-                            {new Date(appointment.GioBatDau).toLocaleString()}
+                            {new Date(appointment.NgayGioKham).toLocaleString()}
                             <br />
                             <strong>Mã nha sĩ:</strong> {appointment.MaNS}
                             <br />
