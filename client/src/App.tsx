@@ -37,7 +37,8 @@ import AppointmentDentist from "./pages/AppointmentDentist.tsx";
 import AppointmentListStaff from "./pages/AppointmentListStaff.tsx";
 import ListMedicineDentist from "./pages/ListMedicineDentist.tsx";
 // import TestPage from "./pages/TestPage.tsx";
-// const Notfound = React.lazy(() => import("./components/NotFound.tsx"));
+import ListMedicalRecord from "./pages/ListMedicalRecord.tsx";
+const Notfound = React.lazy(() => import("./components/NotFound.tsx"));
 
 function useDelayRender(delay = 300) {
   const [loading, setLoading] = useState(true);
@@ -208,11 +209,11 @@ function App() {
             }
           />
 
-          {/* <Route
+          <Route
             path='/allRecord'
             element={
               <ProtectedIsLoginRoute>
-                <TestPage />
+                <ListMedicalRecord />
               </ProtectedIsLoginRoute>
             }
           />
@@ -223,7 +224,7 @@ function App() {
                 <Notfound />
               </React.Suspense>
             }
-          /> */}
+          />
         </Routes>
       </Container>
       <Footer />
