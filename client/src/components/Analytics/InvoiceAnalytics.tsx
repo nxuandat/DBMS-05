@@ -40,7 +40,7 @@ const InvoiceAnalytics = () => {
         <div className="mt-[50px] dark:bg-[#111C43] shadow-sm pb-5 rounded-sm">
             <div>
                 <h1 className={`${styles.title} px-5 !text-start`}>
-                    Invoices Analytics
+                    Phân tích hóa đơn
                 </h1>
                 <p className={`${styles.label} px-5`}>
                     Last 12 months analytics data{" "}

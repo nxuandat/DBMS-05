@@ -153,7 +153,9 @@ export default function Header() {
               color: "#0FA958",
             }}
           >
-            PerfectSmile Dental
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              PerfectSmile Dental
+            </Link>
           </Typography>
           {/* Kiểm tra nếu biến user có giá trị, tức là đã đăng nhập */}
           {user ? (

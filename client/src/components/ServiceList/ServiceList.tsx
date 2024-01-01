@@ -18,15 +18,12 @@ interface IService {
 const ServiceCard = ({ service }: { service: IService }) => {
   const keywords = [
     "dentist",
-    "teeth",
-    "toothbrush",
-    "smile",
     "braces",
     "implant",
     "whitening",
     "cavity",
     "floss",
-    "oral",
+    "invisalign",
   ];
   const getRandomKeywords = (n: number) => {
     // Tạo một mảng để lưu trữ các từ khóa ngẫu nhiên
@@ -56,9 +53,11 @@ const ServiceCard = ({ service }: { service: IService }) => {
     <Card
       style={{
         maxWidth: 345,
+        minHeight: 300,
         margin: 10,
         boxShadow: "0 4px 8px 0 rgba(0,0,0,0.2)",
         transition: "0.3s",
+        textDecoration: "none",
       }}
       className='card-hover'
       onClick={handleClick}
@@ -68,14 +67,13 @@ const ServiceCard = ({ service }: { service: IService }) => {
         alt={service.TenDV}
         wrapped
         ui={false}
-        className='image-zoom' // Thêm class để tạo hiệu ứng zoom cho ảnh
       />
-      <Card.Content className={flipped ? "card-flip" : ""}>
+      <Card.Content>
         <Card.Description>{service.MoTa}</Card.Description>
       </Card.Content>
       <Card.Content
         extra
-        style={{ display: "flex", justifyContent: "flex-end" }}
+        style={{ display: "flex", justifyContent: "flex-end", }}
       >
         <Label color='green' tag className='chip-rotate'>
           {service.DongGia.toLocaleString()} VND
@@ -122,9 +120,9 @@ const ServiceList = () => {
 
   // Trả về jsx để hiển thị danh sách các dịch vụ
   return user.MaKH ? (
-    <div style={{ backgroundColor: "#d4edda", minHeight: "100vh" }}>
+    <div style={{ backgroundColor: "#d4edda", width: "100%", borderRadius: "10px", padding: "1em" , paddingBottom: "2em", marginBottom: "1em",}}>
       <Container style={{ marginTop: 20 }}>
-        <h1 style={{ textAlign: "center", marginBottom: 20 }}>
+        <h1 style={{ textAlign: "center", marginBottom: 20, }}>
           Danh sách các dịch vụ nha khoa
         </h1>
         <Grid stackable columns={3}>
