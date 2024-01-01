@@ -10,8 +10,11 @@ import {
   Grid,
   TextField,
   FormControlLabel,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
-
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -35,6 +38,9 @@ const CreateMedicalRecord: React.FC<CreateMedicalRecordProps> = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const [services, setServices] = useState([]);
+  const [medicines, setMedicines] = useState([]);
+
   const getCurrentTimeInVietnam = () => {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
@@ -56,11 +62,55 @@ const CreateMedicalRecord: React.FC<CreateMedicalRecordProps> = ({
     const intervalId = setInterval(updateNgayKham, 1000);
 
     updateNgayKham();
+    getMedicineName();
+    getServiceName();
     // console.log(NgayXuat);
 
     // Clear the interval when the component unmounts
     return () => clearInterval(intervalId);
   }, []);
+
+  const getMedicineName = () => {
+    axios
+      .get(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/dentist/get-all-medicines`,
+        {
+          withCredentials: true,
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        if (response.data.success && Array.isArray(response.data.medicines)) {
+          setMedicines(response.data.medicines);
+        } else {
+          console.error("Unexpected response data:", response.data);
+        }
+      })
+      .catch((error) => {
+        console.error(`Error: ${error}`);
+      });
+  };
+
+  const getServiceName = () => {
+    axios
+      .get(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/dentist/get-all-services`,
+        {
+          withCredentials: true,
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        if (response.data.success && Array.isArray(response.data.services)) {
+          setServices(response.data.services);
+        } else {
+          console.error("Unexpected response data:", response.data);
+        }
+      })
+      .catch((error) => {
+        console.error(`Error: ${error}`);
+      });
+  };
 
   const handleCreateMedicalRecord = () => {
     const medicalRecordData = {
@@ -147,7 +197,7 @@ const CreateMedicalRecord: React.FC<CreateMedicalRecordProps> = ({
             value={NgayKham}
             disabled
           />
-          <TextField
+          {/* <TextField
             label='Tên dịch vụ'
             type='text'
             variant='outlined'
@@ -164,7 +214,78 @@ const CreateMedicalRecord: React.FC<CreateMedicalRecordProps> = ({
             margin='normal'
             value={TenThuoc}
             onChange={(e) => setTenThuoc(e.target.value)}
-          />
+          /> */}
+          {/* <Select
+            label='Tên dịch vụ'
+            value={TenDV}
+            onChange={(e) => setTenDV(e.target.value)}
+            variant='outlined'
+            fullWidth
+          >
+            {services.map((service) => (
+              <MenuItem key={service.Id} value={service.TenDV}>
+                {service.TenDV}
+              </MenuItem>
+            ))}
+          </Select>
+
+          <Select
+            label='Thuốc kê'
+            value={TenThuoc}
+            onChange={(e) => setTenThuoc(e.target.value)}
+            variant='outlined'
+            fullWidth
+          >
+            {medicines.map((medicine) => (
+              <MenuItem key={medicine.Id} value={medicine.TenThuoc}>
+                {medicine.TenThuoc}
+              </MenuItem>
+            ))}
+          </Select> */}
+          <Box mt={1}>
+            <FormControl variant='outlined' fullWidth>
+              <InputLabel id='service-label'>Tên dịch vụ</InputLabel>
+              <Select
+                labelId='service-label'
+                label='Tên dịch vụ'
+                value={TenDV}
+                onChange={(e) => setTenDV(e.target.value)}
+                renderValue={(selected) => (
+                  <div style={{ textAlign: "left" }}>{selected}</div>
+                )}
+              >
+                {services.map((service) => (
+                  <MenuItem key={service.Id} value={service.TenDV}>
+                    {service.TenDV}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box mt={2}>
+            {" "}
+            {/* This creates a margin-top of 2 spacing units */}
+            <FormControl variant='outlined' fullWidth>
+              <InputLabel id='medicine-label'>Thuốc kê</InputLabel>
+              <Select
+                labelId='medicine-label'
+                label='Thuốc kê'
+                value={TenThuoc}
+                onChange={(e) => setTenThuoc(e.target.value)}
+                renderValue={(selected) => (
+                  <div style={{ textAlign: "left" }}>{selected}</div>
+                )}
+              >
+                {medicines.map((medicine) => (
+                  <MenuItem key={medicine.Id} value={medicine.TenThuoc}>
+                    {medicine.TenThuoc}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
           <TextField
             label='Dặn dò'
             type='text'
