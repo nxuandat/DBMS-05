@@ -8,6 +8,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { useEffect, useState, Fragment } from "react";
 import axios from "axios";
+import Button from "@mui/material/Button";
 
 interface MedicalRecord {
   MaKH: string;
@@ -70,20 +71,70 @@ export default function CustomizedTables() {
     groupedMedicalRecords[record.MaKH].push(record);
   });
 
+  function handleDelete(id: string) {
+    // Prepare the data in the required format
+    const requestData = {
+      SoDT: id,
+    };
+
+    axios
+      .delete(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/dentist/delete-medicalrecord`,
+        {
+          withCredentials: true,
+          data: requestData,
+        }
+      )
+      .then((response) => {
+        // Handle successful deletion, you might want to update the state or refresh the data
+        console.log(`Employee with ID ${id} deleted successfully`);
+        // Update the state or reload data
+        reloadData();
+      })
+      .catch((error) => {
+        // Handle error during deletion
+        console.error(`Error deleting medical record with SoDT: ${id}`, error);
+        // You can provide more specific error handling based on the status code
+        if (error.response && error.response.status === 404) {
+          // Handle Not Found error
+          console.error(`medical record with SoDT: ${id} not found`);
+        } else {
+          // Handle other types of errors
+          console.error("An error occurred during deletion");
+        }
+      });
+  }
+  function reloadData() {
+    axios
+      .get(
+        `${import.meta.env.VITE_REACT_SERVER_PORT}/dentist/get-all-medicalrecords`,
+        {
+          withCredentials: true,
+        }
+      )
+      .then((response) => {
+        setMedicalRecords(response.data.medicalRecords || []);
+      })
+      .catch((error) => {
+        console.error("There was an error reloading data!", error);
+      });
+  }
+
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 700 }} aria-label='customized table'>
         <TableHead>
           <TableRow>
             <StyledTableCell>MaKH</StyledTableCell>
-            <StyledTableCell align='right'>Số điện thoại</StyledTableCell>
-            <StyledTableCell align='right'>STT Khám</StyledTableCell>
-            <StyledTableCell align='right'>Ngày khám</StyledTableCell>
-            <StyledTableCell align='right'>Dặn dò</StyledTableCell>
-            <StyledTableCell align='right'>Mã nha sĩ</StyledTableCell>
-            <StyledTableCell align='right'>Mã dịch vụ</StyledTableCell>
-            <StyledTableCell align='right'>Mã thuốc</StyledTableCell>
-            <StyledTableCell align='right'>Xuất hóa đơn</StyledTableCell>
+            <StyledTableCell align='center'>Số điện thoại</StyledTableCell>
+            <StyledTableCell align='center'>STT Khám</StyledTableCell>
+            <StyledTableCell align='center'>Ngày khám</StyledTableCell>
+            <StyledTableCell align='center'>Dặn dò</StyledTableCell>
+            <StyledTableCell align='center'>Mã nha sĩ</StyledTableCell>
+            <StyledTableCell align='center'>Mã dịch vụ</StyledTableCell>
+            <StyledTableCell align='center'>Mã thuốc</StyledTableCell>
+            <StyledTableCell align='center'>Xuất hóa đơn</StyledTableCell>
+            <StyledTableCell align='center'>Xóa</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -100,25 +151,34 @@ export default function CustomizedTables() {
                       {maKH}
                     </StyledTableCell>
                   )}
-                  <StyledTableCell align='right'>{record.SoDT}</StyledTableCell>
-                  <StyledTableCell align='right'>{record.STT}</StyledTableCell>
-                  <StyledTableCell align='right'>
+                  <StyledTableCell align='left'>{record.SoDT}</StyledTableCell>
+                  <StyledTableCell align='left'>{record.STT}</StyledTableCell>
+                  <StyledTableCell align='left'>
                     {new Date(record.NgayKham).toLocaleDateString()}
                   </StyledTableCell>
-                  <StyledTableCell align='right'>
+                  <StyledTableCell align='left'>
                     {record.DanDo}
                   </StyledTableCell>
-                  <StyledTableCell align='right'>{record.MaNS}</StyledTableCell>
-                  <StyledTableCell align='right'>{record.MaDV}</StyledTableCell>
-                  <StyledTableCell align='right'>
+                  <StyledTableCell align='left'>{record.MaNS}</StyledTableCell>
+                  <StyledTableCell align='left'>{record.MaDV}</StyledTableCell>
+                  <StyledTableCell align='left'>
                     {record.MaThuoc}
                   </StyledTableCell>
-                  <StyledTableCell align='right'>
+                  <StyledTableCell align='left'>
                     {record.TinhTrangXuatHoaDon === "ChuaXuat"
                       ? "Chưa xuất"
                       : record.TinhTrangXuatHoaDon === "DaXuat"
                       ? "Đã xuất"
                       : "Lỗi!"}
+                  </StyledTableCell>
+                  <StyledTableCell align='center'>
+                    <Button
+                      variant='contained'
+                      // color='secondary'
+                      onClick={() => handleDelete(record.SoDT)}
+                    >
+                      Xóa
+                    </Button>
                   </StyledTableCell>
                 </StyledTableRow>
               ))}
