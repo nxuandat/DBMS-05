@@ -399,7 +399,7 @@ export const deleteMedicalRecord = CatchAsyncError(
 export const createDentistSchedule = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { GioBatDau, GioKetThuc, TinhTrangCuocHen } = req.body as any;
+      const { GioBatDau, GioKetThuc, TinhTrangCuocHen, MaKH, SoDT } = req.body as any;
       const MaNS = req.dentist?.MaNS
       const password = req.dentist?.MatKhau;
 
@@ -441,7 +441,8 @@ export const createDentistSchedule = CatchAsyncError(
         insertDentistScheduleRequest.addParameter('GioBatDau', TYPES.DateTime, new Date(GioBatDau));
         insertDentistScheduleRequest.addParameter('GioKetThuc', TYPES.DateTime, new Date(GioKetThuc));
         insertDentistScheduleRequest.addParameter('TinhTrangCuocHen', TYPES.Char, TinhTrangCuocHen);
-
+        insertDentistScheduleRequest.addParameter('MaKH', TYPES.Char, MaKH);
+        insertDentistScheduleRequest.addParameter('SoDT', TYPES.Char, SoDT);
         connection.callProcedure(insertDentistScheduleRequest);
       })
 

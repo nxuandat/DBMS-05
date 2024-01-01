@@ -36,6 +36,7 @@ import ProtectedIsEmployeeRoute from "./protected routes/ProtectedIsDentistRoute
 import AppointmentDentist from "./pages/AppointmentDentist.tsx";
 import AppointmentListStaff from "./pages/AppointmentListStaff.tsx";
 import ListMedicineDentist from "./pages/ListMedicineDentist.tsx";
+import AddDentistSchedule from "./pages/AddDentistSchedule.tsx";
 // import TestPage from "./pages/TestPage.tsx";
 import ListMedicalRecord from "./pages/ListMedicalRecord.tsx";
 const Notfound = React.lazy(() => import("./components/NotFound.tsx"));
@@ -225,6 +226,14 @@ function App() {
               </React.Suspense>
             }
           />
+          <Route
+            path='/addDentistSchedule'
+            element={
+              <ProtectedIsDentistRoute>
+                <AddDentistSchedule />
+              </ProtectedIsDentistRoute>
+            }
+          ></Route>
         </Routes>
       </Container>
       <Footer />
