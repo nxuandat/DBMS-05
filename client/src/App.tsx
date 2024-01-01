@@ -35,6 +35,7 @@ import { EmployeeDashboard } from "./pages/EmployeeDashboard.tsx";
 import ProtectedIsEmployeeRoute from "./protected routes/ProtectedIsDentistRoutes.ts";
 import AppointmentDentist from "./pages/AppointmentDentist.tsx";
 import AppointmentListStaff from "./pages/AppointmentListStaff.tsx";
+import ListMedicineDentist from "./pages/ListMedicineDentist.tsx";
 // import TestPage from "./pages/TestPage.tsx";
 // const Notfound = React.lazy(() => import("./components/NotFound.tsx"));
 
@@ -185,17 +186,25 @@ function App() {
           <Route
             path='/appointment-list-dentist'
             element={
-              <ProtectedIsLoginRoute>
+              <ProtectedIsDentistRoute>
                 <AppointmentDentist />
-              </ProtectedIsLoginRoute>
+              </ProtectedIsDentistRoute>
             }
           />
           <Route
             path='/appointment-list-staff'
             element={
-              <ProtectedIsLoginRoute>
+              <ProtectedIsEmployeeRoute>
                 <AppointmentListStaff />
-              </ProtectedIsLoginRoute>
+              </ProtectedIsEmployeeRoute>
+            }
+          />
+          <Route
+            path='/ListMedicineDentist'
+            element={
+              <ProtectedIsDentistRoute>
+                <ListMedicineDentist />
+              </ProtectedIsDentistRoute>
             }
           />
 

@@ -51,7 +51,7 @@ export default function TemporaryDrawer() {
           { text: "Trang chủ", link: "/" },
           { text: "Hồ sơ bệnh", link: "/allRecord" },
           { text: "Danh sách Lịch hẹn", link: "/appointment-list-dentist" },
-          { text: "Danh sách thuốc", link: "/ListMedicineDoctor" },
+          { text: "Danh sách thuốc", link: "/ListMedicineDentist" },
           { text: "Trang tổng quan", link: "/dashboard" },
         ].map((item, index) => {
           const icons = [

@@ -275,8 +275,8 @@ export const getAllDetailMedicineService = async (req: any, res: Response, next:
                 const detailMedicine = {
                     MaThuoc: columns[0].value.trim(),
                     MaKH: columns[1].value.trim(),
-                    STT: columns[2].value,
-                    SoDT: columns[3].value.trim(),
+                    STT: columns[3].value,
+                    SoDT: columns[2].value.trim(),
                     SoLuong: columns[4].value,
                     ThoiDiemDung: columns[5].value.trim()
                 };
