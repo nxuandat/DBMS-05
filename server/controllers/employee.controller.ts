@@ -15,7 +15,9 @@ import {
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import {
   getAllAppointmentsService,
+  getAllDentistByEmployeeService,
   getAllInvoicesService,
+  getAllUsersService,
   getEmployeeById,
 } from "../services/employee.service";
 import { getAllServicesDentalClinicServiceByUser } from "../services/user.service";
@@ -583,6 +585,26 @@ export const getAllServiceByUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       getAllServicesDentalClinicServiceByUser(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllUsersByEmployee = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersService(req, res, next);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllDentistsByEmployee = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllDentistByEmployeeService(req, res, next);
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }

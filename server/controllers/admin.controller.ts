@@ -1070,6 +1070,8 @@ export const addEmployee = CatchAsyncError(
           GRANT EXECUTE ON UpdateLichHen TO ${MaNV}
           GRANT EXECUTE ON DeleteLichHen TO ${MaNV}
           GRANT EXECUTE ON DeleteHoaDon TO ${MaNV}
+          GRANT EXECUTE ON GetAllUsers TO ${MaNV}
+          GRANT EXECUTE ON GetAllDentistInfoByAdmin TO ${MaNV}
           `;
 
           const addEmployeeRequest = new SQLRequest(sql, (err, rowCount) => {

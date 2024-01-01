@@ -5,7 +5,9 @@ import {
   deleteAppointment,
   deleteInvoice,
   getAllAppointment,
+  getAllDentistsByEmployee,
   getAllInvoices,
+  getAllUsersByEmployee,
   getEmployeeInfo,
   loginEmployee,
   logoutEmployee,
@@ -39,5 +41,9 @@ employeeRouter.delete("/employee/delete-invoice", isAuthenticatedEmployeeLogin, 
 employeeRouter.post("/employee/create-invoice", isAuthenticatedEmployeeLogin, createInvoiceByEmployee);
 
 employeeRouter.put("/employee/update-invoice", isAuthenticatedEmployeeLogin, updateInvoice);
+
+employeeRouter.get("/employee/get-all-users", isAuthenticatedEmployeeLogin, getAllUsersByEmployee);
+
+employeeRouter.get("/employee/get-all-dentists", isAuthenticatedEmployeeLogin, getAllDentistsByEmployee);
 
 export default employeeRouter;
