@@ -43,6 +43,7 @@ const CreateMedicalRecord: React.FC<CreateMedicalRecordProps> = ({
 
   const getCurrentTimeInVietnam = () => {
     const currentDate = new Date();
+
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, "0");
     const day = String(currentDate.getDate()).padStart(2, "0");
@@ -113,9 +114,11 @@ const CreateMedicalRecord: React.FC<CreateMedicalRecordProps> = ({
   };
 
   const handleCreateMedicalRecord = () => {
+    const currentTimeInVietnam = new Date(getCurrentTimeInVietnam());
+    currentTimeInVietnam.setDate(currentTimeInVietnam.getDate() + 1);
     const medicalRecordData = {
       SoDT: SoDT,
-      NgayKham: NgayKham,
+      NgayKham: currentTimeInVietnam.toISOString(),
       DanDo: DanDo,
       TenDV: TenDV,
       TenThuoc: TenThuoc,

@@ -7,6 +7,7 @@ import axios from "axios";
 import { get } from "http";
 // import Invoice from "../components/Invoice";
 import CreateInvoice from "../components/CreateInvoice";
+import PaymentAndUpdateInvoice from "../components/PaymentAndUpdateInvoice";
 
 interface Appointment {
   MaSoHen: string;
@@ -170,9 +171,9 @@ export function EmployeeDashboard() {
           <div style={{ marginRight: "10px" }}>
             <CreateInvoice />
           </div>
-          {/* <div style={{ marginLeft: "10px" }}>
-            <Invoice />
-          </div> */}
+          <div style={{ marginLeft: "10px" }}>
+            <PaymentAndUpdateInvoice />
+          </div>
         </div>
       </div>
 
