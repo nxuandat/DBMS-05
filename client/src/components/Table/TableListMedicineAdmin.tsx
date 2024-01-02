@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import ButtonAdd from "@mui/material/Button";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
 
 interface Medicine {
   MaThuoc: string;
@@ -218,6 +219,7 @@ export default function TableListMedicineAdmin() {
           );
           reloadData();
           handleEditModalClose();
+          toast.success("Sửa thành công!");
         })
         .catch((error) => {
           console.error(
@@ -400,6 +402,7 @@ export default function TableListMedicineAdmin() {
           </Box>
         </Box>
       </Modal>
+      <ToastContainer />
     </div>
   );
 }
