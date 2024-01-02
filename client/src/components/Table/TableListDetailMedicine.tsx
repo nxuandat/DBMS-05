@@ -98,9 +98,7 @@ export default function TableListDetailMedicine() {
                 makh: medicine.MaKH,
                 sodt: medicine.SoDT,
                 quantity: medicine.SoLuong,
-                thoidiemdung: new Date(medicine.ThoiDiemDung).toLocaleDateString(
-                  "vi-VN"
-                ),
+                thoidiemdung: medicine.ThoiDiemDung
               }))
             );
           } else {
