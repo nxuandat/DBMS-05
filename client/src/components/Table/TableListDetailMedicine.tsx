@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@mui/material";
 import Modal from "@mui/material/Modal";
+import { ToastContainer, toast } from "react-toastify";
+
 
 interface DetailMedicine {
     STT: number;
@@ -204,6 +206,7 @@ export default function TableListDetailMedicine() {
             );
             reloadData();
             handleEditModalClose();
+            toast.success("Sửa thành công!");
           })
           .catch((error) => {
             console.error(
@@ -221,7 +224,7 @@ export default function TableListDetailMedicine() {
   
     return (
       <div>
-        <h1>DANH SÁCH THUỐC ĐÃ KÊ</h1>
+        <h1>DANH SÁCH CHI TIẾT THUỐC</h1>
         <hr />
 
         <DataGrid
@@ -359,6 +362,7 @@ export default function TableListDetailMedicine() {
             </Box>
           </Box>
         </Modal>
+        <ToastContainer />
       </div>
     );
   }

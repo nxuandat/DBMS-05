@@ -12,6 +12,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+
 interface User {
   MaKH: string;
   HoTen: string;
@@ -89,6 +91,7 @@ export default function TableListUser() {
           console.log(`User with ID ${editingUser.id} updated successfully`);
           reloadData();
           handleEditModalClose();
+          toast.success("Sửa thành công!");
         })
         .catch((error) => {
           console.error(`Error updating user with ID ${editingUser.id}`, error);
@@ -422,6 +425,7 @@ export default function TableListUser() {
           </Box>
         </Box>
       </Modal>
+      <ToastContainer />
     </div>
   );
 }

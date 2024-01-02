@@ -12,6 +12,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+
 interface Dentist {
   MaNS: string;
   TenDangNhap: string;
@@ -144,6 +146,7 @@ export default function TableListDentist() {
           console.log(`Dentist with ID ${editingUser.id} updated successfully`);
           reloadData();
           handleEditModalClose();
+          toast.success("Sửa thành công!");
         })
         .catch((error) => {
           console.error(
@@ -409,6 +412,7 @@ export default function TableListDentist() {
           </Box>
         </Box>
       </Modal>
+      <ToastContainer />
     </div>
   );
 }

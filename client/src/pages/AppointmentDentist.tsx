@@ -77,7 +77,7 @@ export default function AppointmentDentist() {
       };
 
       axios
-        .delete(`${import.meta.env.VITE_REACT_SERVER_PORT}/delete-dentistschedule`, {
+        .delete(`${import.meta.env.VITE_REACT_SERVER_PORT}/dentist/delete-dentistschedule`, {
           withCredentials: true,
           data: requestData, // Use the data property to send the payload in the request body
         })
