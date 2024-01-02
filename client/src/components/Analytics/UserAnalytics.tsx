@@ -40,7 +40,7 @@ const UserAnalytics = () => {
         <div className="mt-[50px] dark:bg-[#111C43] shadow-sm pb-5 rounded-sm">
             <div>
                 <h1 className={`${styles.title} px-5 !text-start`}>
-                    Users Analytics
+                    Phân tích người dùng
                 </h1>
                 <p className={`${styles.label} px-5`}>
                     Last 12 months analytics data{" "}

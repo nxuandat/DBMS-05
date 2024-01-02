@@ -14,8 +14,8 @@ export function Home() {
   
   return (
     
-    <div id='biggg' className='mt-11'>
-      <div className='row mb-9 mt-11'>
+    <div id='biggg' className='mt-11' style={{ minWidth: "100vh" }}>
+      <div className='row mb-9 mt-11' style={{ minWidth: "100vh" }}>
         <div className='col-md-8 col-lg-7 col-xl-6'>
           <img src={doctorHomeImg} className='img-fluid' alt='doctorHomeImg' />
         </div>
@@ -30,7 +30,7 @@ export function Home() {
                 border: "1px solid #34C38F",
               }}
               component={Link}
-              to='#'
+              to='/about'
             >
               (028) 3838 8388
             </Button>

@@ -9,7 +9,7 @@ export default function App() {
         style={{ backgroundColor: "rgba(81, 200, 150, 0.8)" }}
       >
         &copy; {new Date().getFullYear()} Copyright:{" "}
-        <a className='text-dark' href='#'>
+        <a className='text-dark' href='/'>
           PerfectSmileDental.com
         </a>
       </div>

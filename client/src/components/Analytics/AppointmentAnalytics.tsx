@@ -26,7 +26,7 @@ const AppointmentAnalytics = () => {
             const response = await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/admin/get-appointments-analytics`, { withCredentials: true });
             const analyticsData: any = [];
 
-            response.data.users.last12Months.forEach((item: any) => {
+            response.data.appointments.last12Months.forEach((item: any) => {
                 analyticsData.push({ name: item.month, count: item.count });
             });
 
@@ -40,7 +40,7 @@ const AppointmentAnalytics = () => {
         <div className="mt-[50px] dark:bg-[#111C43] shadow-sm pb-5 rounded-sm">
             <div>
                 <h1 className={`${styles.title} px-5 !text-start`}>
-                    Appointments Analytics
+                    Phân tích cuộc hẹn
                 </h1>
                 <p className={`${styles.label} px-5`}>
                     Last 12 months analytics data{" "}

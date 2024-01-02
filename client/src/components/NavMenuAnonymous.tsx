@@ -45,11 +45,7 @@ export default function TemporaryDrawer() {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        {[
-          { text: "Trang chủ", link: "/" },
-          { text: "Hồ sơ bệnh", link: "/record" },
-          { text: "Lịch hẹn", link: "/appointment" },
-        ].map((item, index) => (
+        {[{ text: "Trang chủ", link: "/" }].map((item, index) => (
           <ListItem key={item.text} disablePadding>
             <ListItemButton component={Link} to={item.link}>
               <ListItemIcon>

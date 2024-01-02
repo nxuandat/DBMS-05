@@ -5,24 +5,27 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-import NavMenu from "./NavMenu";
-import { RootState } from '../redux/rootReducer';
+import NavMenuUser from "./NavMenuUser";
+import NavMenuAdmin from "./NavMenuAdmin";
+import NavMenuAnonymous from "./NavMenuAnonymous";
+import NavMenuStaff from "./NavMenuStaff";
+import NavMenuDentist from "./NavMenuDentist";
+import { RootState } from "../redux/rootReducer";
 import { useSelector, useDispatch } from "react-redux";
 import { userLoggedOut } from "../redux/features/auth/userSlice";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Avatar from "@mui/material/Avatar";
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
-
 
 export default function Header() {
   // Khai báo biến user và dispatch từ redux store
-  let user = useSelector((state: RootState) => state.user.user);
+  const user = useSelector((state: RootState) => state.user.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const [menuAnchor, setMenuAnchor] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -35,46 +38,78 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      // Make a request to the backend to log the user out
-      await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/logout`,{ withCredentials: true });
-      // Dispatch the userLoggedOut action to update the Redux store
-      dispatch(userLoggedOut());
-      // Close the menu
-      handleMenuClose();
-      // Navigate to the home page or any other desired page
-      navigate("/");
+      let apiEndpoint = "";
+      if (user.MaKH) {
+        apiEndpoint = "/user/logout";
+      } else if (user.MaNS) {
+        apiEndpoint = "/dentist/logout";
+      } else if (user.MaQTV) {
+        apiEndpoint = "/admin/logout";
+      } else if (user.MaNV) {
+        apiEndpoint = "/employee/logout";
+      }
+
+      if (apiEndpoint) {
+        await axios.get(
+          `${import.meta.env.VITE_REACT_SERVER_PORT}${apiEndpoint}`,
+          { withCredentials: true }
+        );
+        dispatch(userLoggedOut());
+        handleMenuClose();
+        navigate("/");
+      } else {
+        console.error("Logout error: No valid user type found.");
+      }
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
-
   // Hàm để gọi api lấy thông tin người dùng từ backend
+
   const getUserInfo = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_REACT_SERVER_PORT}/user/me`, { withCredentials: true });
-      // console.log(response.data.user);
-      
-      return response.data.user;
+      let apiEndpoint = "";
+      if (user.MaKH) {
+        apiEndpoint = "/user/me";
+      } else if (user.MaNS) {
+        apiEndpoint = "/dentist/me";
+      } else if (user.MaQTV) {
+        apiEndpoint = "/admin/me";
+      } else if (user.MaNV) {
+        apiEndpoint = "/employee/me";
+      }
+
+      if (apiEndpoint) {
+        const response = await axios.get(
+          `${import.meta.env.VITE_REACT_SERVER_PORT}${apiEndpoint}`,
+          { withCredentials: true }
+        );
+        return response.data.user;
+      } else {
+        console.log("No valid user type found.");
+        return null;
+      }
     } catch (error: any) {
       console.log(error);
-      
       return null;
     }
   };
-  
+
   useEffect(() => {
     // Tạo một hàm async để sử dụng await
     const fetchUserInfo = async () => {
       // Gọi hàm getUserInfo và lưu kết quả vào biến userInfo
+
       const userInfo = await getUserInfo();
+
       // Nếu userInfo là null, tức là không lấy được thông tin người dùng
       if (userInfo === null) {
-       
         dispatch(userLoggedOut());
       } else {
         // Nếu userInfo không phải null, tức là lấy được thông tin người dùng
         // Gán biến user bằng userInfo
-        user = userInfo;
+        // user = userInfo;
+        console.log(userInfo);
       }
     };
     // Gọi hàm async vừa tạo
@@ -98,7 +133,17 @@ export default function Header() {
             }}
           > */}
           {/* <MenuIcon /> */}
-          <NavMenu />
+          {user ? (
+            <>
+              {user.MaKH && <NavMenuUser />}
+              {user.MaQTV && <NavMenuAdmin />}
+              {user.MaNS && <NavMenuDentist />}
+              {user.MaNV && <NavMenuStaff />}
+            </>
+          ) : (
+            <NavMenuAnonymous />
+          )}
+          {/* <NavMenuUser /> */}
           {/* </IconButton> */}
           <Typography
             variant='h6'
@@ -108,11 +153,14 @@ export default function Header() {
               color: "#0FA958",
             }}
           >
-            PerfectSmile Dental
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              PerfectSmile Dental
+            </Link>
           </Typography>
           {/* Kiểm tra nếu biến user có giá trị, tức là đã đăng nhập */}
           {user ? (
             // Nếu đã đăng nhập, hiển thị icon người dùng
+
             <div>
               <Avatar
                 alt={user.TenKH}
@@ -125,12 +173,10 @@ export default function Header() {
                 open={Boolean(menuAnchor)}
                 onClose={handleMenuClose}
               >
-                <MenuItem component={Link} to="/profile">
+                <MenuItem component={Link} to='/profile'>
                   Thông Tin Người Dùng
                 </MenuItem>
-                <MenuItem onClick={handleLogout}>
-                  Đăng Xuất
-                </MenuItem>
+                <MenuItem onClick={handleLogout}>Đăng Xuất</MenuItem>
               </Menu>
             </div>
           ) : (

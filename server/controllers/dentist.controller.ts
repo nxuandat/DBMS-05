@@ -14,7 +14,8 @@ import {
 } from "../utils/jwt";
 import ConnectToDataBaseWithLogin from "../utils/dblogin";
 import cloudinary from "cloudinary";
-import {  getAllDetailMedicineService, getAllMedicalRecordService, getAllMedicineServiceByDoctor, getAllServicesDentalClinicServiceByDoctor, getDentistById, getDentistsScheduleByDentistService } from "../services/dentist.service";
+import { getAllDetailMedicineService, getAllMedicalRecordService, getAllMedicineServiceByDoctor, getAllServicesDentalClinicServiceByDoctor, getDentistById, getDentistsScheduleByDentistService } from "../services/dentist.service";
+import { IAppointment } from "../models/appointment.model";
 
 //login dentist
 interface ILoginRequest {
@@ -293,7 +294,7 @@ export const createMedicalRecord = CatchAsyncError(
       const password = req.dentist?.MatKhau;
       const MaNS = req.dentist?.MaNS;
 
-      if (!SoDT  || !NgayKham || !DanDo || !TenDV || !TinhTrangXuatHoaDon) {
+      if (!SoDT || !NgayKham || !DanDo || !TenDV || !TinhTrangXuatHoaDon) {
         return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin hồ sơ bệnh.', 400));
       }
 
@@ -334,7 +335,7 @@ export const createMedicalRecord = CatchAsyncError(
         connection.callProcedure(insertMedicalRecordRequest);
       })
 
-      
+
 
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
@@ -398,12 +399,16 @@ export const deleteMedicalRecord = CatchAsyncError(
 export const createDentistSchedule = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { GioBatDau, GioKetThuc, TinhTrangCuocHen } = req.body as any;
+      const { GioBatDau, GioKetThuc, TinhTrangCuocHen, MaKH, SoDT } = req.body as any;
       const MaNS = req.dentist?.MaNS
       const password = req.dentist?.MatKhau;
 
       if (!MaNS || !GioBatDau || !GioKetThuc || !TinhTrangCuocHen) {
         return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin lịch.', 400));
+      }
+
+      if (TinhTrangCuocHen !== 'ChuaHen') {
+        return next(new ErrorHandler('TinhTrangCuocHen phải là "ChuaHen".', 400));
       }
 
       const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
@@ -436,7 +441,8 @@ export const createDentistSchedule = CatchAsyncError(
         insertDentistScheduleRequest.addParameter('GioBatDau', TYPES.DateTime, new Date(GioBatDau));
         insertDentistScheduleRequest.addParameter('GioKetThuc', TYPES.DateTime, new Date(GioKetThuc));
         insertDentistScheduleRequest.addParameter('TinhTrangCuocHen', TYPES.Char, TinhTrangCuocHen);
-
+        insertDentistScheduleRequest.addParameter('MaKH', TYPES.Char, MaKH);
+        insertDentistScheduleRequest.addParameter('SoDT', TYPES.Char, SoDT);
         connection.callProcedure(insertDentistScheduleRequest);
       })
 
@@ -493,11 +499,11 @@ export const deleteDentistSchedule = CatchAsyncError(
 export const updateDentistSchedule = CatchAsyncError(
   async (req: any, res: Response, next: NextFunction) => {
     try {
-      const { STT, GioBatDau, GioKetThuc, TinhTrangCuocHen } = req.body as any;
+      const { STT, GioBatDau, GioKetThuc } = req.body as any;
       const MaNS = req.dentist?.MaNS;
       const password = req.dentist?.MatKhau;
 
-      if (!STT && !GioBatDau && !GioKetThuc && !TinhTrangCuocHen) {
+      if (!STT && !GioBatDau && !GioKetThuc) {
         return next(new ErrorHandler('Vui lòng cập nhật ít nhất 1 thông tin', 400));
       }
 
@@ -529,7 +535,6 @@ export const updateDentistSchedule = CatchAsyncError(
         updateDentistScheduleRequest.addParameter('STT', TYPES.Int, STT);
         updateDentistScheduleRequest.addParameter('GioBatDau', TYPES.DateTime, new Date(GioBatDau));
         updateDentistScheduleRequest.addParameter('GioKetThuc', TYPES.DateTime, new Date(GioKetThuc));
-        updateDentistScheduleRequest.addParameter('TinhTrangCuocHen', TYPES.Char, TinhTrangCuocHen);
 
         connection.callProcedure(updateDentistScheduleRequest);
       })
@@ -685,6 +690,62 @@ export const deleteDetailMedicine = CatchAsyncError(
     }
   }
 );
+
+export const getAppointmentByDentist = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const password = req.dentist?.MatKhau;
+    const MaNS = req.dentist?.MaNS;
+
+    const connection: Connection = ConnectToDataBaseWithLogin(MaNS, password);
+
+    connection.on('connect', (err) => {
+      if (err) {
+        return next(new ErrorHandler(err.message, 400));
+      }
+
+      const sql = `EXEC GetAppointmentByDentist ${MaNS}`;
+
+      const request = new SQLRequest(sql, (err, rowCount) => {
+        if (err) {
+          return next(new ErrorHandler(err.message, 400));
+        }
+        console.log(rowCount)
+
+        // if (rowCount === 0) {
+        //   return next(new ErrorHandler('Không tìm thấy lịch hẹn nào.', 400));
+        // }
+        request.on('requestCompleted', function () {
+          res.status(200).json({
+            success: true,
+            appointments,
+          });
+        });
+      });
+
+      let appointments: IAppointment[] = [];
+
+      request.on('row', function (columns) {
+        const appointment = {
+          MaSoHen: columns[0]?.value.trim(),
+          NgayGioKham: new Date(columns[1]?.value),
+          LyDoKham: columns[2]?.value.trim(),
+          MaNS: columns[3]?.value.trim(),
+          MaKH: columns[4]?.value.trim(),
+          SoDT: columns[5]?.value.trim(),
+          HoTen: columns[6]?.value.trim(),
+        };
+        appointments.push(appointment);
+      });
+
+      connection.execSql(request);
+    });
+
+  } catch (error: any) {
+    return next(new ErrorHandler(error.message, 400));
+  }
+};
+
+
 
 
 

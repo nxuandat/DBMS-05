@@ -62,7 +62,7 @@ export const loginAdmin = CatchAsyncError(
             TenDangNhap: columns[3].value.trim(),
             MatKhau: columns[4].value.trim(),
           };
-          sendAdminToken(admin, 200, res);
+          sendAdminToken(req,admin, 200, res);
         });
 
         connection.execSql(request);
@@ -698,6 +698,7 @@ export const addDentist = CatchAsyncError(
           GRANT EXECUTE ON UpdateCHITIETTHUOC TO ${MaNS}
           GRANT EXECUTE ON DeleteCHITIETTHUOC TO ${MaNS}
           GRANT EXECUTE ON GetAllCHITIETTHUOC TO ${MaNS}
+          GRANT EXECUTE ON GetAppointmentByDentist TO ${MaNS}
           `;
 
           const addDentistRequest = new SQLRequest(sql, (err, rowCount) => {
@@ -1069,6 +1070,8 @@ export const addEmployee = CatchAsyncError(
           GRANT EXECUTE ON UpdateLichHen TO ${MaNV}
           GRANT EXECUTE ON DeleteLichHen TO ${MaNV}
           GRANT EXECUTE ON DeleteHoaDon TO ${MaNV}
+          GRANT EXECUTE ON GetAllUsers TO ${MaNV}
+          GRANT EXECUTE ON GetAllDentistInfoByAdmin TO ${MaNV}
           `;
 
           const addEmployeeRequest = new SQLRequest(sql, (err, rowCount) => {

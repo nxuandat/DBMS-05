@@ -1,0 +1,15 @@
+.scheduler-container {
+    height: calc(100vh - 50px - 200px);
+    width: 100vw;
+    transform: translateX(-70px);
+}
+
+
+.dhx_cal_tab.button_day, .dhx_cal_tab.button_week, .dhx_cal_tab.button_month {
+    color: limegreen !important;
+}
+
+/* Thay đổi màu sắc của ngày giờ sự kiện */
+.dhx_cal_event div {
+    background-color: rgb(15, 151, 15) !important;
+}

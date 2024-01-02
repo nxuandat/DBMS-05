@@ -478,68 +478,68 @@ export const createAppointment = CatchAsyncError(
       const SoDT = req.user?.SoDT;
 
       if (!NgayGioKham && !LyDoKham && !HoTen && !MaKH && !SoDT) {
-        return next(new ErrorHandler('Vui lòng nhập đầy đủ thông tin lịch hẹn nha sĩ.', 400));
+        return next(
+          new ErrorHandler(
+            "Vui lòng nhập đầy đủ thông tin lịch hẹn nha sĩ.",
+            400
+          )
+        );
       }
 
       const connection: Connection = ConnectToDataBaseWithLogin(MaKH, password);
 
-      connection.on('connect', (err) => {
+      connection.on("connect", (err) => {
         if (err) {
           return next(new ErrorHandler(err.message, 400));
         }
 
-        const getLastMaSoHenRequest = new SQLRequest(`SELECT MaSoHen FROM LICHHEN`, async (err: Error | null, result: any) => {
-          if (err) {
-            return next(new ErrorHandler(err.message, 400));
-          }
+        const randomNumber = Math.floor(Math.random() * 1000) + 1;
 
-          let newMaSoHenNumber = result + 1;
+        // Create the new MaSoHen by prepending 'MaSoHen' to the new number
+        const newMaSoHen: string =
+          "MSH" + randomNumber.toString().padStart(2, "0");
 
-          const randomNumber = Math.floor(Math.random() * 1000) + 1;
+        const sql = `InsertAppointment`;
 
-          // Create the new MaSoHen by prepending 'MaSoHen' to the new number
-          const newMaSoHen: string = 'MSH' + randomNumber.toString().padStart(2, '0');
+        const insertAppointmentRequest = new SQLRequest(
+          sql,
+          (err, rowCount) => {
+            if (err) {
+              return next(new ErrorHandler(err.message, 400));
+            }
 
-
-
-          getLastMaSoHenRequest.on('requestCompleted', function () {
-            const sql = `InsertAppointment`;
-
-            const insertAppointmentRequest = new SQLRequest(sql, (err, rowCount) => {
-              if (err) {
-                return next(new ErrorHandler(err.message, 400));
-              }
-
-              if (rowCount === 0) {
-                return next(new ErrorHandler("Không thể thêm cuộc hẹn", 400));
-              }
+            if (rowCount === 0) {
+              return next(new ErrorHandler("Không thể thêm cuộc hẹn", 400));
+            }
+            return res.status(201).json({
+              success: true,
+              message: "Thêm lịch hẹn thành công",
             });
+          }
+        );
+        console.log(NgayGioKham);
 
-            console.log(NgayGioKham);
-            
+        insertAppointmentRequest.addParameter(
+          "MaSoHen",
+          TYPES.VarChar,
+          newMaSoHen
+        );
+        insertAppointmentRequest.addParameter(
+          "NgayGioKham",
+          TYPES.DateTime,
+          NgayGioKham
+        );
+        insertAppointmentRequest.addParameter(
+          "LyDoKham",
+          TYPES.NVarChar,
+          LyDoKham
+        );
+        insertAppointmentRequest.addParameter("HoTen", TYPES.NVarChar, HoTen);
+        insertAppointmentRequest.addParameter("MaKH", TYPES.VarChar, MaKH);
+        insertAppointmentRequest.addParameter("SoDT", TYPES.VarChar, SoDT);
 
-            insertAppointmentRequest.addParameter('MaSoHen', TYPES.VarChar, newMaSoHen);
-            insertAppointmentRequest.addParameter('NgayGioKham', TYPES.DateTime,NgayGioKham);
-            insertAppointmentRequest.addParameter('LyDoKham', TYPES.NVarChar, LyDoKham);
-            insertAppointmentRequest.addParameter('HoTen', TYPES.NVarChar, HoTen);
-            insertAppointmentRequest.addParameter('MaKH', TYPES.VarChar, MaKH);
-            insertAppointmentRequest.addParameter('SoDT', TYPES.VarChar, SoDT);
-
-            connection.callProcedure(insertAppointmentRequest);
-          })
-
-          return res.status(201).json({
-            success: true,
-            message: "Thêm lịch hẹn thành công"
-          });
-
-        });
-
-        connection.execSql(getLastMaSoHenRequest);
-
-
+        connection.callProcedure(insertAppointmentRequest);
       });
-
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
@@ -1051,6 +1051,7 @@ export const getAppointmentByUser = CatchAsyncError(
             MaNS: columns[3].value ? columns[3].value.trim() : null,
             MaKH: columns[4].value ? columns[4].value.trim() : null,
             SoDT: columns[5].value ? columns[5].value.trim() : null,
+            HoTen: columns[6].value ? columns[6].value.trim() : null
           };
           appointments.push(appointment);
           
@@ -1110,8 +1111,8 @@ export const getDetailMedicineByUser = CatchAsyncError(
           const medicine = {
             MaThuoc: columns[0].value.trim(),
             MaKH: columns[1].value.trim(),
-            STT: columns[2].value,
-            SoDT: columns[3].value.trim(),
+            STT: columns[3].value,
+            SoDT: columns[2].value.trim(),
             SoLuong: columns[4].value,
             ThoiDiemDung: columns[5].value.trim(),
           };

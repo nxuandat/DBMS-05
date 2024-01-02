@@ -98,6 +98,8 @@ create table LICHNHASI(
   GioBatDau datetime,
   GioKetThuc datetime,
   TinhTrangCuocHen CHAR(20) CHECK (TinhTrangCuocHen IN ('DaHen', 'ChuaHen')),
+  MaKH char(20),
+  SoDT char(15),
   constraint PK_MaNS_STT primary key(MaNS,STT)
 )
 
@@ -188,6 +190,9 @@ FOREIGN KEY(MaThuoc) REFERENCES LOAITHUOC(MaThuoc) ON DELETE CASCADE ON UPDATE C
 
 ALTER TABLE LICHNHASI ADD CONSTRAINT FK_LICHNHASI_NHASI 
 FOREIGN KEY(MaNS) REFERENCES NHASI(MaNS) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE LICHNHASI ADD CONSTRAINT FK_LICHNHASI_KHACHHANG
+FOREIGN KEY(MaKH,SoDT) REFERENCES KHACHHANG(MaKH,SoDT) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE HOSOBENH ADD CONSTRAINT FK_HOSOBENH_KHACHHANG 
 FOREIGN KEY(MaKH,SoDT) REFERENCES KHACHHANG(MaKH,SoDT) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -296,7 +301,7 @@ VALUES
 INSERT INTO LUUTRUANH (MaNguoiDung, SoDT, AvatarUrl)
 VALUES ('KH03', '0139438492', 'avatar1.jpg');
 
-
+use 
 
 INSERT INTO HOADON(MaHoaDon, MaKH, SoDT, STT, NgayXuat, TongChiPhi, TinhTrangThanhToan, MaNV, MaDV)
 VALUES ('HD01', 'KH03', '0912748492', 3, '2023-11-10 00:00:00', 1000000, 'DaThanhToan', 'NV01', 'DV01'),
@@ -316,6 +321,16 @@ INSERT INTO CHITIETTHUOC(MaThuoc, MaKH, SoDT, STT, SoLuong, ThoiDiemDung)
 VALUES ('T01', 'KH03', '0912748492', 3, 5, '2024-01-07 10:00:00'),
 	   ('T02', 'KH02', '0344805188', 2, 20, '2024-01-08 10:00:00'),
 	   ('T03', 'KH02', '0344805188', 2, 1, '2024-01-12 11:00:00');
+
+INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
+VALUES 
+('MSH01', '2023-11-14 18:20:00.000', N'Chảy máu chân răng', 'NS01', 'KH02', '0344805188'),
+('MSH02', '2023-11-16 10:30:00.000', N'Kiểm tra sức khỏe', 'NS01', 'KH01', '+12672133096'),
+('MSH701', '2024-01-17 19:45:00.000', N'bị đau tủy răng', 'NS02', 'KH03', '0912748492');
+
+INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT)
+VALUES 
+('MSH34', '2024-01-15 10:20:00.000', N'Viêm nha chu', 'NS03', 'KH02', '0344805188');
 	  
 
 
@@ -675,6 +690,24 @@ BEGIN
     WHERE ln.TinhTrangCuocHen = 'ChuaHen'
       AND i.NgayGioKham BETWEEN ln.GioBatDau AND ln.GioKetThuc;
 END;
+
+CREATE TRIGGER LichHen_LichNhaSiChange
+ON LICHHEN
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE ln
+    SET ln.TinhTrangCuocHen = 'DaHen',
+        ln.MaKH = i.MaKH,
+        ln.SoDT = i.SoDT
+    FROM LICHNHASI ln
+    INNER JOIN inserted i ON ln.MaNS = i.MaNS
+    WHERE ln.TinhTrangCuocHen = 'ChuaHen'
+      AND i.NgayGioKham BETWEEN ln.GioBatDau AND ln.GioKetThuc;
+END;
+
 
 GO
 
@@ -1260,56 +1293,41 @@ END;
 
 GO
 
+
 --Thêm lịch hẹn của người dùng 
 CREATE PROCEDURE InsertAppointment
     @MaSoHen varchar(20),
     @NgayGioKham datetime,
     @LyDoKham nvarchar(100),
     @HoTen nvarchar(50),
-    @MaKH varchar(20),
+    @MaKH char(20),
     @SoDT varchar(15)
 AS
 BEGIN
     -- Khai báo biến
-    DECLARE @retry INT;
-	DECLARE @MaNS varchar(20)
-	SELECT @MaNS = MaNS from NHASI where HoTen = @HoTen
-    SET @retry = 5;
+    DECLARE @MaNS varchar(20)
+    SELECT @MaNS = MaNS from NHASI where HoTen = @HoTen
 
-    -- Bắt đầu vòng lặp
-    WHILE @retry > 0
-    BEGIN
-        BEGIN TRY
-            -- Bắt đầu giao tác
-            BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Bắt đầu giao tác
+        BEGIN TRANSACTION;
 
-            -- Chờ 5 giây trước khi thực hiện giao tác để giảm thiểu thời gian giữ khóa
-            WAITFOR DELAY '00:00:05';
+        -- Thực hiện truy vấn INSERT với mức cô lập SERIALIZABLE để tránh dirty read, lost update, phantom read và unrepeatable read
+        SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 
-            -- Thực hiện truy vấn INSERT với mức cô lập SERIALIZABLE để tránh dirty read, lost update, phantom read và unrepeatable read
-            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+        INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT) 
+        VALUES (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT);
 
-            INSERT INTO LICHHEN (MaSoHen, NgayGioKham, LyDoKham, MaNS, MaKH, SoDT) 
-            VALUES (@MaSoHen, @NgayGioKham, @LyDoKham, @MaNS, @MaKH, @SoDT);
+        -- Kết thúc giao tác
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Nếu có lỗi, hủy giao tác
+        ROLLBACK TRANSACTION;
 
-            -- Kết thúc giao tác
-            COMMIT TRANSACTION;
-
-            -- Đặt lại số lần thử lại
-            SET @retry = 0;
-        END TRY
-        BEGIN CATCH
-            -- Nếu có lỗi, hủy giao tác
-            ROLLBACK TRANSACTION;
-
-            -- Giảm số lần thử lại
-            SET @retry = @retry - 1;
-
-            -- Nếu hết số lần thử lại, đưa ra lỗi
-            IF @retry = 0
-                THROW;
-        END CATCH
-    END
+        -- Đưa ra lỗi
+        THROW;
+    END CATCH
 END;
 
 GO
@@ -1756,7 +1774,8 @@ BEGIN
             SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 
             -- Truy vấn dữ liệu
-            SELECT * FROM LICHHEN WITH (ROWLOCK, READCOMMITTED)
+            SELECT L.*, N.HoTen FROM LICHHEN L WITH (ROWLOCK, READCOMMITTED)
+            JOIN NHASI N ON L.MaNS = N.MaNS
             WHERE MaKH = @MaKH;
 
             -- Kết thúc giao dịch
@@ -2031,19 +2050,22 @@ END;
 
 GO
 
+
 CREATE PROCEDURE ThemLichNhaSi
     @MaNS char(20),
     @STT int,
     @GioBatDau datetime,
     @GioKetThuc datetime,
-    @TinhTrangCuocHen char(20)
+    @TinhTrangCuocHen char(20),
+    @MaKH char(20) = NULL,
+    @SoDT char(15) = NULL
 AS
 BEGIN
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
     BEGIN TRANSACTION;
     BEGIN TRY
-        INSERT INTO LICHNHASI(MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen)
-        VALUES (@MaNS, @STT, @GioBatDau, @GioKetThuc, @TinhTrangCuocHen);
+        INSERT INTO LICHNHASI(MaNS, STT, GioBatDau, GioKetThuc, TinhTrangCuocHen, MaKH, SoDT)
+        VALUES (@MaNS, @STT, @GioBatDau, @GioKetThuc, @TinhTrangCuocHen, @MaKH, @SoDT);
         COMMIT;
     END TRY
     BEGIN CATCH
@@ -2053,23 +2075,33 @@ BEGIN
 END;
 
 GO
+DROP PROCEDURE SuaLichNhaSi
 
 CREATE PROCEDURE SuaLichNhaSi
     @MaNS char(20),
     @STT int,
     @GioBatDau datetime,
-    @GioKetThuc datetime,
-    @TinhTrangCuocHen char(20)
+    @GioKetThuc datetime
 AS
 BEGIN
     SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
     BEGIN TRANSACTION;
     BEGIN TRY
-        UPDATE LICHNHASI
-        SET GioBatDau = ISNULL(@GioBatDau,GioBatDau), 
-		GioKetThuc = ISNULL(@GioKetThuc,GioKetThuc), 
-		TinhTrangCuocHen = ISNULL(@TinhTrangCuocHen,TinhTrangCuocHen)
-        WHERE MaNS = @MaNS AND STT = @STT;
+        DECLARE @TinhTrangCuocHen char(20);
+        SELECT @TinhTrangCuocHen = TinhTrangCuocHen FROM LICHNHASI WHERE MaNS = @MaNS AND STT = @STT;
+
+        IF @TinhTrangCuocHen = 'ChuaHen'
+        BEGIN
+            UPDATE LICHNHASI
+            SET GioBatDau = ISNULL(@GioBatDau,GioBatDau), 
+                GioKetThuc = ISNULL(@GioKetThuc,GioKetThuc)
+            WHERE MaNS = @MaNS AND STT = @STT;
+        END
+        ELSE IF @TinhTrangCuocHen = 'DaHen'
+        BEGIN
+            THROW 51000, 'ko thể sửa lịch do khách hàng đã đặt giờ đó', 1;
+        END
+
         COMMIT;
     END TRY
     BEGIN CATCH
@@ -2077,6 +2109,8 @@ BEGIN
         THROW;
     END CATCH
 END;
+
+
 
 GO
 
@@ -2598,6 +2632,33 @@ BEGIN
     END CATCH
 END;
 
+
+CREATE PROCEDURE GetAppointmentByDentist
+    @MaNS char(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+            SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+            SELECT LICHHEN.*, NHASI.HoTen
+            FROM LICHHEN 
+            INNER JOIN NHASI ON LICHHEN.MaNS = NHASI.MaNS
+            WHERE LICHHEN.MaNS = @MaNS;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int;
+        SELECT @ErrMsg = ERROR_MESSAGE(),
+               @ErrSeverity = ERROR_SEVERITY();
+        RAISERROR(@ErrMsg, @ErrSeverity, 1);
+    END CATCH
+END;
+
+
+
 go
 
 
@@ -2754,13 +2815,11 @@ GRANT EXECUTE ON GetDetailMedicineByUser TO KH02
 
 
 
-
-
 --Phân quyền quản trị viên
 USE MASTER;
 GO
 CREATE LOGIN QTV01
-WITH PASSWORD = '567890',
+WITH PASSWORD = '123456',
 CHECK_POLICY = OFF, CHECK_EXPIRATION = OFF,
 DEFAULT_DATABASE = PHONGKHAMNHASI
 GO
@@ -2866,6 +2925,7 @@ GRANT EXECUTE ON CreateCHITIETTHUOC TO NS01
 GRANT EXECUTE ON UpdateCHITIETTHUOC TO NS01
 GRANT EXECUTE ON DeleteCHITIETTHUOC TO NS01
 GRANT EXECUTE ON GetAllCHITIETTHUOC TO NS01
+GRANT EXECUTE ON GetAppointmentByDentist TO NS01
 
 
 --Nha sĩ NS02
@@ -2914,6 +2974,8 @@ GRANT EXECUTE ON CreateCHITIETTHUOC TO NS02
 GRANT EXECUTE ON UpdateCHITIETTHUOC TO NS02
 GRANT EXECUTE ON DeleteCHITIETTHUOC TO NS02
 GRANT EXECUTE ON GetAllCHITIETTHUOC TO NS02
+GRANT EXECUTE ON GetAppointmentByDentist TO NS02
+
 
 
 --Nha sĩ NS03
@@ -2962,6 +3024,9 @@ GRANT EXECUTE ON CreateCHITIETTHUOC TO NS03
 GRANT EXECUTE ON UpdateCHITIETTHUOC TO NS03
 GRANT EXECUTE ON DeleteCHITIETTHUOC TO NS03
 GRANT EXECUTE ON GetAllCHITIETTHUOC TO NS03
+GRANT EXECUTE ON GetAppointmentByDentist TO NS03
+
+EXEC GetAppointmentByDentist 'NS03'
 
 
 -------------------------
@@ -3007,6 +3072,8 @@ GRANT EXECUTE ON UpdateHoaDon TO NV01
 GRANT EXECUTE ON UpdateLichHen TO NV01
 GRANT EXECUTE ON DeleteLichHen TO NV01
 GRANT EXECUTE ON DeleteHoaDon TO NV01
+GRANT EXECUTE ON GetAllUsers TO NV01
+GRANT EXECUTE ON GetAllDentistInfoByAdmin TO NV01
 
 
 --------------------------------------NV294
@@ -3051,6 +3118,8 @@ GRANT EXECUTE ON UpdateHoaDon TO NV294
 GRANT EXECUTE ON UpdateLichHen TO NV294
 GRANT EXECUTE ON DeleteLichHen TO NV294
 GRANT EXECUTE ON DeleteHoaDon TO NV294
+GRANT EXECUTE ON GetAllUsers TO NV294
+GRANT EXECUTE ON GetAllDentistInfoByAdmin TO NV294
 
 
 

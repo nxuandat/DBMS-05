@@ -144,6 +144,8 @@ export const getAllMedicalRecordService = async (req: any, res: Response, next: 
                     return next(new ErrorHandler(err.message, 400));
                 }
 
+                console.log(rowCount)
+
                 if (rowCount === 0) {
                     return next(new ErrorHandler('Không tìm thấy hồ sơ bệnh nào.', 400));
                 }
@@ -219,7 +221,9 @@ export const getDentistsScheduleByDentistService = async (req: any, res: Respons
                     STT: columns[1]?.value,
                     GioBatDau: new Date(columns[2]?.value),
                     GioKetThuc: new Date(columns[3]?.value),
-                    TinhTrangCuocHen: columns[4]?.value.trim()
+                    TinhTrangCuocHen: columns[4]?.value.trim(),
+                    MaKH: columns[5]?.value ? columns[5]?.value.trim() : null,
+                    SoDT: columns[6]?.value ? columns[6]?.value.trim() : null,
                 };
                 dentistsSchedules.push(dentist);
             });
@@ -271,8 +275,8 @@ export const getAllDetailMedicineService = async (req: any, res: Response, next:
                 const detailMedicine = {
                     MaThuoc: columns[0].value.trim(),
                     MaKH: columns[1].value.trim(),
-                    STT: columns[2].value,
-                    SoDT: columns[3].value.trim(),
+                    STT: columns[3].value,
+                    SoDT: columns[2].value.trim(),
                     SoLuong: columns[4].value,
                     ThoiDiemDung: columns[5].value.trim()
                 };
