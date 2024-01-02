@@ -20,6 +20,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useNavigate } from "react-router-dom";
 
+
 export default function Header() {
   // Khai báo biến user và dispatch từ redux store
   const user = useSelector((state: RootState) => state.user.user);
@@ -145,6 +146,16 @@ export default function Header() {
           )}
           {/* <NavMenuUser /> */}
           {/* </IconButton> */}
+          <div className="absolute h-[4.79%] w-[67.06%] top-[4.43%] right-[18.86%] bottom-[90.78%] left-[14.08%] text-lg text-dodgerblue font-sarala">
+            <img
+              className="absolute h-full w-[25.4%] top-[0%] right-[74.6%] bottom-[0%] left-[0%] max-w-full overflow-hidden max-h-full object-contain"
+              alt=""
+              src="/dentist.png"
+              width="40px"
+              height="40px" 
+            />
+
+          </div>
           <Typography
             variant='h6'
             component='div'
