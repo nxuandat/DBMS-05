@@ -313,6 +313,25 @@ export default function LogIn2() {
               >
                 Đăng nhập
               </button>
+              <div className='divider d-flex align-items-center justify-content-center my-4'>
+                <p className='text-center fw-bold mx-3 mb-0 text-muted'>HOẶC</p>
+              </div>
+              <a
+                className='btn btn-primary btn-lg btn-block'
+                style={{
+                  backgroundColor: "#f7f7f7",
+                  borderColor: "transparent",
+                  color: "#0a0a0a",
+                }}
+                href='/login'
+                role='button'
+              >
+                <i
+                  className='far fa-id-badge'
+                  style={{ marginRight: "10px" }}
+                />
+                Đăng nhập với quyền Khách hàng
+              </a>
             </form>
             <ToastContainer />
           </div>
