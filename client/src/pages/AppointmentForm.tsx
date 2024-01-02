@@ -15,6 +15,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import FormControl from "@mui/material/FormControl";
+import { set } from "date-fns";
 
 interface IDentist {
   MaNS: string;
@@ -189,15 +190,16 @@ const AppointmentForm = () => {
 
   const handleDateChange = (e) => {
     const selectedDateTime = e.target.value;
+    setNgayGioKham(selectedDateTime);
 
-    if (isAppointmentAvailable(selectedDateTime)) {
-      setNgayGioKham(selectedDateTime);
-    } else {
-      // Handle the case where there is already an appointment within the selected date and time range
-      console.error(
-        "Đã có lịch hẹn trong khoảng thời gian này, quý khách vui lòng chọn khoảng thời gian khác."
-      );
-    }
+    // if (isAppointmentAvailable(selectedDateTime)) {
+    //   setNgayGioKham(selectedDateTime);
+    // } else {
+    //   // Handle the case where there is already an appointment within the selected date and time range
+    //   console.error(
+    //     "Đã có lịch hẹn trong khoảng thời gian này, quý khách vui lòng chọn khoảng thời gian khác."
+    //   );
+    // }
   };
 
   const handleCloseError = () => {
