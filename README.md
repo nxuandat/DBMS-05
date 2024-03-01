@@ -16,7 +16,7 @@
 
 ## Project Description
 ### Dental Clinic Management System
-
+A project for the Database Management Systems course. The system enables customer registration, appointment booking, medical record management, and administration functions such as medicine and user management.
 #### Customer Module
 1. **Customer Registration:**
    - Provide personal information: name, date of birth, address, phone number, password.
@@ -55,3 +55,20 @@
 2. **User Management:**
    - Add employee and dentist accounts.
    - Lock accounts when necessary.
+
+## Technology Stack
+- Frontend: React.js with TypeScript
+- Backend: Microsoft SQL Server
+- Build Tool: Vite
+- Getting Started
+
+## To get started with the project, follow these steps:
+
+1. Clone the repository to your local machine.
+2. Install Node.js 18 if not already installed.
+3. Navigate to the project directory.
+4. Run ```npm install``` to install dependencies.
+5. Set up your Microsoft SQL Server database.
+6. Configure the database connection in the backend code.
+7. Run ```npm run dev``` to start the Vite development server.
+8. Access the application in your web browser.
